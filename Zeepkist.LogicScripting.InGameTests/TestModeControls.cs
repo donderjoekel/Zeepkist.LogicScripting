@@ -9,6 +9,7 @@ namespace TNRD.Zeepkist.LogicScripting.InGameTests;
 
 /// <summary>
 /// Goes into test mode and back the way a player does: the level editor's Test key, and Quit in the pause menu.
+/// Restarts the round the way a player does too, with Reset there.
 /// </summary>
 internal static class TestModeControls
 {
@@ -32,11 +33,15 @@ internal static class TestModeControls
     /// </summary>
     public static IEnumerator Leave()
     {
-        var pauseMenu = Object.FindObjectOfType<PauseMenuUI>(true)
-            ?? throw new InvalidOperationException("no pause menu to quit test mode from");
-        pauseMenu.Open(true);
-        yield return null;
-        pauseMenu.OnQuit();
+        return PressInPauseMenu(menu => menu.OnQuit());
+    }
+
+    /// <summary>
+    /// Opens the pause menu and presses Reset, which restarts the round.
+    /// </summary>
+    public static IEnumerator Restart()
+    {
+        return PressInPauseMenu(menu => menu.OnReset());
     }
 
     /// <summary>
@@ -49,5 +54,14 @@ internal static class TestModeControls
         return game.LevelLoads > loadsBefore
             && ComponentCache.Get<LEV_LevelEditorCentral>() is { } central
             && !central.saveload.isLoading;
+    }
+
+    private static IEnumerator PressInPauseMenu(Action<PauseMenuUI> press)
+    {
+        var pauseMenu = Object.FindObjectOfType<PauseMenuUI>(true)
+            ?? throw new InvalidOperationException("no pause menu in test mode");
+        pauseMenu.Open(true);
+        yield return null;
+        press(pauseMenu);
     }
 }
