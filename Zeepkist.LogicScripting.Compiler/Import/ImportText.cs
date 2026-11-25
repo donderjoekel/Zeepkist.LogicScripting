@@ -5,7 +5,9 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
 /// <summary>
-/// Writes one line per block, <c>&lt;function&gt;_&lt;n&gt; = &lt;function&gt;(...)</c>.
+/// Writes one line per block, <c>&lt;function&gt;_&lt;n&gt; = &lt;function&gt;(...)</c>, or only the call for a block
+/// without outputs, which can't have a name. When every block is hidden, <c>default hide: true</c> comes first instead
+/// of <c>hide:</c> in each call.
 /// </summary>
 internal static class ImportText
 {
@@ -17,19 +19,32 @@ internal static class ImportText
         Dictionary<string, string> names = [];
         Dictionary<string, int> counts = [];
         List<string> lines = [];
+        var hidesAll = ordered.All(b => b.FindValues(BlockSetting.Hide).Count > 0);
+        if (hidesAll)
+            lines.Add($"default {BlockSetting.Hide.Name}: true");
+
         foreach (var block in ordered)
         {
             BlockManifest.TryGetBlock(block.BlockId, out var type, out var style);
+            List<string> arguments = [.. WriteInputs(graph, block, type, names), .. WriteSettings(block, type.Settings)];
+            if (!hidesAll)
+                arguments.AddRange(WriteSettings(block, [BlockSetting.Hide]));
+
+            if (style != type.DefaultStyle)
+                arguments.Add($"{BlockType.StyleName}: {style.Name}");
+
+            var call = $"{type.Function}({string.Join(", ", arguments)})";
+            if (type.Outputs.Count == 0)
+            {
+                lines.Add(call);
+                continue;
+            }
+
             counts.TryGetValue(type.Function, out var count);
             counts[type.Function] = count + 1;
             var name = $"{type.Function}_{count + 1}";
             names.Add(block.Uid, name);
-
-            List<string> arguments = [.. WriteInputs(graph, block, type, names), .. WriteSettings(block, type)];
-            if (style != type.DefaultStyle)
-                arguments.Add($"{BlockType.StyleName}: {style.Name}");
-
-            lines.Add($"{name} = {type.Function}({string.Join(", ", arguments)})");
+            lines.Add($"{name} = {call}");
         }
 
         return string.Join("\n", lines);
@@ -49,18 +64,31 @@ internal static class ImportText
         {
             var wire = graph.FindWire(block, input);
             if (wire == null)
+            {
                 skipped = true;
-            else
-                yield return skipped ? $"{input.Name}: {names[wire.FromUid]}" : names[wire.FromUid];
+                continue;
+            }
+
+            var output = WriteOutput(graph, wire, names);
+            yield return skipped ? $"{input.Name}: {output}" : output;
         }
     }
 
-    private static IEnumerable<string> WriteSettings(ImportedBlock block, BlockType type)
+    /// <summary>
+    /// The block's name, followed by its output's when it has several.
+    /// </summary>
+    private static string WriteOutput(ImportGraph graph, ImportedWire wire, IReadOnlyDictionary<string, string> names)
     {
-        foreach (var setting in type.Settings.Append(BlockSetting.Hide))
+        var name = names[wire.FromUid];
+        var outputs = graph.GetOutputs(wire.FromUid);
+        return outputs.Count == 1 ? name : $"{name}.{outputs.First(o => o.Index == wire.FromConnector).Name}";
+    }
+
+    private static IEnumerable<string> WriteSettings(ImportedBlock block, IReadOnlyList<BlockSetting> settings)
+    {
+        foreach (var setting in settings)
         {
-            var stored = block.Settings.FirstOrDefault(s => s.Key == setting.Key && ImportCompare.GetValue(s) != null);
-            if (stored != null && setting.ToText(stored) is { } text)
+            if (block.FindValues(setting).FirstOrDefault() is { } stored && setting.ToText(stored) is { } text)
                 yield return $"{setting.Name}: {text}";
         }
     }

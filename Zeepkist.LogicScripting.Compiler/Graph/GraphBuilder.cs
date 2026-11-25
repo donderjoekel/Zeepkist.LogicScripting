@@ -250,7 +250,7 @@ internal sealed partial class GraphBuilder
     {
         if (_disabledBlockIds.Contains(style.BlockId))
         {
-            Error(origin, $"'{type.Describe(style)}' doesn't match this game version and is turned off");
+            Error(origin, $"'{type.Describe(style)}' {MessageFragments.TurnedOff}");
         }
 
         return _graph.AddBlock(type, style, settings);

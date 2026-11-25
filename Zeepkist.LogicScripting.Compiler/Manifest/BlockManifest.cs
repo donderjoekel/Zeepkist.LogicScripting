@@ -317,11 +317,11 @@ public static class BlockManifest
     public static readonly BlockType PropertyMultiplier = new(
         "property_multiplier",
         BlockCategory.Outputs,
-        2449,
-        1,
+        [new BlockStyle(null, 2449, 1)],
         Numbered(0, "apply", "reset"),
         [],
-        PlayerOrEveryone);
+        [PlayerOrEveryone],
+        freshSettings: [Setting.Int("x47", 1), Setting.Int("x48", 1)]);
 
     public static readonly BlockType Trigger = PlacedOnly(
         "trigger",

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
@@ -53,6 +54,14 @@ public sealed class ImportedBlock
     /// Like <see cref="Settings"/>, for the numbers stored in a way no Setting of the Block Manifest is.
     /// </summary>
     public IReadOnlyDictionary<string, float> Floats { get; }
+
+    /// <summary>
+    /// What the block stores for a Setting, none for the value a block placed by hand starts with.
+    /// </summary>
+    internal IReadOnlyList<Setting> FindValues(BlockSetting setting)
+    {
+        return Settings.Where(s => s.Key == setting.Key && ImportCompare.GetValue(s) != null).ToList();
+    }
 
     private static IEnumerable<KeyValuePair<string, TValue>> WithoutReserved<TValue>(IReadOnlyDictionary<string, TValue> stored)
     {

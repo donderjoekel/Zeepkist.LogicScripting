@@ -1,0 +1,140 @@
+# Blocks with several outputs, a mode, a style, Settings, and hidden ones import into a Script that compiles to the same
+open-window
+place-start
+
+# place-block places a type's first style, so a Compile places the other one
+new-script Styled
+set-text
+passthrough(style: skinny_1h)
+end
+compile
+expect-result Placed 1 block
+name-group-block Styled passthrough as s
+open-delete Styled
+press-prompt keep-blocks
+expect-list-result kept its 1 block
+
+place-block generator as g
+set-block-setting g power 9
+place-block generator as n
+set-block-setting n power 2
+place-block demultiplexer as dm
+place-block math as m
+set-block-setting m op subtract
+set-block-setting m hide true
+place-block power_display as p
+place-block delay as d
+place-block power_display as q
+place-block simple_telemetry as t
+set-block-setting t mode global_velocity
+place-block power_display as r
+place-block parking as k
+set-block-setting k player 2
+wire-blocks g out to dm data
+wire-blocks n out to dm select
+wire-blocks dm ch2 to s x
+wire-blocks s out to m a
+wire-blocks n out to m b
+wire-blocks m out to p x
+wire-blocks p out to d x
+wire-blocks d out to q x
+wire-blocks t heading to r x
+move-block p 16 0 -8
+move-block q 32 0 -8
+move-block r 48 0 -8
+
+# A stored value a Script can't write, a block it can't create and a Toggler are named
+set-block-setting d ticks 5
+place-block random as bad
+set-block-setting bad min 5
+set-block-setting bad max 2
+select-blocks bad
+expect-step-fails import-selected because has a min above its max, which a Script can't write
+place-block lamp as lamp
+select-blocks lamp
+expect-step-fails import-selected because a Script can't create lamp "
+place-block toggler as tog
+select-blocks tog
+expect-step-fails import-selected because has targets, which Import can't write
+expect-blocks 14
+
+test-mode
+wait 2
+expect-display p 7
+expect-display q 7
+screenshot test-before
+back-to-editor
+open-window
+
+remember-blocks g n dm s m p d q t r k
+select-blocks g n dm s m p d q t r k
+import-selected
+expect-list-result Imported 11 blocks as "Imported"
+expect-text generator_1 = generator(power: 9)
+expect-text generator_2 = generator(power: 2)
+expect-text demultiplexer_1 = demultiplexer(generator_2, generator_1)
+expect-text passthrough_1 = passthrough(demultiplexer_1.ch2, style: skinny_1h)
+expect-text math_1 = math(passthrough_1, generator_2, op: subtract, hide: true)
+expect-text power_display_1 = power_display(math_1)
+expect-text delay_1 = delay(power_display_1, ticks: 5)
+expect-text simple_telemetry_1 = simple_telemetry(mode: global_velocity)
+expect-text power_display(simple_telemetry_1.heading)
+expect-text parking(player: 2)
+expect-no-errors
+expect-blocks-unmoved g n dm s m p d q t r k
+screenshot imported
+
+# The Compile's blocks show the same numbers
+compile
+expect-result Replaced 11 → 11 blocks
+expect-blocks 14
+name-group-block Imported demultiplexer as dm2
+name-group-block Imported passthrough as s2
+name-group-block Imported math as m2
+name-group-block Imported delay as d2
+name-group-block Imported simple_telemetry as t2
+name-group-block Imported parking as k2
+expect-wire dm2 ch2 to s2 x
+expect-wire s2 out to m2 a
+expect-wires t2 1
+expect-wires k2 0
+test-mode
+wait 2
+expect-signal m2 a 9
+expect-signal m2 b 2
+expect-signal d2 x 7
+screenshot test-compiled
+back-to-editor
+open-window
+
+# Blocks that are all hidden share a default
+place-block generator as h1
+set-block-setting h1 hide true
+place-block power_display as h2
+set-block-setting h2 hide true
+wire-blocks h1 out to h2 x
+select-blocks h1 h2
+import-selected
+expect-text default hide: true
+expect-text power_display_1 = power_display(generator_1)
+expect-no-errors
+compile
+expect-result Replaced 2 → 2 blocks
+
+# The Compile's blocks are hidden too
+name-group-block Imported 2 generator as h3
+name-group-block Imported 2 power_display as h4
+open-delete Imported 2
+press-prompt keep-blocks
+select-blocks h3 h4
+import-selected
+expect-text default hide: true
+expect-text power_display_1 = power_display(generator_1)
+expect-no-errors
+
+# A style the startup check turned off is named
+place-block pulser as off
+turn-off-style pulser
+select-blocks off
+expect-step-fails import-selected because can't be imported: 'pulser' doesn't match this game version and is turned off
+expect-no-exceptions

@@ -8,4 +8,6 @@ public static class MessageFragments
     public const string OnlyDelayCanReferAhead = "only delay(...) can refer ahead";
 
     public const string InBlockGroup = "in a Block Group, which a recompile replaces";
+
+    public const string TurnedOff = "doesn't match this game version and is turned off";
 }

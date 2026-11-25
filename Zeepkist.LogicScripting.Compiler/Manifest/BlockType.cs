@@ -38,7 +38,8 @@ public sealed class BlockType
         IReadOnlyList<BlockSetting> settings = null,
         BlockModes modes = null,
         bool isPlacedOnly = false,
-        BlockRange range = null)
+        BlockRange range = null,
+        IReadOnlyList<Setting> freshSettings = null)
     {
         Function = function;
         Category = category;
@@ -49,6 +50,7 @@ public sealed class BlockType
         Modes = modes;
         IsPlacedOnly = isPlacedOnly;
         Range = range;
+        FreshSettings = freshSettings ?? [];
     }
 
     /// <summary>
@@ -91,6 +93,11 @@ public sealed class BlockType
     /// A block whose position matters: Scripts only reach it through a Placed Block Reference, never place it.
     /// </summary>
     public bool IsPlacedOnly { get; }
+
+    /// <summary>
+    /// What a fresh block stores, placed by hand or by a Compile, that is neither 0 nor one of <see cref="Settings"/>.
+    /// </summary>
+    public IReadOnlyList<Setting> FreshSettings { get; }
 
     /// <summary>
     /// Two of <see cref="Settings"/> whose minimum must not be above the maximum, or null.
