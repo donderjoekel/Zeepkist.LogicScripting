@@ -7,9 +7,9 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
 /// <summary>
 /// Writes one line per block, <c>&lt;function&gt;_&lt;n&gt; = &lt;function&gt;(...)</c>, or only the call for a block
-/// without outputs, which can't have a name. A Placed Block Reference to each outside block comes before them, and the
-/// call that wires into one comes right after the last block that feeds it. When every block is hidden,
-/// <c>default hide: true</c> comes first instead of <c>hide:</c> in each call.
+/// without outputs, which can't have a name. A Placed Block Reference to each outside block comes before them, a kept
+/// one's below a comment that says why it stays, and the call that wires into one comes right after the last block that
+/// feeds it. When every block is hidden, <c>default hide: true</c> comes first instead of <c>hide:</c> in each call.
 /// </summary>
 internal sealed class ImportText
 {
@@ -52,6 +52,9 @@ internal sealed class ImportText
             foreach (var uid in calls[i])
                 lines.Add(new ImportLine(uid, $"{GetName(uid)}({string.Join(", ", WriteInputs(uid))})"));
         }
+
+        foreach (var kept in _graph.Kept)
+            GetName(kept.Uid);
 
         lines.InsertRange(0, _references);
         if (hidesAll)
@@ -137,6 +140,9 @@ internal sealed class ImportText
 
         name = NewName(_graph.GetType(uid));
         _names.Add(uid, name);
+        if (_graph.Kept.FirstOrDefault(k => k.Uid == uid) is { } kept)
+            _references.Add(new ImportLine(uid, $"# {kept.Reason}"));
+
         _references.Add(new ImportLine(uid, $"{name} = placed(\"{uid}\")"));
         return name;
     }

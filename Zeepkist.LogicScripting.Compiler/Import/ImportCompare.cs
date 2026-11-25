@@ -24,7 +24,11 @@ internal static class ImportCompare
         if (!compiled.Succeeded)
         {
             var error = compiled.Errors[0];
-            var place = lines?[error.Position.Line - 1].Uid is { } uid ? $" at {graph.Describe(uid)}" : "";
+            var uid = lines?[error.Position.Line - 1].Uid;
+            if (graph.Kept.FirstOrDefault(k => k.Uid == uid) is { } kept)
+                return $"{kept.Reason}, and it can't stay as a placed block: {error.Message}";
+
+            var place = uid != null ? $" at {graph.Describe(uid)}" : "";
             return $"its text doesn't compile{place}: {error.Message}";
         }
 
@@ -67,6 +71,15 @@ internal static class ImportCompare
         return number == 0 ? null : number.ToString(CultureInfo.InvariantCulture);
     }
 
+    /// <summary>
+    /// Whether a fresh block of the type stores the same.
+    /// </summary>
+    public static bool IsFresh(Setting setting, BlockType type)
+    {
+        var fresh = type.FreshSettings.FirstOrDefault(s => s.Kind == setting.Kind && s.Key == setting.Key);
+        return GetValue(setting) == (fresh == null ? null : GetValue(fresh));
+    }
+
     private static string GetUid(WireEnd end, IReadOnlyList<ImportedBlock> ordered)
     {
         return end.IsPlaced ? end.Uid : ordered[end.Block].Uid;
@@ -89,7 +102,7 @@ internal static class ImportCompare
 
         var setting = compiled.Type.Settings.Append(BlockSetting.Hide).FirstOrDefault(s => s.Key == key);
         return setting == null
-            ? $"{BlockImport.Describe(block)} has a Setting a Script can't write, \"{key}\""
+            ? BlockImport.DescribeUnknown(block, key)
             : BlockImport.DescribeUnwritable(block, setting);
     }
 
@@ -102,10 +115,8 @@ internal static class ImportCompare
         Dictionary<(SettingKind Kind, string Key), string> values = [];
         foreach (var setting in settings)
         {
-            var fresh = type.FreshSettings.FirstOrDefault(s => s.Kind == setting.Kind && s.Key == setting.Key);
-            var value = GetValue(setting);
-            if (value != (fresh == null ? null : GetValue(fresh)))
-                values[(setting.Kind, setting.Key)] = value ?? "0";
+            if (!IsFresh(setting, type))
+                values[(setting.Kind, setting.Key)] = GetValue(setting) ?? "0";
         }
 
         return values;

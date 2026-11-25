@@ -59,6 +59,8 @@ All notable changes to Logic Scripting are listed here.
 - **Import selected**, above New Script, makes a Script from the blocks selected in the level, with their settings and wires.
   The blocks stay as they are until you compile it. It takes every block a Script can create.
   Other blocks they're wired to or that a Toggler targets stay where they are, and the Script refers to them with `placed(...)`.
+  A selected block with settings a Script can't write, such as a Math block's input override, stays where it is too,
+  with a comment above its `placed(...)` that says why, and the result line says how many stayed.
   It says which block or wire is the reason when it can't import a selection.
   Blocks that feed back through a `delay` import too. A loop of wires without one is refused, naming its blocks.
 

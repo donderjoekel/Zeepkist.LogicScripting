@@ -17,6 +17,7 @@ internal sealed class ImportGraph
     private readonly Dictionary<string, int> _indices;
     private readonly Dictionary<string, PlacedBlock> _outside = [];
     private readonly Dictionary<(string Uid, int Connector), ImportedWire> _inputs = [];
+    private readonly List<KeptBlock> _kept = [];
 
     /// <param name="blocks">The blocks to import.</param>
     /// <param name="findPlacedBlock">An outside block by its UID, or null when there's none.</param>
@@ -36,6 +37,11 @@ internal sealed class ImportGraph
     /// One for each wired input.
     /// </summary>
     public IReadOnlyCollection<ImportedWire> Wires => _inputs.Values;
+
+    /// <summary>
+    /// The outside blocks the Script refers to whether or not a Wire or target reaches them.
+    /// </summary>
+    public IReadOnlyList<KeptBlock> Kept => _kept;
 
     public bool IsImported(string uid)
     {
@@ -69,6 +75,15 @@ internal sealed class ImportGraph
     public string Describe(string uid)
     {
         return BlockImport.Describe(uid, GetBlockId(uid));
+    }
+
+    /// <summary>
+    /// Returns why the Script can't refer to the block, or null when it's in the graph.
+    /// </summary>
+    public string AddKept(KeptBlock block)
+    {
+        _kept.Add(block);
+        return AddOutside(block.Uid, "the selection has", false);
     }
 
     /// <summary>
