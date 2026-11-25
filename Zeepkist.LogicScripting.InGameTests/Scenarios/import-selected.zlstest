@@ -27,9 +27,9 @@ back-to-editor
 open-window
 
 # What can't be imported, with the block that's the reason, leaves the level as it was
-place-block math as m
+place-block lamp as m
 select-blocks g m
-expect-step-fails import-selected because isn't a type Import takes: generator, logic, power_display
+expect-step-fails import-selected because a Script can't create lamp "
 select-blocks g l p
 expect-step-fails import-selected because which isn't selected
 select-blocks h g l

@@ -1,0 +1,120 @@
+# A fresh block of each type a Script can create imports on its own
+open-window
+place-block delay as delay
+select-blocks delay
+import-selected
+expect-text delay_1 = delay(
+place-block random as random
+select-blocks random
+import-selected
+expect-text random_1 = random(
+place-block generator as generator
+select-blocks generator
+import-selected
+expect-text generator_1 = generator(
+place-block logic as logic
+select-blocks logic
+import-selected
+expect-text logic_1 = logic(
+place-block math as math
+select-blocks math
+import-selected
+expect-text math_1 = math(
+place-block math_3_pins as math3
+select-blocks math3
+import-selected
+expect-text math_3_pins_1 = math_3_pins(
+place-block digitizer as digitizer
+select-blocks digitizer
+import-selected
+expect-text digitizer_1 = digitizer(
+place-block transistor as transistor
+select-blocks transistor
+import-selected
+expect-text transistor_1 = transistor(
+place-block multiplexer as mux
+select-blocks mux
+import-selected
+expect-text multiplexer_1 = multiplexer(
+place-block demultiplexer as demux
+select-blocks demux
+import-selected
+expect-text demultiplexer_1 = demultiplexer(
+place-block pulser as pulser
+select-blocks pulser
+import-selected
+expect-text pulser_1 = pulser(
+place-block ticker as ticker
+select-blocks ticker
+import-selected
+expect-text ticker_1 = ticker(
+place-block resettable_ticker as rticker
+select-blocks rticker
+import-selected
+expect-text resettable_ticker_1 = resettable_ticker(
+place-block timer as timer
+select-blocks timer
+import-selected
+expect-text timer_1 = timer(
+place-block simple_memory as smem
+select-blocks smem
+import-selected
+expect-text simple_memory_1 = simple_memory(
+place-block cheese_memory as cmem
+select-blocks cmem
+import-selected
+expect-text cheese_memory_1 = cheese_memory(
+place-block counter as counter
+select-blocks counter
+import-selected
+expect-text counter_1 = counter(
+place-block toggle_latch as latch
+select-blocks latch
+import-selected
+expect-text toggle_latch_1 = toggle_latch(
+place-block date_timer as date
+select-blocks date
+import-selected
+expect-text date_timer_1 = date_timer(
+place-block player_input as input
+select-blocks input
+import-selected
+expect-text player_input_1 = player_input(
+place-block simple_telemetry as tele
+select-blocks tele
+import-selected
+expect-text simple_telemetry_1 = simple_telemetry(
+place-block wheel_telemetry as wheel
+select-blocks wheel
+import-selected
+expect-text wheel_telemetry_1 = wheel_telemetry(
+place-block passthrough as pass
+select-blocks pass
+import-selected
+expect-text passthrough_1 = passthrough(
+place-block power_display as display
+select-blocks display
+import-selected
+expect-text power_display_1 = power_display(
+place-block death as death
+select-blocks death
+import-selected
+expect-text death(
+place-block parking as parking
+select-blocks parking
+import-selected
+expect-text parking(
+place-block state_changer as state
+select-blocks state
+import-selected
+expect-text state_changer(
+place-block force_giver as force
+select-blocks force
+import-selected
+expect-text force_giver(
+place-block property_multiplier as prop
+select-blocks prop
+import-selected
+expect-text property_multiplier(
+expect-no-errors
+expect-no-exceptions

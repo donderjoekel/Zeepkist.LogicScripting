@@ -33,6 +33,15 @@ internal sealed class ImportGraph
     }
 
     /// <summary>
+    /// A block's outputs, as the mode it's in names them.
+    /// </summary>
+    public IReadOnlyList<BlockConnector> GetOutputs(string uid)
+    {
+        var block = Find(uid);
+        return TypeOf(block).GetOutputs(block.Settings);
+    }
+
+    /// <summary>
     /// Returns why the Wire can't be imported, or null when it's in the graph. A Wire added before, read from its other
     /// end, stays one.
     /// </summary>
@@ -46,7 +55,7 @@ internal sealed class ImportGraph
         if (from == null)
             return $"{BlockImport.Describe(to)} has a Wire from block \"{wire.FromUid}\", which isn't selected";
 
-        if (!HasConnector(TypeOf(from).Outputs, wire.FromConnector) || !HasConnector(TypeOf(to).Inputs, wire.ToConnector))
+        if (!HasConnector(GetOutputs(wire.FromUid), wire.FromConnector) || !HasConnector(TypeOf(to).Inputs, wire.ToConnector))
             return $"the Wire from {BlockImport.Describe(from)} to {BlockImport.Describe(to)} doesn't go from an output to an input";
 
         if (!_inputs.TryGetValue((wire.ToUid, wire.ToConnector), out var other))

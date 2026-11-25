@@ -65,8 +65,8 @@ internal static class ImportCompare
         if (block.BlockId != compiled.Style.BlockId)
             return $"its text doesn't give {BlockImport.Describe(block)} its own type and style";
 
-        var read = GetValues(block.Settings);
-        var written = GetValues(compiled.Settings);
+        var read = GetValues(block.Settings, compiled.Type);
+        var written = GetValues(compiled.Settings, compiled.Type);
         var key = read.Keys.Union(written.Keys)
             .Where(k => !read.TryGetValue(k, out var a) || !written.TryGetValue(k, out var b) || a != b)
             .Select(k => k.Key)
@@ -78,16 +78,22 @@ internal static class ImportCompare
         var setting = compiled.Type.Settings.Append(BlockSetting.Hide).FirstOrDefault(s => s.Key == key);
         return setting == null
             ? $"{BlockImport.Describe(block)} has a Setting a Script can't write, \"{key}\""
-            : $"{BlockImport.Describe(block)} has a value for {setting.Name} that a Script can't write";
+            : BlockImport.DescribeUnwritable(block, setting);
     }
 
-    private static Dictionary<(SettingKind Kind, string Key), string> GetValues(IReadOnlyList<Setting> settings)
+    /// <summary>
+    /// The values that differ from what a fresh block of the type stores, which a Compile's block stores too unless
+    /// the Script gives another.
+    /// </summary>
+    private static Dictionary<(SettingKind Kind, string Key), string> GetValues(IReadOnlyList<Setting> settings, BlockType type)
     {
         Dictionary<(SettingKind Kind, string Key), string> values = [];
         foreach (var setting in settings)
         {
-            if (GetValue(setting) is { } value)
-                values[(setting.Kind, setting.Key)] = value;
+            var fresh = type.FreshSettings.FirstOrDefault(s => s.Kind == setting.Kind && s.Key == setting.Key);
+            var value = GetValue(setting);
+            if (value != (fresh == null ? null : GetValue(fresh)))
+                values[(setting.Kind, setting.Key)] = value ?? "0";
         }
 
         return values;
