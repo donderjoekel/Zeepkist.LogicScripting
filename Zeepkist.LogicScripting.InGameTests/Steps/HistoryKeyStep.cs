@@ -8,8 +8,6 @@ namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 /// </summary>
 internal abstract class HistoryKeyStep : ScenarioStep
 {
-    private const float PressSeconds = 5;
-
     private readonly EditorKey _key;
 
     protected HistoryKeyStep(EditorKey key)
@@ -24,14 +22,9 @@ internal abstract class HistoryKeyStep : ScenarioStep
             yield break;
 
         var before = central.undoRedo.currentHistoryPosition;
-        EditorKeys.Press(_key);
-        yield return context.WaitUntil(() => !EditorKeys.IsPressed, PressSeconds);
-        if (EditorKeys.IsPressed)
-        {
-            EditorKeys.Release();
-            context.Fail($"the level editor didn't read the key within {PressSeconds} seconds");
+        yield return context.PressEditorKey(_key);
+        if (context.Failed)
             yield break;
-        }
 
         var after = central.undoRedo.currentHistoryPosition;
         if (after == before)

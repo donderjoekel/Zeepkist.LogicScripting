@@ -96,6 +96,11 @@ public class StepListTests
     [InlineData("turn-off-style lamp", typeof(TurnOffStyleStep))]
     [InlineData("insert-selected", typeof(InsertSelectedStep))]
     [InlineData("import-selected", typeof(ImportSelectedStep))]
+    [InlineData("grab-blocks", typeof(GrabBlocksStep))]
+    [InlineData("drop-blocks", typeof(DropBlocksStep))]
+    [InlineData("paste-blocks as g2 l2", typeof(PasteBlocksStep))]
+    [InlineData("save-level saved", typeof(SaveLevelStep))]
+    [InlineData("load-level saved", typeof(LoadLevelStep))]
     [InlineData("undo", typeof(UndoStep))]
     [InlineData("redo", typeof(RedoStep))]
     [InlineData("place-start", typeof(PlaceStartStep))]
@@ -794,6 +799,48 @@ public class StepListTests
     }
 
     [Fact]
+    public void PasteBlocks_ReadsTheCopiesNames_InOrder()
+    {
+        var step = Assert.IsType<PasteBlocksStep>(Assert.Single(ScenarioParser.Parse("steps", "paste-blocks as l2 g2", out _).Steps));
+
+        Assert.Equal(["l2", "g2"], step.Names);
+    }
+
+    [Theory]
+    [InlineData("save-level saved", null)]
+    [InlineData("load-level saved", null)]
+    [InlineData("load-level saved while import-selected", typeof(ImportSelectedStep))]
+    [InlineData("load-level saved while expect-step-fails import-selected because a while b", typeof(ExpectStepFailsStep))]
+    public void TheLevelFileSteps_ReadTheName_AndAStepForWhileItLoads(string line, Type meanwhile)
+    {
+        var step = Assert.Single(ScenarioParser.Parse("steps", line, out _).Steps);
+
+        Assert.Equal("saved", step is LoadLevelStep load ? load.Name : Assert.IsType<SaveLevelStep>(step).Name);
+        Assert.Equal(meanwhile, (step as LoadLevelStep)?.Meanwhile?.GetType());
+    }
+
+    [Theory]
+    [InlineData("grab-blocks g", "grab-blocks takes nothing after it")]
+    [InlineData("drop-blocks g", "drop-blocks takes nothing after it")]
+    [InlineData("paste-blocks", "paste-blocks takes 'as' and a name for each selected block's copy")]
+    [InlineData("paste-blocks g2", "paste-blocks takes 'as' and a name for each selected block's copy")]
+    [InlineData("paste-blocks as g2 g2", "paste-blocks takes placed blocks' names, each once")]
+    [InlineData("paste-blocks as a}b", "paste-blocks takes a name of letters")]
+    [InlineData("save-level", "save-level takes a name of letters")]
+    [InlineData("save-level ../saved", "save-level takes a name of letters")]
+    [InlineData("load-level", "load-level takes a saved level's name")]
+    [InlineData("load-level two words", "load-level takes a name of letters")]
+    [InlineData("load-level saved while set-text", "load-level takes a saved level's name")]
+    [InlineData("load-level saved while load-level saved", "load-level takes a saved level's name")]
+    [InlineData("load-level saved while nope", "unknown step 'nope'")]
+    public void TheGrabPasteAndLevelFileSteps_WithAWrongArgument_Fail(string line, string message)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains(message, error);
+    }
+
+    [Fact]
     public void FindConnector_FindsItByName()
     {
         var input = NamedBlock.FindConnector("l", "input", BlockManifest.Logic.Inputs, "op_in", out var error);
@@ -932,6 +979,12 @@ public class StepListTests
         Assert.Equal(documented.OrderBy(o => o), options.Where(o => o != "-*").OrderBy(o => o));
     }
 
+    [Fact]
+    public void TheRunScript_RemovesTheLevelsTheStepsSave()
+    {
+        Assert.Contains($"\ntest_level_prefix={TestLevels.Prefix}\n", RepoFiles.Read("tools/ingame-test.sh").Replace("\r\n", "\n"));
+    }
+
     [Theory]
     [InlineData("smoke.zlstest")]
     [InlineData("test-mode.zlstest")]
@@ -949,6 +1002,7 @@ public class StepListTests
     [InlineData("readme-screenshots.zlstest")]
     [InlineData("wire-select-blocks.zlstest")]
     [InlineData("signals-and-positions.zlstest")]
+    [InlineData("import-selected-edges.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {
         var text = RepoFiles.Read($"Zeepkist.LogicScripting.InGameTests/Scenarios/{file}");

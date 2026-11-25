@@ -5,4 +5,6 @@ internal enum EditorKey
     None,
     Undo,
     Redo,
+    Grab,
+    Duplicate,
 }

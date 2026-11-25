@@ -1,0 +1,80 @@
+# An import around grabbing, saving, loading and pasting
+open-window
+place-block generator as g
+set-block-setting g power 5
+place-block power_display as p
+wire-blocks g out to p x
+move-block p 16 0 -8
+remember-blocks g p
+
+# Not while blocks are grabbed. Grabbed blocks follow the mouse, so undoing the drop puts them back
+expect-step-fails drop-blocks because no blocks are grabbed
+select-blocks g p
+grab-blocks
+expect-step-fails grab-blocks because blocks are grabbed
+expect-step-fails import-selected because Let go of the grabbed blocks first
+drop-blocks
+undo
+wait 1
+expect-blocks-unmoved g p
+expect-blocks 2
+
+# The saved level file has the Script: it's back after the one in the level is deleted and the file is loaded
+select-blocks g p
+import-selected
+expect-list-result Imported 2 blocks as "Imported"
+expect-text generator_1 = generator(power: 5)
+save-level imported
+open-delete Imported
+press-prompt keep-blocks
+expect-list-result kept its 2 blocks
+expect-step-fails select-script Imported because no Script named
+
+# Not while a level loads
+load-level imported while expect-step-fails import-selected because Wait for the level to load
+expect-blocks 2
+expect-blocks-unmoved g p
+expect-wire g out to p x
+select-script Imported
+expect-text generator_1 = generator(power: 5)
+expect-text power_display_1 = power_display(generator_1)
+select-group Imported
+expect-list-result Selected 2 blocks of "Imported"
+
+# Pasted copies aren't in the Block Group. g2 copies the block that carries the Script. It's selected last, so the other
+# copy carries the new Script, and pasted first, so the level would give the old text it copied first once it's loaded.
+# Its power is changed, so that text would show
+select-blocks g p
+paste-blocks as g2 p2
+expect-step-fails import-selected because Let go of the grabbed blocks first
+drop-blocks
+expect-blocks 4
+expect-wire g2 out to p2 x
+select-group Imported
+expect-list-result Selected 2 blocks of "Imported"
+set-block-setting g2 power 7
+select-blocks p2 g2
+import-selected
+expect-list-result Imported 2 blocks as "Imported 2"
+expect-text generator_1 = generator(power: 7)
+screenshot copy-imported
+
+# And the level file has both Scripts. Deleting the new one first drops its Draft, which the window would show instead
+save-level copy
+open-delete Imported 2
+press-prompt keep-blocks
+expect-list-result kept its 2 blocks
+load-level copy
+expect-blocks 4
+select-script Imported 2
+expect-text generator_1 = generator(power: 7)
+select-group Imported 2
+expect-list-result Selected 2 blocks of "Imported 2"
+select-script Imported
+expect-text generator_1 = generator(power: 5)
+select-group Imported
+expect-list-result Selected 2 blocks of "Imported"
+expect-blocks-unmoved g p
+expect-wire g out to p x
+expect-wire g2 out to p2 x
+expect-no-exceptions

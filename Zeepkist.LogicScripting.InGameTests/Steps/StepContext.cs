@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx.Logging;
 using Imui.Core;
@@ -17,6 +18,7 @@ namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 /// </summary>
 internal sealed class StepContext
 {
+    private const float KeyPressSeconds = 5;
     private const float ListDrawSeconds = 2;
     private const float WindowDrawSeconds = 2;
 
@@ -61,6 +63,11 @@ internal sealed class StepContext
     /// What remember-blocks remembered, by the block's name, for the rest of the scenario.
     /// </summary>
     public Dictionary<string, BlockPose> RememberedPoses { get; } = [];
+
+    /// <summary>
+    /// The files save-level saved, by the name it was given, for the rest of the scenario.
+    /// </summary>
+    public Dictionary<string, FileInfo> SavedLevels { get; } = [];
 
     /// <summary>
     /// The window's rect the first time a Scenario of the run drew it, which the run puts back before each Scenario after
@@ -233,6 +240,21 @@ internal sealed class StepContext
     }
 
     /// <summary>
+    /// Presses one of the level editor's keys once and waits until the editor has read it. Fails the step when it isn't
+    /// read in time.
+    /// </summary>
+    public IEnumerator PressEditorKey(EditorKey key)
+    {
+        EditorKeys.Press(key);
+        yield return WaitUntil(() => !EditorKeys.IsPressed, KeyPressSeconds);
+        if (EditorKeys.IsPressed)
+        {
+            EditorKeys.Release();
+            Fail($"the level editor didn't read the key within {KeyPressSeconds} seconds");
+        }
+    }
+
+    /// <summary>
     /// Waits for the shown tab's list to take the button or click handed to it, the next time the window draws it. When
     /// it isn't drawn in time, such as with the Scripts side collapsed, fails the step and drops the input, so it can't
     /// land in a later step.
@@ -323,6 +345,23 @@ internal sealed class StepContext
             Fail("not in the level editor");
 
         return central;
+    }
+
+    /// <summary>
+    /// Like <see cref="RequireEditor"/>, with blocks selected and none grabbed too.
+    /// </summary>
+    public LEV_LevelEditorCentral RequireSelectedBlocks()
+    {
+        var central = RequireEditor();
+        if (central == null)
+            return null;
+
+        if (central.gizmos.isGrabbing)
+            Fail("blocks are grabbed: add drop-blocks first");
+        else if (central.selection.list.Count == 0)
+            Fail("no blocks are selected: add select-blocks first");
+
+        return Failed ? null : central;
     }
 
     /// <summary>
