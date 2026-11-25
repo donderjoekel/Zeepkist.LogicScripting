@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Blocks;
+using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
@@ -28,6 +29,27 @@ internal static class LevelWires
     {
         var described = wires.Select(w => Describe(central, names, w)).Distinct().ToList();
         return described.Count == 0 ? "(no Wires)" : string.Join(", ", described);
+    }
+
+    /// <summary>
+    /// The blocks in the level's Dependency Loops, with the UID of one that has no name, or null when it has no loop.
+    /// </summary>
+    public static string DescribeDependencyLoops(LEV_LevelEditorCentral central, PlacedBlockNames names)
+    {
+        // No Script has this id, so no Block Group is left out of the Wires it follows
+        var scriptId = ScriptId.New();
+        List<string> looped = [];
+        foreach (var block in central.undoRedo.allBlocksDictionary.Values)
+        {
+            // Downstream stops at a Delay, so a block finds itself in it only through a loop without one
+            if (block != null
+                && BlockManifest.TryGetBlock(block.blockID, out var type, out _)
+                && type != BlockManifest.Delay
+                && PlacedBlocks.Find(central, block.UID, scriptId).Downstream.Contains(block.UID))
+                looped.Add($"{type.Function} \"{names.FindName(block.UID) ?? block.UID}\"");
+        }
+
+        return looped.Count == 0 ? null : string.Join(", ", looped);
     }
 
     private static string Describe(LEV_LevelEditorCentral central, PlacedBlockNames names, BlockWire wire)

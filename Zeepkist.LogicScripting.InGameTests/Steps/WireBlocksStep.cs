@@ -23,11 +23,19 @@ internal sealed class WireBlocksStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
+        return StoreWire(context, Wire, closesLoop: false);
+    }
+
+    /// <summary>
+    /// Fails for a Wire that closes a Dependency Loop, or with <paramref name="closesLoop"/> for one that doesn't.
+    /// </summary>
+    public static IEnumerator StoreWire(StepContext context, WireArgument argument, bool closesLoop)
+    {
         var central = context.RequireEditor();
         if (central == null)
             yield break;
 
-        var wire = context.RequireWire(central, Wire, out var from, out var to);
+        var wire = context.RequireWire(central, argument, out var from, out var to);
         if (wire == null)
             yield break;
 
@@ -36,15 +44,16 @@ internal sealed class WireBlocksStep : ScenarioStep
         if (placed.WiredInputs.Contains(wire.ToConnector))
         {
             var wires = LevelWires.Describe(central, context.PlacedBlocks, to.ReadWires());
-            context.Fail($"\"{to.Name}\"'s input {Wire.Input} already has a Wire", "no Wire", wires);
+            context.Fail($"\"{to.Name}\"'s input {argument.Input} already has a Wire", "no Wire", wires);
             yield break;
         }
 
         // Downstream stops at a Delay, but not at the block it starts from
         var isCycle = wire.ToUid == wire.FromUid || placed.Downstream.Contains(wire.FromUid);
-        if (isCycle && from.Type != BlockManifest.Delay && to.Type != BlockManifest.Delay)
+        var isLoop = isCycle && from.Type != BlockManifest.Delay && to.Type != BlockManifest.Delay;
+        if (isLoop != closesLoop)
         {
-            context.Fail($"{Wire} closes a Dependency Loop");
+            context.Fail(isLoop ? $"{argument} closes a Dependency Loop" : $"{argument} closes no Dependency Loop");
             yield break;
         }
 
@@ -55,7 +64,7 @@ internal sealed class WireBlocksStep : ScenarioStep
         if (!LevelWires.IsStoredAtOutput(central, wire) || !LevelWires.IsStoredAtInput(central, wire))
         {
             var wires = LevelWires.Describe(central, context.PlacedBlocks, from.ReadWires().Concat(to.ReadWires()));
-            context.Fail("the blocks didn't keep the Wire", Wire.ToString(), wires);
+            context.Fail("the blocks didn't keep the Wire", argument.ToString(), wires);
             yield break;
         }
 

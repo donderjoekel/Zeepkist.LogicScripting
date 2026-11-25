@@ -3,7 +3,8 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Starts test mode and waits until the round starts, when the player can drive.
+/// Starts test mode and waits until the round starts, when the player can drive. Refuses a level with a Dependency Loop,
+/// which would stop all its logic.
 /// </summary>
 internal sealed class TestModeStep : ScenarioStep
 {
@@ -18,6 +19,13 @@ internal sealed class TestModeStep : ScenarioStep
         if (!TestModeControls.HasStart(central))
         {
             context.Fail("the level has no start block: add place-start first");
+            yield break;
+        }
+
+        var loop = LevelWires.DescribeDependencyLoops(central, context.PlacedBlocks);
+        if (loop != null)
+        {
+            context.Fail($"the level has a Dependency Loop, which test mode mustn't start with: {loop}");
             yield break;
         }
 

@@ -84,6 +84,7 @@ public class StepListTests
     [InlineData("set-block-setting t mode global_velocity", typeof(SetBlockSettingStep))]
     [InlineData("name-group-block Lights logic as l", typeof(NameGroupBlockStep))]
     [InlineData("wire-blocks g out to l a", typeof(WireBlocksStep))]
+    [InlineData("wire-dependency-loop l out to g a", typeof(WireDependencyLoopStep))]
     [InlineData("select-blocks g l", typeof(SelectBlocksStep))]
     [InlineData("expect-wire g out to l a", typeof(ExpectWireStep))]
     [InlineData("expect-wires l 2", typeof(ExpectWiresStep))]
@@ -105,6 +106,7 @@ public class StepListTests
     [InlineData("redo", typeof(RedoStep))]
     [InlineData("place-start", typeof(PlaceStartStep))]
     [InlineData("test-mode", typeof(TestModeStep))]
+    [InlineData("restart-round", typeof(RestartRoundStep))]
     [InlineData("back-to-editor", typeof(BackToEditorStep))]
     [InlineData("wait 1", typeof(WaitStep))]
     [InlineData("screenshot compiled", typeof(ScreenshotStep))]
@@ -122,6 +124,7 @@ public class StepListTests
     [Theory]
     [InlineData("place-start now")]
     [InlineData("test-mode 5")]
+    [InlineData("restart-round now")]
     [InlineData("back-to-editor now")]
     public void TheTestModeSteps_TakeNothingAfterThem(string line)
     {
@@ -636,6 +639,14 @@ public class StepListTests
     }
 
     [Fact]
+    public void WireDependencyLoop_AnOutput_ThenAnInput()
+    {
+        var step = Assert.IsType<WireDependencyLoopStep>(Assert.Single(ScenarioParser.Parse("steps", "wire-dependency-loop o out to n a", out _).Steps));
+
+        Assert.Equal("o out to n a", step.Wire.ToString());
+    }
+
+    [Fact]
     public void ExpectWire_AnOutput_ThenAnInput()
     {
         var step = Assert.IsType<ExpectWireStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-wire g out to l a", out _).Steps));
@@ -649,6 +660,8 @@ public class StepListTests
     [InlineData("wire-blocks g out l a")]
     [InlineData("wire-blocks g out into l a")]
     [InlineData("wire-blocks g out to l a b")]
+    [InlineData("wire-dependency-loop")]
+    [InlineData("wire-dependency-loop l out g a")]
     [InlineData("expect-wire")]
     [InlineData("expect-wire g out to l")]
     public void TheWireSteps_TakeAnOutput_To_AndAnInput(string line)
@@ -1003,6 +1016,7 @@ public class StepListTests
     [InlineData("wire-select-blocks.zlstest")]
     [InlineData("signals-and-positions.zlstest")]
     [InlineData("import-selected-edges.zlstest")]
+    [InlineData("import-delay-feedback.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {
         var text = RepoFiles.Read($"Zeepkist.LogicScripting.InGameTests/Scenarios/{file}");
