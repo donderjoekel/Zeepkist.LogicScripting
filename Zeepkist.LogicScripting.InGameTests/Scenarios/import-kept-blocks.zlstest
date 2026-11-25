@@ -1,0 +1,93 @@
+# Blocks that hold something a Script can't write stay in place, and the contraption gives the same numbers after a Compile
+open-window
+place-start
+place-block generator as g
+set-block-setting g power 9
+place-block generator as n
+set-block-setting n power 2
+place-block math as m
+set-block-setting m op multiply
+set-stored-setting m text oi2 5
+place-block math as o
+set-block-setting o op subtract
+place-block power_display as p
+place-block random as r
+set-block-setting r min 5
+set-block-setting r max 2
+place-block toggler as t
+wire-blocks g out to m a
+wire-blocks n out to m b
+wire-blocks m out to o a
+wire-blocks n out to o b
+wire-blocks o out to p x
+wire-blocks n out to r trigger
+wire-blocks g out to t x
+move-block n 0 0 16
+move-block m 16 0 0
+move-block o 32 0 0
+move-block p 48 0 -8
+move-block r 64 0 0
+move-block t 80 0 0
+remember-blocks g n m o p r t
+
+# 9 * 5 - 2, as the override replaces the Wire into b
+test-mode
+wait 2
+expect-display p 43
+expect-signal o a 45
+screenshot test-before
+back-to-editor
+open-window
+
+select-blocks g n m o p r t
+import-selected
+expect-list-result Imported 4 blocks as "Imported". The next Compile replaces them with a new layout. 3 stayed as placed blocks: they use settings a Script can't write
+expect-text # math "
+expect-text " has a Setting a Script can't write, "oi2"
+expect-text math_1 = placed("
+expect-text # random "
+expect-text " has a min above its max, which a Script can't write
+expect-text random_1 = placed("
+expect-text # toggler "
+expect-text " has no targets, which a Script has to give
+expect-text toggler_1 = placed("
+expect-text power_display(math_1 - 2)
+expect-no-errors
+expect-blocks-unmoved g n m o p r t
+screenshot imported
+
+compile
+expect-result Replaced 4 → 4 blocks
+expect-blocks 7
+expect-blocks-unmoved m r t
+name-group-block Imported math as o2
+name-group-block Imported power_display as p2
+expect-wires m 3
+expect-wires r 1
+expect-wires t 1
+expect-wire m out to o2 a
+expect-wire o2 out to p2 x
+
+test-mode
+wait 2
+expect-display p2 43
+expect-signal o2 a 45
+expect-signal m a 9
+expect-signal m b 2
+screenshot test-compiled
+back-to-editor
+open-window
+
+# Both undos put every Wire back
+undo
+wait 1
+expect-wire g out to m a
+expect-wire n out to m b
+expect-wire m out to o a
+expect-wires r 1
+expect-wires t 1
+undo
+wait 1
+expect-blocks-unmoved g n m o p r t
+expect-wires m 3
+expect-no-exceptions

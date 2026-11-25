@@ -7,8 +7,9 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
 /// <summary>
-/// Writes blocks already in the level as the text of a Script, all or nothing: the text compiles to the same blocks,
-/// Settings and Wires, except that Generators of the same power may become one, or the import is refused.
+/// Writes blocks already in the level as the text of a Script: the text compiles to the same blocks, Settings and Wires,
+/// except that Generators of the same power may become one, or the import is refused. A block with Settings a Script
+/// can't write stays in the level, and the text refers to it.
 /// </summary>
 public static class BlockImport
 {
@@ -30,26 +31,40 @@ public static class BlockImport
         IReadOnlyCollection<int> disabledBlockIds = null,
         Func<string, IReadOnlyCollection<string>, PlacedBlock> findPlacedBlock = null)
     {
-        var imported = blocks.Where(IsTakenIn).ToList();
-        if (imported.Count == 0)
+        var creatable = blocks.Where(IsCreatable).ToList();
+        if (creatable.Count == 0)
             return ImportResult.Refused("a Script can't create any of the selected blocks");
 
-        HashSet<string> targets = [.. togglerTargets ?? [], .. imported.SelectMany(GetTargets)];
-        var refusal = imported.Select(b => FindProblem(b, targets, disabledBlockIds ?? [])).FirstOrDefault(p => p != null);
+        var refusal = creatable.Select(b => FindProblem(b, disabledBlockIds ?? [])).FirstOrDefault(p => p != null);
         if (refusal != null)
             return ImportResult.Refused(refusal);
+
+        List<ImportedBlock> imported = [];
+        List<KeptBlock> kept = [];
+        foreach (var block in creatable)
+        {
+            if (FindUnwritable(block, wires) is { } reason)
+                kept.Add(new KeptBlock(block.Uid, reason));
+            else
+                imported.Add(block);
+        }
+
+        if (imported.Count == 0)
+            return ImportResult.Refused(DescribeNothingWritable(kept));
+
+        // A kept block keeps its UID, so its Togglers still find it
+        HashSet<string> targets = [.. togglerTargets ?? [], .. creatable.SelectMany(GetTargets)];
+        if (imported.FirstOrDefault(b => targets.Contains(b.Uid)) is { } target)
+            return ImportResult.Refused($"a Toggler targets {Describe(target)}, and would lose it at the next Compile");
 
         HashSet<string> uids = [.. imported.Select(b => b.Uid)];
         PlacedBlock FindOutsideBlock(string uid) => findPlacedBlock?.Invoke(uid, uids);
 
         var graph = new ImportGraph(imported, FindOutsideBlock, disabledBlockIds);
-        refusal = wires.Select(graph.AddWire)
+        refusal = kept.Select(graph.AddKept)
+            .Concat(wires.Select(graph.AddWire))
             .Concat(imported.SelectMany(b => GetTargets(b).Select(t => graph.AddTarget(b, t))))
             .FirstOrDefault(p => p != null);
-        if (refusal != null)
-            return ImportResult.Refused(refusal);
-
-        refusal = imported.Select(b => FindRangeProblem(graph, b)).FirstOrDefault(p => p != null);
         if (refusal != null)
             return ImportResult.Refused(refusal);
 
@@ -60,7 +75,7 @@ public static class BlockImport
         var text = ImportText.Write(graph, ordered);
         var compiled = ScriptCompiler.Compile(text.Text, 0, disabledBlockIds, FindOutsideBlock);
         refusal = ImportCompare.FindDifference(graph, ordered, text, compiled);
-        return refusal == null ? ImportResult.Written(text.Text, uids) : ImportResult.Refused(refusal);
+        return refusal == null ? ImportResult.Written(text.Text, uids, kept) : ImportResult.Refused(refusal);
     }
 
     /// <summary>
@@ -81,7 +96,21 @@ public static class BlockImport
         return $"{Describe(block)} has a value for {setting.Name} that a Script can't write";
     }
 
-    private static bool IsTakenIn(ImportedBlock block)
+    internal static string DescribeUnknown(ImportedBlock block, string key)
+    {
+        // A comment in the text holds it, and a line break would end the comment
+        var shown = string.Concat(key.Where(c => !char.IsControl(c)));
+        return $"{Describe(block)} has a Setting a Script can't write, \"{shown}\"";
+    }
+
+    private static string DescribeNothingWritable(IReadOnlyList<KeptBlock> kept)
+    {
+        return kept.Count == 1
+            ? kept[0].Reason
+            : $"a Script can't write any of the selected blocks: {string.Join(", ", kept.Select(k => k.Reason))}";
+    }
+
+    private static bool IsCreatable(ImportedBlock block)
     {
         return !BlockManifest.GetPlacedType(block.BlockId).IsPlacedOnly;
     }
@@ -93,10 +122,10 @@ public static class BlockImport
             .SelectMany(block.FindTargets);
     }
 
-    private static string FindProblem(
-        ImportedBlock block,
-        IReadOnlyCollection<string> togglerTargets,
-        IReadOnlyCollection<int> disabledBlockIds)
+    /// <summary>
+    /// What keeps the Script from even referring to the block.
+    /// </summary>
+    private static string FindProblem(ImportedBlock block, IReadOnlyCollection<int> disabledBlockIds)
     {
         if (block.IsInBlockGroup)
             return $"{Describe(block)} is {MessageFragments.InBlockGroup}";
@@ -105,17 +134,26 @@ public static class BlockImport
         if (disabledBlockIds.Contains(style.BlockId))
             return $"{Describe(block)} can't be imported: '{type.Describe(style)}' {MessageFragments.TurnedOff}";
 
-        if (togglerTargets.Contains(block.Uid))
-            return $"a Toggler targets {Describe(block)}, and would lose it at the next Compile";
-
-        return type.Settings.Append(BlockSetting.Hide).FirstOrDefault(s => !IsWritable(block, s)) is { } setting
-            ? DescribeUnwritable(block, setting)
-            : null;
+        // The block has no outputs in a mode that isn't one of the options
+        return type.Modes != null && !IsWritable(block, type.Modes.Setting) ? DescribeUnwritable(block, type.Modes.Setting) : null;
     }
 
     /// <summary>
-    /// Checked before anything asks for the block's outputs, which a mode that isn't one of the options doesn't have.
+    /// What the block stores that a fresh Compile wouldn't, so that the block has to stay, or null.
     /// </summary>
+    private static string FindUnwritable(ImportedBlock block, IReadOnlyList<ImportedWire> wires)
+    {
+        var type = BlockManifest.GetPlacedType(block.BlockId);
+        if (type.Settings.Append(BlockSetting.Hide).FirstOrDefault(s => !IsWritable(block, s)) is { } setting)
+        {
+            return setting.IsRequired && !block.HasValue(setting)
+                ? $"{Describe(block)} has no {setting.Name}, which a Script has to give"
+                : DescribeUnwritable(block, setting);
+        }
+
+        return block.FindUnknownKey(type) is { } key ? DescribeUnknown(block, key) : FindRangeProblem(block, wires);
+    }
+
     private static bool IsWritable(ImportedBlock block, BlockSetting setting)
     {
         if (setting.Type == SettingType.Targets)
@@ -128,11 +166,15 @@ public static class BlockImport
     /// <summary>
     /// The same rule a Compile has for a <see cref="BlockType.Range"/>, whose error wouldn't say which block it is.
     /// </summary>
-    private static string FindRangeProblem(ImportGraph graph, ImportedBlock block)
+    private static string FindRangeProblem(ImportedBlock block, IReadOnlyList<ImportedWire> wires)
     {
         var type = BlockManifest.GetPlacedType(block.BlockId);
         var range = type.Range;
-        if (range == null || graph.FindWire(block.Uid, type.Inputs[type.IndexOfInput(range.MaximumInput)]) != null)
+        if (range == null)
+            return null;
+
+        var input = type.Inputs[type.IndexOfInput(range.MaximumInput)];
+        if (wires.Any(w => w.ToUid == block.Uid && w.ToConnector == input.Index))
             return null;
 
         return GetNumber(block, range.Minimum) > GetNumber(block, range.Maximum)

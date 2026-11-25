@@ -10,9 +10,10 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
 /// <summary>
 /// Writes the text the way a player would: <c>default hide: true</c> when every block is hidden, then the Placed Block
-/// References to the outside blocks, then the blocks circuit by circuit, with a blank line between them. A block used
-/// once is written where it's used while the line stays short, and one that nothing uses has no name. The call that
-/// wires into an outside block comes right after the last block that feeds it.
+/// References to the outside blocks, a kept one's below a comment that says why it stays, then the blocks circuit by
+/// circuit, with a blank line between them. A block used once is written where it's used while the line stays short,
+/// and one that nothing uses has no name. The call that wires into an outside block comes right after the last block
+/// that feeds it.
 /// </summary>
 internal sealed class ImportText
 {
@@ -65,7 +66,12 @@ internal sealed class ImportText
             StartSection();
 
         foreach (var uid in outside)
+        {
+            if (_graph.Kept.FirstOrDefault(k => k.Uid == uid) is { } kept)
+                _lines.Add(new ImportLine(uid, $"# {kept.Reason}"));
+
             _lines.Add(new ImportLine(uid, $"{_names[uid]} = {GraphBuilder.PlacedFunction}(\"{uid}\")"));
+        }
 
         foreach (var circuit in circuits)
         {
@@ -189,7 +195,8 @@ internal sealed class ImportText
     }
 
     /// <summary>
-    /// The outside blocks in the order the lines use them, those a call reads before the one it wires into.
+    /// The outside blocks in the order the lines use them, those a call reads before the one it wires into, and then the
+    /// kept blocks no line uses.
     /// </summary>
     private List<string> FindOutsideUses(IEnumerable<string> uids)
     {
@@ -209,7 +216,7 @@ internal sealed class ImportText
             }
         }
 
-        return outside.Distinct().ToList();
+        return outside.Concat(_graph.Kept.Select(k => k.Uid)).Distinct().ToList();
     }
 
     private void AddLine(string uid)

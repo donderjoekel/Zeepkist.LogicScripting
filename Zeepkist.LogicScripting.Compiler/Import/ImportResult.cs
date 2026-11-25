@@ -7,10 +7,15 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 /// </summary>
 public sealed class ImportResult
 {
-    private ImportResult(string text, IReadOnlyCollection<string> importedUids, string refusal)
+    private ImportResult(
+        string text,
+        IReadOnlyCollection<string> importedUids,
+        IReadOnlyList<KeptBlock> kept,
+        string refusal)
     {
         Text = text;
         ImportedUids = importedUids;
+        Kept = kept;
         Refusal = refusal;
     }
 
@@ -25,19 +30,24 @@ public sealed class ImportResult
     public IReadOnlyCollection<string> ImportedUids { get; }
 
     /// <summary>
+    /// The selected blocks of types a Script can create that stay outside it, none when the import is refused.
+    /// </summary>
+    public IReadOnlyList<KeptBlock> Kept { get; }
+
+    /// <summary>
     /// Which block or Wire is the reason, or null when the import isn't refused.
     /// </summary>
     public string Refusal { get; }
 
     public bool Succeeded => Refusal == null;
 
-    public static ImportResult Written(string text, IReadOnlyCollection<string> importedUids)
+    public static ImportResult Written(string text, IReadOnlyCollection<string> importedUids, IReadOnlyList<KeptBlock> kept)
     {
-        return new ImportResult(text, importedUids, null);
+        return new ImportResult(text, importedUids, kept, null);
     }
 
     public static ImportResult Refused(string refusal)
     {
-        return new ImportResult(null, [], refusal);
+        return new ImportResult(null, [], [], refusal);
     }
 }

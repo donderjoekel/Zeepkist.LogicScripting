@@ -63,5 +63,5 @@ expect-no-errors
 
 # A Toggler without targets can't be written
 select-blocks plain
-expect-step-fails import-selected because has a value for targets that a Script can't write
+expect-step-fails import-selected because has no targets, which a Script has to give
 expect-no-exceptions

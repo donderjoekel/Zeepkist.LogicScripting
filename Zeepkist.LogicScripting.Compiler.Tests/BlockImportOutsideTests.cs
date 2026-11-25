@@ -424,15 +424,12 @@ public class BlockImportOutsideTests
     }
 
     [Theory]
-    [InlineData]
-    [InlineData("", "lamp")]
-    [InlineData("lamp", "lamp")]
-    public void ATogglerWithTargetsAScriptCantWrite_IsRefused(params string[] targets)
+    [InlineData("has no targets, which a Script has to give")]
+    [InlineData("has a value for targets that a Script can't write", "", "lamp")]
+    [InlineData("has a value for targets that a Script can't write", "lamp", "lamp")]
+    public void ATogglerWithTargetsAScriptCantWrite_IsRefusedOnItsOwn(string reason, params string[] targets)
     {
-        AssertRefused(
-            new ImportLevel([Toggler("tog", targets), Lamp()]),
-            "toggler \"tog\" has a value for targets that a Script can't write",
-            "tog");
+        AssertRefused(new ImportLevel([Toggler("tog", targets), Lamp()]), $"toggler \"tog\" {reason}", "tog");
     }
 
     [Fact]

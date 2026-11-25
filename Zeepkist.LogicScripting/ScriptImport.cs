@@ -80,6 +80,11 @@ internal static class ScriptImport
         message = blocks.Count == 1
             ? $"Imported 1 block as \"{name}\". The next Compile replaces it with a new layout"
             : $"Imported {blocks.Count} blocks as \"{name}\". The next Compile replaces them with a new layout";
+        if (import.Kept.Count == 1)
+            message += ". 1 stayed as a placed block: it uses settings a Script can't write";
+        else if (import.Kept.Count > 1)
+            message += $". {import.Kept.Count} stayed as placed blocks: they use settings a Script can't write";
+
         return script;
     }
 

@@ -455,14 +455,14 @@ public class BlockImportTests
     }
 
     [Theory]
-    [InlineData("0")]
-    [InlineData("-1")]
-    [InlineData("2147483648")]
-    [InlineData(null)]
-    public void ADelayWithTicksAScriptCantWrite_IsRefused(string ticks)
+    [InlineData("0", "has no ticks, which a Script has to give")]
+    [InlineData("-1", "has a value for ticks that a Script can't write")]
+    [InlineData("2147483648", "has a value for ticks that a Script can't write")]
+    [InlineData(null, "has no ticks, which a Script has to give")]
+    public void ADelayWithTicksAScriptCantWrite_IsRefusedOnItsOwn(string ticks, string reason)
     {
         AssertRefused(
-            "delay \"d\" has a value for ticks that a Script can't write",
+            $"delay \"d\" {reason}",
             [new ImportedBlock("d", DelayId, texts: ticks == null ? null : Texts(("ldl", ticks)))]);
     }
 
@@ -502,11 +502,11 @@ public class BlockImportTests
     }
 
     [Fact]
-    public void ARangeWithItsMinimumAboveItsMaximum_IsRefused_UnlessAnInputReplacesTheMaximum()
+    public void ARangeWithItsMinimumAboveItsMaximum_IsRefusedOnItsOwn_UnlessAnInputReplacesTheMaximum()
     {
         ImportedBlock[] blocks = [new ImportedBlock("r", RandomId, texts: Texts(("xv1", "5"))), new ImportedBlock("g", GeneratorId)];
 
-        AssertRefused("random \"r\" has a min above its max, which a Script can't write", blocks);
+        AssertRefused("random \"r\" has a min above its max, which a Script can't write", [blocks[0]]);
         Assert.Equal(
             "random(max_in: 0, min: 5)",
             BlockImport.Import(blocks, [new ImportedWire("g", 0, "r", 1)]).Text);

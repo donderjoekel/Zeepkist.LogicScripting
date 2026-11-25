@@ -13,7 +13,7 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 public sealed class ImportedBlock
 {
     private const string WireKeyPrefix = "id";
-    private const char PaintKeyPrefix = 'p';
+    private const string PaintKeyPrefix = "p";
 
     /// <param name="uid">The block's UID.</param>
     /// <param name="blockId">The block's ID, which picks its type and style.</param>
@@ -34,10 +34,10 @@ public sealed class ImportedBlock
         IsInBlockGroup = isInBlockGroup;
         Settings =
         [
-            .. WithoutReserved(ints).Select(i => Setting.Int(i.Key, i.Value)),
-            .. WithoutReserved(texts).Select(t => Setting.Text(t.Key, t.Value))
+            .. Without(ints, IsReservedInt).Select(i => Setting.Int(i.Key, i.Value)),
+            .. Without(texts, IsReservedText).Select(t => Setting.Text(t.Key, t.Value))
         ];
-        Floats = WithoutReserved(floats).ToDictionary(f => f.Key, f => f.Value);
+        Floats = floats ?? new Dictionary<string, float>();
     }
 
     public string Uid { get; }
@@ -46,7 +46,7 @@ public sealed class ImportedBlock
 
     /// <summary>
     /// What the block stores, whether or not the Block Manifest knows the key, without its Wires, its paint and the
-    /// mod's own keys.
+    /// mod's own keys. A key a fresh Compile wouldn't write is checked, so any new one the game adds counts.
     /// </summary>
     public IReadOnlyList<Setting> Settings { get; }
 
@@ -68,7 +68,7 @@ public sealed class ImportedBlock
     /// </summary>
     internal IReadOnlyList<string> FindTargets(BlockSetting setting)
     {
-        return GetTargetKeys(setting).Where(t => !string.IsNullOrEmpty(t)).ToList();
+        return GetStoredTargets(setting).Where(t => !string.IsNullOrEmpty(t)).ToList();
     }
 
     /// <summary>
@@ -79,27 +79,77 @@ public sealed class ImportedBlock
         var targets = FindTargets(setting);
         return targets.Count > 0
             && targets.Distinct().Count() == targets.Count
-            && targets.SequenceEqual(GetTargetKeys(setting).Take(targets.Count));
+            && targets.SequenceEqual(GetStoredTargets(setting).Take(targets.Count));
     }
 
-    private IEnumerable<string> GetTargetKeys(BlockSetting setting)
+    internal bool HasValue(BlockSetting setting)
     {
-        for (var i = 1; i <= BlockSetting.MaxTargets; i++)
-        {
-            var key = setting.Key + i.ToString(CultureInfo.InvariantCulture);
-            yield return Settings.FirstOrDefault(s => s.Kind == SettingKind.Text && s.Key == key)?.TextValue;
-        }
+        return setting.Type == SettingType.Targets ? FindTargets(setting).Count > 0 : FindValues(setting).Count > 0;
     }
 
-    private static IEnumerable<KeyValuePair<string, TValue>> WithoutReserved<TValue>(IReadOnlyDictionary<string, TValue> stored)
+    /// <summary>
+    /// The first key with a value a fresh block doesn't store that none of the type's Settings is stored under, or null.
+    /// </summary>
+    internal string FindUnknownKey(BlockType type)
     {
-        return (stored ?? new Dictionary<string, TValue>()).Where(s => !IsReserved(s.Key));
+        return Settings.Where(s => !IsKnown(s, type) && !ImportCompare.IsFresh(s, type))
+            .Select(s => s.Key)
+            .Concat(Floats.Where(f => f.Value != 0).Select(f => f.Key))
+            .FirstOrDefault();
     }
 
-    private static bool IsReserved(string key)
+    private static bool IsKnown(Setting stored, BlockType type)
     {
-        return key.StartsWith(WireKeyPrefix, StringComparison.Ordinal)
-            || key is BlockGroupTag.Key or ScriptCarrier.TextKey or ScriptCarrier.NameKey or ScriptCarrier.LanguageVersionKey
-            || (key.Length > 1 && key[0] == PaintKeyPrefix && int.TryParse(key.Substring(1), NumberStyles.None, CultureInfo.InvariantCulture, out _));
+        return type.Settings.Append(BlockSetting.Hide).Any(s => s.Type == SettingType.Targets
+            ? stored.Kind == SettingKind.Text && GetTargetKeys(s).Contains(stored.Key)
+            : s.Key == stored.Key);
+    }
+
+    private IEnumerable<string> GetStoredTargets(BlockSetting setting)
+    {
+        return GetTargetKeys(setting).Select(k => Settings.FirstOrDefault(s => s.Kind == SettingKind.Text && s.Key == k)?.TextValue);
+    }
+
+    private static IEnumerable<string> GetTargetKeys(BlockSetting setting)
+    {
+        return Enumerable.Range(1, BlockSetting.MaxTargets).Select(i => setting.Key + i.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static IEnumerable<KeyValuePair<string, TValue>> Without<TValue>(
+        IReadOnlyDictionary<string, TValue> stored,
+        Func<string, bool> isReserved)
+    {
+        return (stored ?? new Dictionary<string, TValue>()).Where(s => !isReserved(s.Key));
+    }
+
+    /// <summary>
+    /// Only the keys known to be something else, as any other could be a Setting: how many Wires a Connector has,
+    /// <c>id0</c>, and paint, <c>p0</c>.
+    /// </summary>
+    private static bool IsReservedInt(string key)
+    {
+        return key == ScriptCarrier.LanguageVersionKey
+            || IsNumbered(key, WireKeyPrefix)
+            || IsNumbered(key, PaintKeyPrefix);
+    }
+
+    /// <summary>
+    /// Like <see cref="IsReservedInt"/>: one of a Connector's Wires, <c>id0-0</c>.
+    /// </summary>
+    private static bool IsReservedText(string key)
+    {
+        var dash = key.IndexOf('-');
+        return key is BlockGroupTag.Key or ScriptCarrier.TextKey or ScriptCarrier.NameKey
+            || (dash >= 0 && IsNumbered(key.Substring(0, dash), WireKeyPrefix) && IsNumber(key.Substring(dash + 1)));
+    }
+
+    private static bool IsNumbered(string key, string prefix)
+    {
+        return key.StartsWith(prefix, StringComparison.Ordinal) && IsNumber(key.Substring(prefix.Length));
+    }
+
+    private static bool IsNumber(string text)
+    {
+        return int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out _);
     }
 }
