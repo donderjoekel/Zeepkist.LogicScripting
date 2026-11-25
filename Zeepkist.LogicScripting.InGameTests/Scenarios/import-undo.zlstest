@@ -4,9 +4,12 @@ place-block generator as g
 place-block power_display as p
 set-block-setting p hide true
 wire-blocks g out to p x
+move-block p 16 0 -8
+remember-blocks g p
 select-blocks g p
 import-selected
 expect-list-result Imported 2 blocks as "Imported"
+expect-blocks-unmoved g p
 expect-text power_display_1 = power_display(generator_1, hide: true)
 
 undo
@@ -15,12 +18,14 @@ select-group Imported
 expect-list-result "Imported" has no blocks in the level
 expect-blocks 2
 expect-wire g out to p x
+expect-blocks-unmoved g p
 
 redo
 wait 1
 select-group Imported
 expect-list-result Selected 2 blocks of "Imported"
 expect-wire g out to p x
+expect-blocks-unmoved g p
 
 # Blocks kept as plain ones import again, under a name that's free
 new-script Imported 2
@@ -33,4 +38,5 @@ import-selected
 expect-list-result Imported 2 blocks as "Imported 3"
 select-group Imported 3
 expect-list-result Selected 2 blocks of "Imported 3"
+expect-blocks-unmoved g p
 expect-no-exceptions

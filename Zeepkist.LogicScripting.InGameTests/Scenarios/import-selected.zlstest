@@ -11,10 +11,17 @@ place-block power_display as p
 wire-blocks g out to l a
 wire-blocks h out to l b
 wire-blocks l out to p x
+move-block h 0 0 16
+move-block l 16 0 0
+move-block p 32 0 -8
+remember-blocks g h l p
 select-blocks g h l p
 screenshot before
 test-mode
 wait 2
+expect-signal l a 5
+expect-signal l b 0
+expect-display p 1
 screenshot test-before
 back-to-editor
 open-window
@@ -44,13 +51,18 @@ expect-blocks 5
 expect-wire g out to l a
 expect-wire h out to l b
 expect-wire l out to p x
+expect-blocks-unmoved g h l p
 screenshot imported
 
 # The same number in test mode, and the level still has the Script after it's loaded again
 test-mode
 wait 2
+expect-signal l a 5
+expect-signal l b 0
+expect-display p 1
 screenshot test-imported
 back-to-editor
+expect-blocks-unmoved g h l p
 open-window
 select-group Imported
 expect-list-result Selected 4 blocks of "Imported"
@@ -77,6 +89,9 @@ expect-wire gate out to display x
 expect-wires gate 3
 test-mode
 wait 2
+expect-signal gate a 5
+expect-signal gate b 0
+expect-display display 1
 screenshot test-compiled
 back-to-editor
 expect-blocks 5
