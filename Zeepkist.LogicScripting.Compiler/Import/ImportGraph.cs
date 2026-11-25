@@ -109,36 +109,91 @@ internal sealed class ImportGraph
     }
 
     /// <summary>
-    /// The blocks, each after those wired into it and otherwise in the order they were given. Null when Wires make a
-    /// loop, with a block in it or fed by it as <paramref name="stuck"/>.
+    /// The blocks, each after those wired into it and otherwise in the order they were given. Only a Delay can come
+    /// before the block wired into it, or be it, when that Wire closes a loop. Null when a Dependency Loop leaves no
+    /// such order, with its blocks as <paramref name="loop"/>.
     /// </summary>
-    public IReadOnlyList<ImportedBlock> GetOrder(out ImportedBlock stuck)
+    public IReadOnlyList<ImportedBlock> GetOrder(out IReadOnlyList<ImportedBlock> loop)
     {
-        var missing = new int[_blocks.Count];
+        // The blocks wired into each one, until they're in the order
+        var feeders = _blocks.Select(_ => new SortedSet<int>()).ToList();
         var fed = _blocks.Select(_ => new List<int>()).ToList();
         foreach (var wire in Wires.Where(w => IsImported(w.FromUid) && IsImported(w.ToUid)))
         {
-            missing[_indices[wire.ToUid]]++;
+            feeders[_indices[wire.ToUid]].Add(_indices[wire.FromUid]);
             fed[_indices[wire.FromUid]].Add(_indices[wire.ToUid]);
         }
 
-        SortedSet<int> ready = [.. Enumerable.Range(0, _blocks.Count).Where(i => missing[i] == 0)];
+        var isOrdered = new bool[_blocks.Count];
         List<ImportedBlock> ordered = [];
-        while (ready.Count > 0)
+        SortedSet<int> ready = [.. Enumerable.Range(0, _blocks.Count).Where(i => feeders[i].Count == 0)];
+        OrderReady();
+
+        // Ordering a block opens the loops it's in and never makes one, so a Delay that isn't in a loop by its turn
+        // won't be in one later
+        foreach (var delay in Enumerable.Range(0, _blocks.Count).Where(i => GetType(_blocks[i].Uid) == BlockManifest.Delay))
         {
-            var index = ready.Min;
-            ready.Remove(index);
-            ordered.Add(_blocks[index]);
-            foreach (var next in fed[index])
+            if (isOrdered[delay] || !IsInLoop(delay, feeders))
+                continue;
+
+            ready.Add(delay);
+            OrderReady();
+        }
+
+        loop = ordered.Count == _blocks.Count ? null : FindLoop(Array.IndexOf(isOrdered, false), feeders);
+        return loop == null ? ordered : null;
+
+        void OrderReady()
+        {
+            while (ready.Count > 0)
             {
-                missing[next]--;
-                if (missing[next] == 0)
-                    ready.Add(next);
+                var index = ready.Min;
+                ready.Remove(index);
+                isOrdered[index] = true;
+                ordered.Add(_blocks[index]);
+                foreach (var next in fed[index])
+                {
+                    feeders[next].Remove(index);
+                    if (feeders[next].Count == 0 && !isOrdered[next])
+                        ready.Add(next);
+                }
+            }
+        }
+    }
+
+    private static bool IsInLoop(int block, IReadOnlyList<SortedSet<int>> feeders)
+    {
+        HashSet<int> seen = [];
+        Stack<int> pending = new([block]);
+        while (pending.Count > 0)
+        {
+            foreach (var feeder in feeders[pending.Pop()])
+            {
+                if (feeder == block)
+                    return true;
+
+                if (seen.Add(feeder))
+                    pending.Push(feeder);
             }
         }
 
-        stuck = _blocks.Where((_, i) => missing[i] > 0).FirstOrDefault();
-        return stuck == null ? ordered : null;
+        return false;
+    }
+
+    /// <summary>
+    /// A loop the block is in or fed by, in the direction of its Wires.
+    /// </summary>
+    private List<ImportedBlock> FindLoop(int block, IReadOnlyList<SortedSet<int>> feeders)
+    {
+        List<int> path = [];
+        HashSet<int> seen = [];
+        while (seen.Add(block))
+        {
+            path.Add(block);
+            block = feeders[block].Min;
+        }
+
+        return [.. path.Skip(path.IndexOf(block)).Reverse().Select(i => _blocks[i])];
     }
 
     /// <param name="uid">The outside block's UID.</param>

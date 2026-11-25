@@ -229,13 +229,183 @@ public class BlockImportTests
     }
 
     [Fact]
-    public void ALoop_IsRefused()
+    public void ADelayThatFeedsItself_IsWrittenWithItsOwnName()
+    {
+        AssertText(
+            "delay_1 = delay(delay_1, ticks: 5)",
+            [Delay("d")],
+            new ImportedWire("d", 1, "d", 0));
+    }
+
+    [Fact]
+    public void TwoDelaysFeedingEachOther_OnlyTheFirstRefersAhead()
+    {
+        AssertText(
+            """
+            delay_1 = delay(delay_2, ticks: 5)
+            delay_2 = delay(delay_1, ticks: 6)
+            """,
+            [Delay("d", 5), Delay("e", 6)],
+            new ImportedWire("d", 1, "e", 0),
+            new ImportedWire("e", 1, "d", 0));
+    }
+
+    [Fact]
+    public void ALatchThroughSeveralBlocks_RefersAheadOnlyInItsDelay()
+    {
+        AssertText(
+            """
+            generator_1 = generator()
+            delay_1 = delay(logic_2, ticks: 5)
+            logic_1 = logic(generator_1, delay_1, op: or)
+            logic_2 = logic(logic_1, logic_1)
+            power_display_1 = power_display(logic_2)
+            """,
+            [
+                new ImportedBlock("p", DisplayId),
+                new ImportedBlock("m", LogicId),
+                new ImportedBlock("l", LogicId, ints: Ints(("xmo", 1))),
+                Delay("d"),
+                new ImportedBlock("g", GeneratorId)
+            ],
+            new ImportedWire("g", 0, "l", 0),
+            new ImportedWire("d", 1, "l", 1),
+            new ImportedWire("l", 3, "m", 0),
+            new ImportedWire("l", 3, "m", 1),
+            new ImportedWire("m", 3, "d", 0),
+            new ImportedWire("m", 3, "p", 0));
+    }
+
+    [Fact]
+    public void OneDelayFeedingSeveralLoops_RefersAheadOnce()
+    {
+        AssertText(
+            """
+            delay_1 = delay(logic_3, ticks: 5)
+            logic_1 = logic(delay_1)
+            logic_2 = logic(delay_1, op: or)
+            logic_3 = logic(logic_1, logic_2)
+            """,
+            [
+                new ImportedBlock("a", LogicId),
+                new ImportedBlock("b", LogicId, ints: Ints(("xmo", 1))),
+                new ImportedBlock("c", LogicId),
+                Delay("d")
+            ],
+            new ImportedWire("d", 1, "a", 0),
+            new ImportedWire("d", 1, "b", 0),
+            new ImportedWire("a", 3, "c", 0),
+            new ImportedWire("b", 3, "c", 1),
+            new ImportedWire("c", 3, "d", 0));
+    }
+
+    [Fact]
+    public void ADelayFedByALoop_ComesAfterIt()
+    {
+        AssertText(
+            """
+            delay_1 = delay(logic_1, ticks: 5)
+            logic_1 = logic(delay_1)
+            delay_2 = delay(logic_1, ticks: 6)
+            delay_3 = delay(delay_2, ticks: 7)
+            """,
+            [Delay("f", 7), Delay("e", 6), Delay("d"), new ImportedBlock("l", LogicId)],
+            new ImportedWire("l", 3, "d", 0),
+            new ImportedWire("d", 1, "l", 0),
+            new ImportedWire("l", 3, "e", 0),
+            new ImportedWire("e", 1, "f", 0));
+    }
+
+    [Fact]
+    public void ADelayThatAnotherOneTakesOutOfItsLoops_DoesNotReferAhead()
+    {
+        AssertText(
+            """
+            delay_1 = delay(delay_2, ticks: 5)
+            logic_1 = logic(delay_1)
+            delay_2 = delay(logic_1, ticks: 6)
+            """,
+            [Delay("d"), Delay("e", 6), new ImportedBlock("l", LogicId)],
+            new ImportedWire("d", 1, "l", 0),
+            new ImportedWire("l", 3, "e", 0),
+            new ImportedWire("e", 1, "d", 0));
+    }
+
+    [Fact]
+    public void AnOutputOfSeveral_CanBeReferredAheadTo()
+    {
+        Assert.True(BlockManifest.TryGetFunction("demultiplexer", out var type));
+        var output = type.Outputs[1];
+        AssertText(
+            $"""
+            delay_1 = delay(demultiplexer_1.{output.Name}, ticks: 5)
+            demultiplexer_1 = demultiplexer(delay_1)
+            """,
+            [new ImportedBlock("m", type.DefaultStyle.BlockId), Delay("d")],
+            new ImportedWire("d", 1, "m", type.Inputs[0].Index),
+            new ImportedWire("m", output.Index, "d", 0));
+    }
+
+    [Fact]
+    public void LoopsWithWiresInAnyOrder_GiveTheSameText()
+    {
+        ImportedBlock[] blocks = [Delay("d"), Delay("e", 6), new ImportedBlock("l", LogicId), new ImportedBlock("m", LogicId)];
+        ImportedWire[] wires =
+        [
+            new("d", 1, "l", 0), new("e", 1, "l", 1), new("l", 3, "m", 0), new("m", 3, "d", 0), new("l", 3, "e", 0)
+        ];
+
+        var import = BlockImport.Import(blocks, wires);
+
+        Assert.Null(import.Refusal);
+        for (var i = 1; i < wires.Length; i++)
+            Assert.Equal(import.Text, BlockImport.Import(blocks, [.. wires.Skip(i), .. wires.Take(i)]).Text);
+
+        Assert.Equal(import.Text, BlockImport.Import(blocks, [.. Enumerable.Reverse(wires)]).Text);
+    }
+
+    [Fact]
+    public void ADependencyLoop_IsRefused_NamingItsBlocksInTheDirectionOfTheWires()
     {
         AssertRefused(
-            "logic \"l\" is in a loop of Wires, or fed by one",
-            [new ImportedBlock("l", LogicId), new ImportedBlock("d", DisplayId)],
+            "a loop of Wires has no Delay in it: logic \"l\", power_display \"d\", power_display \"e\"",
+            [new ImportedBlock("e", DisplayId), new ImportedBlock("l", LogicId), new ImportedBlock("d", DisplayId)],
             new ImportedWire("l", 3, "d", 0),
-            new ImportedWire("d", 1, "l", 0));
+            new ImportedWire("d", 1, "e", 0),
+            new ImportedWire("e", 1, "l", 0));
+    }
+
+    [Fact]
+    public void ABlockThatFeedsItself_IsADependencyLoop()
+    {
+        AssertRefused(
+            "a loop of Wires has no Delay in it: logic \"l\"",
+            [new ImportedBlock("l", LogicId)],
+            new ImportedWire("l", 3, "l", 0));
+    }
+
+    [Fact]
+    public void ADependencyLoopsRefusal_LeavesOutWhatIsOnlyFedByIt()
+    {
+        AssertRefused(
+            "a loop of Wires has no Delay in it: power_display \"p\", logic \"l\"",
+            [Delay("d"), new ImportedBlock("q", DisplayId), new ImportedBlock("l", LogicId), new ImportedBlock("p", DisplayId)],
+            new ImportedWire("l", 3, "p", 0),
+            new ImportedWire("p", 1, "l", 0),
+            new ImportedWire("l", 3, "d", 0),
+            new ImportedWire("d", 1, "q", 0));
+    }
+
+    [Fact]
+    public void ADependencyLoopNextToALoopThroughADelay_IsRefusedWithoutTheDelay()
+    {
+        AssertRefused(
+            "a loop of Wires has no Delay in it: logic \"m\", logic \"l\"",
+            [Delay("d"), new ImportedBlock("l", LogicId), new ImportedBlock("m", LogicId)],
+            new ImportedWire("l", 3, "d", 0),
+            new ImportedWire("d", 1, "l", 0),
+            new ImportedWire("l", 3, "m", 0),
+            new ImportedWire("m", 3, "l", 1));
     }
 
     [Fact]
@@ -473,6 +643,23 @@ public class BlockImportTests
                 .Distinct()
                 .Select(n => Setting.Text(setting.Key, n.ToString(CultureInfo.InvariantCulture)))
         ];
+    }
+
+    private static ImportedBlock Delay(string uid, int ticks = 5)
+    {
+        return new ImportedBlock(uid, DelayId, texts: Texts(("ldl", $"{ticks}")));
+    }
+
+    /// <summary>
+    /// The import itself checks that the text compiles to the same Wires.
+    /// </summary>
+    private static void AssertText(string text, IReadOnlyList<ImportedBlock> blocks, params ImportedWire[] wires)
+    {
+        var import = BlockImport.Import(blocks, wires);
+
+        Assert.Null(import.Refusal);
+        Assert.Equal(text.Replace("\r\n", "\n"), import.Text);
+        Assert.Equal(wires.Length, ScriptCompiler.Compile(import.Text, 0).Wires.Count);
     }
 
     private static void AssertRefused(string refusal, IReadOnlyList<ImportedBlock> blocks, params ImportedWire[] wires)

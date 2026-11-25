@@ -289,6 +289,82 @@ public class BlockImportOutsideTests
     }
 
     [Fact]
+    public void ALatchBetweenOutsideBlocks_RefersAheadOnlyInItsDelay()
+    {
+        var level = new ImportLevel(
+            [Trigger(), Logic(), Delay(), Lamp()],
+            new ImportedWire("t", 0, "l", 0),
+            new ImportedWire("d", 1, "l", 1),
+            new ImportedWire("l", 3, "d", 0),
+            new ImportedWire("l", 3, "lamp", 0),
+            new ImportedWire("d", 1, "lamp", 1));
+
+        AssertImports(
+            level,
+            """
+            trigger_1 = placed("t")
+            lamp_1 = placed("lamp")
+            delay_1 = delay(logic_1, ticks: 1)
+            logic_1 = logic(trigger_1, delay_1)
+            lamp_1(logic_1, delay_1)
+            """.Replace("\r\n", "\n"),
+            "l",
+            "d");
+    }
+
+    [Fact]
+    public void ALoopThroughAnOutsideBlock_AndOneInsideTheImport_AreWritten()
+    {
+        var level = new ImportLevel(
+            [Logic(), Delay(), new ImportedBlock("p", PassthroughId)],
+            new ImportedWire("l", 3, "d", 0),
+            new ImportedWire("d", 1, "l", 0),
+            new ImportedWire("d", 1, "p", 0),
+            new ImportedWire("p", 1, "l", 1));
+
+        AssertImports(
+            level,
+            """
+            passthrough_1 = placed("p")
+            delay_1 = delay(logic_1, ticks: 1)
+            passthrough_1(delay_1)
+            logic_1 = logic(delay_1, passthrough_1)
+            """.Replace("\r\n", "\n"),
+            "l",
+            "d");
+    }
+
+    [Fact]
+    public void ADependencyLoopThroughAnOutsideBlock_NextToALoopThroughADelay_IsRefused()
+    {
+        var level = new ImportLevel(
+            [Logic(), Delay(), new ImportedBlock("p", PassthroughId)],
+            new ImportedWire("l", 3, "d", 0),
+            new ImportedWire("d", 1, "l", 0),
+            new ImportedWire("l", 3, "p", 0),
+            new ImportedWire("p", 1, "l", 1));
+
+        AssertRefused(
+            level,
+            "its text doesn't compile at passthrough \"p\": This Wire makes a Dependency Loop, which stops all logic in play. Put a delay(...) in the loop",
+            "l",
+            "d");
+    }
+
+    [Fact]
+    public void ADependencyLoopInsideTheImport_IsRefusedWithoutTheOutsideBlocks()
+    {
+        var level = new ImportLevel(
+            [Trigger(), Logic("a"), Logic("b"), Lamp()],
+            new ImportedWire("t", 0, "a", 0),
+            new ImportedWire("a", 3, "b", 0),
+            new ImportedWire("b", 3, "a", 1),
+            new ImportedWire("b", 3, "lamp", 0));
+
+        AssertRefused(level, "a loop of Wires has no Delay in it: logic \"b\", logic \"a\"", "a", "b", "lamp");
+    }
+
+    [Fact]
     public void AWireToAnotherScriptsGroupBlock_IsRefused()
     {
         var level = new ImportLevel(

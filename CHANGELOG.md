@@ -60,6 +60,7 @@ All notable changes to Logic Scripting are listed here.
   The blocks stay as they are until you compile it. It takes every block a Script can create.
   Other blocks they're wired to or that a Toggler targets stay where they are, and the Script refers to them with `placed(...)`.
   It says which block or wire is the reason when it can't import a selection.
+  Blocks that feed back through a `delay` import too. A loop of wires without one is refused, naming its blocks.
 
 ### Changed
 

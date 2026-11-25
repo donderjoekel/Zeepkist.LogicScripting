@@ -53,9 +53,9 @@ public static class BlockImport
         if (refusal != null)
             return ImportResult.Refused(refusal);
 
-        var ordered = graph.GetOrder(out var stuck);
+        var ordered = graph.GetOrder(out var loop);
         if (ordered == null)
-            return ImportResult.Refused($"{Describe(stuck)} is in a loop of Wires, or fed by one");
+            return ImportResult.Refused($"a loop of Wires has no Delay in it: {string.Join(", ", loop.Select(Describe))}");
 
         var lines = ImportText.Write(graph, ordered);
         var text = string.Join("\n", lines.Select(l => l.Text));

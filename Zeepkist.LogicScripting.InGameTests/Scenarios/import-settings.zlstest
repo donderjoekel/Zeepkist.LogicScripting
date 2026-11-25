@@ -39,6 +39,7 @@ wire-blocks m out to p x
 wire-blocks p out to d x
 wire-blocks d out to q x
 wire-blocks t heading to r x
+move-block n 0 0 16
 move-block p 16 0 -8
 move-block q 32 0 -8
 move-block r 48 0 -8

@@ -33,6 +33,7 @@ internal sealed class ImportText
 
     private IReadOnlyList<ImportLine> Write(IReadOnlyList<ImportedBlock> ordered)
     {
+        // All of them first, as a Delay can refer to a block below it
         foreach (var block in ordered)
         {
             var type = BlockManifest.GetPlacedType(block.BlockId);

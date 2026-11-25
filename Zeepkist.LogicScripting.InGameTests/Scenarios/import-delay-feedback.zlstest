@@ -1,0 +1,122 @@
+# Blocks that feed back through a Delay import, and a latch made that way still holds after a Compile
+open-window
+place-start
+
+# A latch: the Ticker equals the Generator for one Tick, and the Delay of one Tick keeps what that set
+place-block ticker as t
+place-block generator as g
+set-block-setting g power 400
+place-block math as eq
+set-block-setting eq op equal
+place-block logic as l
+set-block-setting l op or
+place-block delay as d
+set-block-setting d ticks 1
+place-block power_display as p
+wire-blocks t out to eq a
+wire-blocks g out to eq b
+wire-blocks eq out to l a
+wire-blocks d out to l b
+wire-blocks l out to d x
+wire-blocks d out to p x
+
+# The editor refuses the Wire that would make a Dependency Loop
+place-block logic as n
+place-block logic as o
+wire-blocks n out to o a
+expect-step-fails wire-blocks o out to n a because Dependency Loop
+
+# Not on top of each other, so the order of the lines doesn't hang on the blocks' random UIDs
+move-block g 16 0 0
+move-block eq 32 0 0
+move-block l 48 0 0
+move-block d 64 0 0
+move-block p 80 0 -8
+move-block n 0 0 32
+move-block o 16 0 32
+
+# By hand first, with the input that set it back at 0
+test-mode
+wait 1
+expect-display p 0
+wait 12
+expect-signal l a 0
+expect-signal l b 1
+expect-display p 1
+screenshot test-before
+back-to-editor
+open-window
+
+remember-blocks t g eq l d p
+select-blocks t g eq l d p
+import-selected
+expect-list-result Imported 6 blocks as "Imported"
+expect-text delay_1 = delay(logic_1, ticks: 1)
+expect-text logic_1 = logic(math_1, delay_1, op: or)
+expect-text power_display_1 = power_display(delay_1)
+expect-no-errors
+expect-blocks-unmoved t g eq l d p
+expect-wire l out to d x
+expect-wire d out to l b
+
+# The same blocks selected the other way around give the same text. The undone import keeps its name
+undo
+wait 1
+select-blocks p d l eq g t
+import-selected
+expect-text delay_1 = delay(logic_1, ticks: 1)
+expect-text logic_1 = logic(math_1, delay_1, op: or)
+expect-no-errors
+screenshot imported
+
+# The Compile's latch holds too
+compile
+expect-result Replaced 6 → 6 blocks
+name-group-block Imported 2 logic as l2
+name-group-block Imported 2 delay as d2
+name-group-block Imported 2 power_display as p2
+expect-wire l2 out to d2 x
+expect-wire d2 out to l2 b
+test-mode
+wait 1
+expect-display p2 0
+wait 12
+expect-signal l2 a 0
+expect-signal l2 b 1
+expect-display p2 1
+screenshot test-compiled
+back-to-editor
+open-window
+
+# And starts a new test clear, setting again in the same Tick of it
+test-mode
+wait 1
+expect-display p2 0
+wait 12
+expect-display p2 1
+back-to-editor
+open-window
+
+# A Delay that feeds itself, and two that feed each other
+place-block delay as self
+set-block-setting self ticks 2
+wire-blocks self out to self x
+select-blocks self
+import-selected
+expect-text delay_1 = delay(delay_1, ticks: 2)
+compile
+expect-result Replaced 1 → 1 block
+place-block delay as a
+set-block-setting a ticks 4
+place-block delay as b
+set-block-setting b ticks 5
+move-block b 16 0 0
+wire-blocks a out to b x
+wire-blocks b out to a x
+select-blocks b a
+import-selected
+expect-text delay_1 = delay(delay_2, ticks: 4)
+expect-text delay_2 = delay(delay_1, ticks: 5)
+compile
+expect-result Replaced 2 → 2 blocks
+expect-no-exceptions
