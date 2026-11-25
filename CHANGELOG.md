@@ -57,8 +57,9 @@ All notable changes to Logic Scripting are listed here.
   with their inputs and outputs. An input the function uses as a setting is marked `(setting)`.
 - In the Script editor, Enter after a Function's first line indents the body, and typing `end` lines it up with that first line.
 - **Import selected**, above New Script, makes a Script from the blocks selected in the level, with their settings and wires.
-  The blocks stay as they are until you compile it. It takes every block a Script can create, except `toggler` for now,
-  and says which block or wire is the reason when it can't import a selection.
+  The blocks stay as they are until you compile it. It takes every block a Script can create.
+  Other blocks they're wired to or that a Toggler targets stay where they are, and the Script refers to them with `placed(...)`.
+  It says which block or wire is the reason when it can't import a selection.
 
 ### Changed
 

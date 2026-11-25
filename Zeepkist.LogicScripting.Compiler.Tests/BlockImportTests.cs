@@ -19,7 +19,6 @@ public class BlockImportTests
     private const int RandomId = 2425;
     private const int CounterId = 2434;
     private const int TelemetryId = 2440;
-    private const int TogglerId = 2417;
     private const int DeathId = 2427;
     private const int LampId = 2448;
     private const int MultiplierId = 2449;
@@ -186,23 +185,11 @@ public class BlockImportTests
     }
 
     [Fact]
-    public void APlacedOnlyBlock_IsRefused()
-    {
-        AssertRefused("a Script can't create lamp \"l\"", [new ImportedBlock("g", GeneratorId), new ImportedBlock("l", LampId)]);
-    }
-
-    [Fact]
-    public void ABlockThatIsNoLogicBlock_IsRefused()
-    {
-        AssertRefused("a Script can't create block \"b\"", [new ImportedBlock("b", 1)]);
-    }
-
-    [Fact]
-    public void AToggler_IsRefused()
+    public void OnlyBlocksAScriptCantCreate_AreRefused()
     {
         AssertRefused(
-            "toggler \"t\" has targets, which Import can't write",
-            [new ImportedBlock("t", TogglerId, texts: Texts(("xuid1", "g")))]);
+            "a Script can't create any of the selected blocks",
+            [new ImportedBlock("l", LampId), new ImportedBlock("b", 1)]);
     }
 
     [Fact]
@@ -220,24 +207,6 @@ public class BlockImportTests
 
         Assert.Null(import.Text);
         Assert.Equal("a Toggler targets generator \"g\", and would lose it at the next Compile", import.Refusal);
-    }
-
-    [Fact]
-    public void AWireToABlockOutside_IsRefused()
-    {
-        AssertRefused(
-            "generator \"g\" has a Wire to block \"out\", which isn't selected",
-            [new ImportedBlock("g", GeneratorId)],
-            new ImportedWire("g", 0, "out", 0));
-    }
-
-    [Fact]
-    public void AWireFromABlockOutside_IsRefused()
-    {
-        AssertRefused(
-            "power_display \"d\" has a Wire from block \"out\", which isn't selected",
-            [new ImportedBlock("d", DisplayId)],
-            new ImportedWire("out", 0, "d", 0));
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,26 +12,44 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 /// </summary>
 public static class BlockImport
 {
-    /// <param name="blocks">The blocks to import.</param>
+    /// <param name="blocks">
+    /// The selected blocks. Those a Script can't create stay outside blocks, like the blocks that aren't selected.
+    /// </param>
     /// <param name="wires">Every Wire with an end on one of them, each once or once from either end.</param>
     /// <param name="togglerTargets">The UIDs of the blocks the level's Togglers target, or null for none.</param>
     /// <param name="disabledBlockIds">Blocks the startup check found don't match the game, or null for none.</param>
+    /// <param name="findPlacedBlock">
+    /// The block in the level with a UID, or null when there's none. Its Wires leave out the blocks whose UIDs come
+    /// second: those the import takes in, which the next Compile replaces. Without it, reaching an outside block
+    /// refuses the import.
+    /// </param>
     public static ImportResult Import(
         IReadOnlyList<ImportedBlock> blocks,
         IReadOnlyList<ImportedWire> wires,
         IReadOnlyCollection<string> togglerTargets = null,
-        IReadOnlyCollection<int> disabledBlockIds = null)
+        IReadOnlyCollection<int> disabledBlockIds = null,
+        Func<string, IReadOnlyCollection<string>, PlacedBlock> findPlacedBlock = null)
     {
-        var refusal = blocks.Select(b => FindProblem(b, togglerTargets ?? [], disabledBlockIds ?? [])).FirstOrDefault(p => p != null);
+        var imported = blocks.Where(IsTakenIn).ToList();
+        if (imported.Count == 0)
+            return ImportResult.Refused("a Script can't create any of the selected blocks");
+
+        HashSet<string> targets = [.. togglerTargets ?? [], .. imported.SelectMany(GetTargets)];
+        var refusal = imported.Select(b => FindProblem(b, targets, disabledBlockIds ?? [])).FirstOrDefault(p => p != null);
         if (refusal != null)
             return ImportResult.Refused(refusal);
 
-        var graph = new ImportGraph(blocks);
-        refusal = wires.Select(graph.AddWire).FirstOrDefault(p => p != null);
+        HashSet<string> uids = [.. imported.Select(b => b.Uid)];
+        PlacedBlock FindOutsideBlock(string uid) => findPlacedBlock?.Invoke(uid, uids);
+
+        var graph = new ImportGraph(imported, FindOutsideBlock, disabledBlockIds);
+        refusal = wires.Select(graph.AddWire)
+            .Concat(imported.SelectMany(b => GetTargets(b).Select(t => graph.AddTarget(b, t))))
+            .FirstOrDefault(p => p != null);
         if (refusal != null)
             return ImportResult.Refused(refusal);
 
-        refusal = blocks.Select(b => FindRangeProblem(graph, b)).FirstOrDefault(p => p != null);
+        refusal = imported.Select(b => FindRangeProblem(graph, b)).FirstOrDefault(p => p != null);
         if (refusal != null)
             return ImportResult.Refused(refusal);
 
@@ -38,10 +57,11 @@ public static class BlockImport
         if (ordered == null)
             return ImportResult.Refused($"{Describe(stuck)} is in a loop of Wires, or fed by one");
 
-        var text = ImportText.Write(graph, ordered);
-        var compiled = ScriptCompiler.Compile(text, 0, disabledBlockIds);
-        refusal = ImportCompare.FindDifference(graph, ordered, compiled);
-        return refusal == null ? ImportResult.Written(text) : ImportResult.Refused(refusal);
+        var lines = ImportText.Write(graph, ordered);
+        var text = string.Join("\n", lines.Select(l => l.Text));
+        var compiled = ScriptCompiler.Compile(text, 0, disabledBlockIds, FindOutsideBlock);
+        refusal = ImportCompare.FindDifference(graph, ordered, compiled, lines);
+        return refusal == null ? ImportResult.Written(text, uids) : ImportResult.Refused(refusal);
     }
 
     /// <summary>
@@ -49,12 +69,29 @@ public static class BlockImport
     /// </summary>
     internal static string Describe(ImportedBlock block)
     {
-        return $"{BlockManifest.GetPlacedType(block.BlockId).Function} \"{block.Uid}\"";
+        return Describe(block.Uid, block.BlockId);
+    }
+
+    internal static string Describe(string uid, int blockId)
+    {
+        return $"{BlockManifest.GetPlacedType(blockId).Function} \"{uid}\"";
     }
 
     internal static string DescribeUnwritable(ImportedBlock block, BlockSetting setting)
     {
         return $"{Describe(block)} has a value for {setting.Name} that a Script can't write";
+    }
+
+    private static bool IsTakenIn(ImportedBlock block)
+    {
+        return !BlockManifest.GetPlacedType(block.BlockId).IsPlacedOnly;
+    }
+
+    private static IEnumerable<string> GetTargets(ImportedBlock block)
+    {
+        return BlockManifest.GetPlacedType(block.BlockId).Settings
+            .Where(s => s.Type == SettingType.Targets)
+            .SelectMany(block.FindTargets);
     }
 
     private static string FindProblem(
@@ -65,12 +102,7 @@ public static class BlockImport
         if (block.IsInBlockGroup)
             return $"{Describe(block)} is {MessageFragments.InBlockGroup}";
 
-        if (!BlockManifest.TryGetBlock(block.BlockId, out var type, out var style) || type.IsPlacedOnly)
-            return $"a Script can't create {Describe(block)}";
-
-        if (type.Settings.FirstOrDefault(s => s.Type == SettingType.Targets) is { } targets)
-            return $"{Describe(block)} has {targets.Name}, which Import can't write";
-
+        BlockManifest.TryGetBlock(block.BlockId, out var type, out var style);
         if (disabledBlockIds.Contains(style.BlockId))
             return $"{Describe(block)} can't be imported: '{type.Describe(style)}' {MessageFragments.TurnedOff}";
 
@@ -87,6 +119,9 @@ public static class BlockImport
     /// </summary>
     private static bool IsWritable(ImportedBlock block, BlockSetting setting)
     {
+        if (setting.Type == SettingType.Targets)
+            return block.HasWritableTargets(setting);
+
         var stored = block.FindValues(setting);
         return stored.Count == 0 ? !setting.IsRequired : stored.All(s => setting.ToText(s) != null);
     }
@@ -98,7 +133,7 @@ public static class BlockImport
     {
         var type = BlockManifest.GetPlacedType(block.BlockId);
         var range = type.Range;
-        if (range == null || graph.FindWire(block, type.Inputs[type.IndexOfInput(range.MaximumInput)]) != null)
+        if (range == null || graph.FindWire(block.Uid, type.Inputs[type.IndexOfInput(range.MaximumInput)]) != null)
             return null;
 
         return GetNumber(block, range.Minimum) > GetNumber(block, range.Maximum)

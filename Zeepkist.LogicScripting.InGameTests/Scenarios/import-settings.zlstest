@@ -43,7 +43,7 @@ move-block p 16 0 -8
 move-block q 32 0 -8
 move-block r 48 0 -8
 
-# A stored value a Script can't write, a block it can't create and a Toggler are named
+# A stored value a Script can't write, nothing it can create and a Toggler without targets are refused
 set-block-setting d ticks 5
 place-block random as bad
 set-block-setting bad min 5
@@ -52,10 +52,10 @@ select-blocks bad
 expect-step-fails import-selected because has a min above its max, which a Script can't write
 place-block lamp as lamp
 select-blocks lamp
-expect-step-fails import-selected because a Script can't create lamp "
+expect-step-fails import-selected because a Script can't create any of the selected blocks
 place-block toggler as tog
 select-blocks tog
-expect-step-fails import-selected because has targets, which Import can't write
+expect-step-fails import-selected because has a value for targets that a Script can't write
 expect-blocks 14
 
 test-mode

@@ -1,0 +1,68 @@
+# A Toggler imports with Placed Block References to its targets, and its targets can't be imported
+open-window
+place-block lamp as m
+place-block generator as h
+place-block generator as g
+
+# No step sets a Toggler's targets, so a Compile places the Toggler and its blocks are kept as plain ones
+new-script Door
+set-text
+a = placed("{uid:m}")
+b = placed("{uid:h}")
+toggler(generator(power: 3), targets: [a, b])
+end
+compile
+expect-result Placed 2 blocks
+name-group-block Door toggler as tog
+name-group-block Door generator as on
+open-delete Door
+press-prompt keep-blocks
+expect-list-result kept its 2 blocks
+expect-blocks 5
+
+# Selected with the Toggler or without it, a target would be lost at the next Compile
+select-blocks h
+expect-step-fails import-selected because a Toggler targets generator "
+select-blocks tog on h
+expect-step-fails import-selected because a Toggler targets generator "
+expect-blocks 5
+
+# A lamp can't be taken in, so it stays the Toggler's target
+select-blocks tog on m
+import-selected
+expect-list-result Imported 2 blocks as "Imported"
+expect-text generator_1 = generator(power: 3)
+expect-text toggler(generator_1, targets: [lamp_1, generator_2])
+expect-text lamp_1 = placed("
+expect-text generator_2 = placed("
+expect-no-errors
+compile
+expect-result Replaced 2 → 2 blocks
+expect-blocks 5
+
+# The Compile's Toggler still has both targets
+name-group-block Imported toggler as tog2
+name-group-block Imported generator as on2
+expect-wire on2 out to tog2 x
+open-delete Imported
+press-prompt keep-blocks
+select-blocks h
+expect-step-fails import-selected because a Toggler targets generator "
+select-blocks tog2 on2
+import-selected
+expect-text toggler(generator_1, targets: [lamp_1, generator_2])
+expect-no-errors
+
+# A Toggler that isn't selected is wired like another outside block
+place-block toggler as plain
+wire-blocks g out to plain x
+select-blocks g
+import-selected
+expect-text toggler_1 = placed("
+expect-text toggler_1(generator_1)
+expect-no-errors
+
+# A Toggler without targets can't be written
+select-blocks plain
+expect-step-fails import-selected because has a value for targets that a Script can't write
+expect-no-exceptions

@@ -48,18 +48,20 @@ internal static class ScriptImport
             return null;
         }
 
-        var blocks = central.selection.list.ToList();
+        var selected = central.selection.list.ToList();
         var import = BlockImport.Import(
-            [.. blocks.Select(Read)],
-            [.. blocks.SelectMany(ReadWires)],
+            [.. selected.Select(Read)],
+            [.. selected.SelectMany(ReadWires)],
             FindTogglerTargets(central),
-            check.DisabledBlockIds);
+            check.DisabledBlockIds,
+            (uid, imported) => PlacedBlocks.Find(central, uid, imported.Contains));
         if (!import.Succeeded)
         {
             message = $"Nothing imported: {import.Refusal}";
             return null;
         }
 
+        var blocks = selected.Where(b => import.ImportedUids.Contains(b.UID)).ToList();
         var script = new StoredScript(ScriptId.New(), name, import.Text, ScriptCarrier.LanguageVersion);
         try
         {
