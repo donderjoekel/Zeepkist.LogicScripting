@@ -1,0 +1,95 @@
+# In test mode the steps read a block's Signals and what a Power Display shows, and back in the editor they see whether
+# blocks moved
+place-block generator as g
+set-block-setting g power 7
+place-block generator as h
+set-block-setting h power 1
+place-block logic as l
+place-block power_display as p
+place-block power_display as q
+wire-blocks g out to l a
+wire-blocks h out to l b
+wire-blocks l out to p x
+wire-blocks g out to q x
+move-block p 16 0 -8
+move-block l 0 16 0
+place-start
+
+# Remembering and checking
+expect-step-fails expect-blocks-unmoved g because wasn't remembered
+expect-step-fails remember-blocks g nope because no block was placed or named as "nope"
+expect-step-fails expect-blocks-unmoved g because wasn't remembered
+remember-blocks g l p q
+expect-blocks-unmoved g l p q
+expect-step-fails expect-blocks-unmoved h because wasn't remembered
+
+# A moved block is found, undo puts it back, and so does moving it back
+move-block l 0 0 4
+expect-step-fails expect-blocks-unmoved g l p q because "l" has another position
+expect-blocks-unmoved g p q
+undo
+expect-blocks-unmoved g l p q
+redo
+expect-step-fails expect-blocks-unmoved l because "l" has another position
+move-block l 0 0 -4
+expect-blocks-unmoved l
+
+# Outside test mode there is no Signal to read
+expect-step-fails expect-signal l a 7 because not in test mode
+expect-step-fails expect-display p 1 because not in test mode
+
+test-mode
+wait 2
+expect-signal l a 7
+expect-signal l b 1
+expect-signal p x 1
+expect-signal q x 7
+expect-display p 1
+expect-display q 7
+screenshot running
+expect-step-fails expect-signal l a 1 because input a is 7
+expect-step-fails expect-signal l nope 1 because "l" has no input called 'nope'
+expect-step-fails expect-signal nope a 1 because no block was placed or named as "nope"
+expect-step-fails expect-display q 1 because "q" shows 7
+expect-step-fails expect-display l 1 because is a logic, not a power_display
+expect-step-fails expect-display nope 1 because no block was placed or named as "nope"
+expect-step-fails remember-blocks l because not in the level editor
+expect-step-fails expect-blocks-unmoved l because not in the level editor
+back-to-editor
+
+# The round trip moved nothing, and what was remembered is still there
+expect-blocks-unmoved g l p q
+set-block-setting g power -3
+expect-blocks-unmoved g
+test-mode
+wait 2
+expect-signal q x -3
+expect-display q -3
+back-to-editor
+
+# A removed block is gone, not unmoved
+place-block lamp as lamp
+remember-blocks lamp
+undo
+undo
+expect-step-fails expect-blocks-unmoved lamp because "lamp"'s UID
+
+# A Compile's blocks are read the same way, by the names given to them
+open-window
+new-script Lights
+set-text
+power_display(1 & 1)
+end
+compile
+expect-result Placed 3 blocks
+name-group-block Lights power_display as display
+name-group-block Lights logic as gate
+remember-blocks display gate
+test-mode
+wait 2
+expect-signal gate a 1
+expect-signal display x 1
+expect-display display 1
+back-to-editor
+expect-blocks-unmoved display gate
+expect-no-exceptions
