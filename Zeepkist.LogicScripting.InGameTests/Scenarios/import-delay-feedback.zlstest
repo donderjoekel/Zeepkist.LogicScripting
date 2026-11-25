@@ -1,4 +1,4 @@
-# Blocks that feed back through a Delay import, and a latch made that way still holds after a Compile
+# Blocks that feed back through a Delay import, and a latch made that way still works after a Compile and a restart
 open-window
 place-start
 
@@ -25,6 +25,9 @@ place-block logic as n
 place-block logic as o
 wire-blocks n out to o a
 expect-step-fails wire-blocks o out to n a because Dependency Loop
+
+# A round can only restart in test mode
+expect-step-fails restart-round because not in test mode
 
 # Not on top of each other, so the order of the lines doesn't hang on the blocks' random UIDs
 move-block g 16 0 0
@@ -85,6 +88,16 @@ expect-signal l2 a 0
 expect-signal l2 b 1
 expect-display p2 1
 screenshot test-compiled
+
+# A round restart clears it, and it sets again
+restart-round
+wait 1
+expect-display p2 0
+wait 12
+expect-signal l2 a 0
+expect-signal l2 b 1
+expect-display p2 1
+screenshot test-restarted
 back-to-editor
 open-window
 
@@ -119,4 +132,20 @@ expect-text delay_1 = delay(delay_2, ticks: 4)
 expect-text delay_2 = delay(delay_1, ticks: 5)
 compile
 expect-result Replaced 2 → 2 blocks
+
+# A level can hold a Dependency Loop all the same. Import refuses it, naming its blocks in the direction of its Wires
+expect-step-fails wire-dependency-loop n out to o b because closes no Dependency Loop
+wire-dependency-loop o out to n a
+expect-wire o out to n a
+expect-step-fails test-mode because the level has a Dependency Loop
+select-blocks n o
+expect-step-fails import-selected because a loop of Wires has no Delay in it: logic "{uid:o}", logic "{uid:n}"
+
+# Without that Wire they import
+undo
+undo
+expect-wires o 1
+select-blocks n o
+import-selected
+expect-list-result Imported 2 blocks
 expect-no-exceptions

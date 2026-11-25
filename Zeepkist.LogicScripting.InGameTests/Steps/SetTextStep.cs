@@ -23,7 +23,7 @@ internal sealed class SetTextStep : ScenarioStep
         var text = context.PlacedBlocks.Expand(Text, out var unknown);
         if (text == null)
         {
-            context.Fail($"no block placed or named as \"{unknown}\": add place-block <function> as {unknown} or name-group-block first", unknown, context.PlacedBlocks.Listed);
+            context.FailUnknownUid(unknown);
             yield break;
         }
 

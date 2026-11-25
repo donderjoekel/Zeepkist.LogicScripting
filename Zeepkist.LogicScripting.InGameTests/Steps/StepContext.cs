@@ -134,6 +134,14 @@ internal sealed class StepContext
     }
 
     /// <summary>
+    /// For a step whose text has <c>{uid:&lt;name&gt;}</c> with a name no block was placed or named as.
+    /// </summary>
+    public void FailUnknownUid(string name)
+    {
+        Fail($"no block placed or named as \"{name}\": add place-block <function> as {name} or name-group-block first", name, PlacedBlocks.Listed);
+    }
+
+    /// <summary>
     /// The Logic Block type with the Block Function's name, or null after failing the step when there's none.
     /// </summary>
     public BlockType RequireBlockType(string function)
