@@ -18,15 +18,16 @@ internal static class PlacedBlocks
     }
 
     /// <summary>
-    /// Leaves the blocks the next Compile replaces out of the block's Wires.
+    /// Leaves the blocks the next Compile replaces out of the block's Wires. A block in the Block Group of
+    /// <paramref name="leftId"/>, when given, counts as in none, as it's about to leave it.
     /// </summary>
-    public static PlacedBlock Find(LEV_LevelEditorCentral central, string uid, Func<string, bool> isReplaced)
+    public static PlacedBlock Find(LEV_LevelEditorCentral central, string uid, Func<string, bool> isReplaced, ScriptId leftId = null)
     {
         var block = LevelBlocks.Find(central, uid);
         if (block == null)
             return null;
 
-        var isInBlockGroup = BlockGroups.IsInAnyGroup(block);
+        var isInBlockGroup = BlockGroups.IsInOtherGroup(block, leftId);
         if (!BlockManifest.TryGetBlock(block.blockID, out var type, out _))
             return new PlacedBlock(block.blockID, isInBlockGroup: isInBlockGroup);
 

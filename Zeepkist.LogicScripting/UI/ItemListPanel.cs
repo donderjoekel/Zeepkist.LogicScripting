@@ -247,6 +247,15 @@ internal abstract class ItemListPanel<T> : IListPanel
         _deletePrompt.Close();
     }
 
+    /// <summary>
+    /// For an entry that's gone from the list, which a prompt left open would still rename or delete.
+    /// </summary>
+    public void ClosePromptOn(T entry)
+    {
+        if (_deletePrompt.Deleted == entry || (_namePrompt.IsRenaming && _renamed == entry))
+            ClosePrompts();
+    }
+
     public void OpenNew()
     {
         _deletePrompt.Close();

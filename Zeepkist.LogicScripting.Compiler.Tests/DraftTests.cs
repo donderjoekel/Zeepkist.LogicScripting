@@ -105,6 +105,25 @@ public class DraftTests
         Assert.Single(new DraftChanges().TakeChanged(list.Entries, NoDraft));
     }
 
+    [Fact]
+    public void AnImportedOrphansDraft_IsKeptUntilTheScriptIsEdited()
+    {
+        var list = new ScriptList();
+        var changes = new DraftChanges();
+        list.Update([new StoredScript(_id, "doors", "x = 0", 1)], new Dictionary<ScriptId, int>(), NoDraft);
+        list.Entries[0].Text = "x = 5";
+        var newer = Assert.Single(changes.TakeChanged(list.Entries, NoDraft));
+        list.Clear();
+
+        var entry = list.AddImportedOrphan(new StoredScript(_id, "doors", "x = 1", 1));
+        changes.TakeAsSaved(entry);
+
+        Assert.Empty(changes.TakeChanged(list.Entries, _ => newer));
+
+        entry.Text = "x = 2";
+        Assert.Equal("x = 2", Assert.Single(changes.TakeChanged(list.Entries, _ => newer)).Text);
+    }
+
     private static Draft NoDraft(ScriptId id)
     {
         return null;

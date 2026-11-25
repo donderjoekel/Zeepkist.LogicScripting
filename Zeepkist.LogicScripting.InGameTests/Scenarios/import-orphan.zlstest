@@ -1,0 +1,54 @@
+# An Orphaned Group without a Draft becomes a Script again, which saves, loads and compiles, and undo orphans it again
+open-window
+set-scripts-width 1
+new-script Lights
+set-text
+g = generator(power: 3)
+power_display((g & g) | g)
+end
+compile
+expect-result Placed 4 blocks
+name-group-block Lights power_display as d
+delete-carrier Lights
+save-level orphaned
+load-level orphaned
+delete-drafts
+expect-orphans 1
+screenshot narrow
+
+# A pasted copy isn't a member, and what's selected doesn't matter
+select-blocks d
+paste-blocks as d2
+drop-blocks
+expect-blocks 4
+import-orphan Unnamed
+expect-orphans 0
+expect-orphan-result Imported 3 blocks as "Imported". The next Compile replaces them with a new layout
+expect-no-errors
+screenshot imported
+
+# Undo lists it again, with its message and Script gone, also after a redo
+undo
+expect-orphans 1
+expect-orphan-result none
+expect-step-fails expect-text power_display because no Script or Library selected
+expect-step-fails select-script Imported because no Script named "Imported"
+redo
+expect-orphans 0
+select-script Imported
+expect-text power_display(
+undo
+expect-orphans 1
+
+import-orphan Unnamed
+expect-orphans 0
+save-level imported
+load-level imported
+expect-orphans 0
+select-script Imported
+expect-text power_display(
+expect-no-errors
+compile
+expect-result Replaced 3 → 3 blocks
+expect-blocks 4
+expect-no-exceptions

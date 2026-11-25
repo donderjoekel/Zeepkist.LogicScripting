@@ -195,7 +195,17 @@ internal sealed partial class ScriptWindow
         public void RestoreOrphan(OrphanedGroup orphan)
         {
             ShowTab(libraries: false);
-            _window.Select(_window.RestoreOrphan(orphan));
+            _window.RestoreOrphan(orphan);
+        }
+
+        /// <summary>
+        /// Like Import on the group's row on the Scripts tab, which selects the Script it makes. Returns why it made
+        /// none, or null.
+        /// </summary>
+        public string ImportOrphan(OrphanedGroup orphan)
+        {
+            ShowTab(libraries: false);
+            return _window.ImportOrphan(orphan) == null ? _window._orphanedGroupsPanel.Message : null;
         }
 
         /// <summary>

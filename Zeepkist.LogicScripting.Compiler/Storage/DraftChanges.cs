@@ -33,6 +33,15 @@ public sealed class DraftChanges
         return changed;
     }
 
+    /// <summary>
+    /// Takes the Script as saved though its Draft wasn't: the Draft there is, if any, stays until the Script is edited.
+    /// For a Script imported from an Orphaned Group, whose Draft may hold text newer than the blocks.
+    /// </summary>
+    public void TakeAsSaved(ScriptEntry entry)
+    {
+        _saved[entry.Id] = Draft.For(entry);
+    }
+
     private static bool KeepsSavedDraft(ScriptEntry entry, Draft draft, Draft saved)
     {
         if (saved == null)

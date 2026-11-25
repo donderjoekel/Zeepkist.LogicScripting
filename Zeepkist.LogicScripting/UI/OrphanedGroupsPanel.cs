@@ -13,13 +13,15 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
 /// <summary>
-/// Lists the level's Orphaned Groups, each with Delete, Untag, Select and Restore Script from Draft. Delete and Untag
-/// are one undo step each, Select is the editor's own selection step; restoring is the caller's.
+/// Lists the level's Orphaned Groups, each with Delete, Untag, Select, Import and Restore Script from Draft. Delete and
+/// Untag are one undo step each, Select is the editor's own selection step; importing and restoring are the caller's.
 /// </summary>
 internal sealed class OrphanedGroupsPanel
 {
     private readonly ManualLogSource _logger;
     private string _message = string.Empty;
+
+    public string Message => _message;
 
     public OrphanedGroupsPanel(ManualLogSource logger)
     {
@@ -46,40 +48,35 @@ internal sealed class OrphanedGroupsPanel
     }
 
     /// <summary>
-    /// Returns the Orphaned Group whose Script the player chose to restore from its Draft, or null. Collapsed, the
-    /// section is its heading and the result line.
+    /// Returns the Orphaned Groups the player chose to import and to restore from its Draft, null for none. Collapsed,
+    /// the section is its heading and the result line, and without Orphaned Groups left only the result line.
     /// </summary>
-    public OrphanedGroup Draw(ImGui gui, IReadOnlyList<OrphanedGroup> orphanedGroups, ref bool collapsed)
+    public (OrphanedGroup Imported, OrphanedGroup Restored) Draw(ImGui gui, IReadOnlyList<OrphanedGroup> orphanedGroups, ref bool collapsed)
     {
         DrawnMessage = (Time.frameCount, string.Empty);
-        if (orphanedGroups.Count == 0)
-        {
-            _message = string.Empty;
-            return null;
-        }
-
-        if (DrawHeading(gui, orphanedGroups.Count, collapsed))
+        if (orphanedGroups.Count > 0 && DrawHeading(gui, orphanedGroups.Count, collapsed))
             collapsed = !collapsed;
 
-        var restored = collapsed ? null : DrawGroups(gui, orphanedGroups);
+        var chosen = collapsed ? default : DrawGroups(gui, orphanedGroups);
         if (_message.Length > 0)
         {
             gui.Text(_message, wrap: true);
             DrawnMessage = (Time.frameCount, _message);
         }
 
-        return restored;
+        return chosen;
     }
 
-    private OrphanedGroup DrawGroups(ImGui gui, IReadOnlyList<OrphanedGroup> orphanedGroups)
+    private (OrphanedGroup Imported, OrphanedGroup Restored) DrawGroups(ImGui gui, IReadOnlyList<OrphanedGroup> orphanedGroups)
     {
+        OrphanedGroup imported = null;
         OrphanedGroup restored = null;
         foreach (var orphan in orphanedGroups)
         {
             var name = GetName(orphan);
             gui.Text(orphan.BlockCount == 1 ? $"{name}, 1 block" : $"{name}, {orphan.BlockCount} blocks", wrap: true);
 
-            // Three short buttons share a row and the long one gets its own, so both fit the narrow Scripts side
+            // Three short buttons share a row and the others get their own, so all fit the narrow Scripts side
             gui.AddSpacingIfLayoutFrameNotEmpty();
             var row = gui.AddSingleRowRect(default);
             var third = (row.W - (gui.Style.Layout.Spacing * 2)) / 3;
@@ -96,6 +93,11 @@ internal sealed class OrphanedGroupsPanel
             if (gui.Button("Select", selectRect))
                 Select(orphan);
 
+            if (gui.Button("Import"))
+                imported = orphan;
+
+            gui.TooltipAtLastControl("Make a Script from these blocks, which stay as they are until you compile it");
+
             gui.BeginReadOnly(orphan.Draft == null);
             if (gui.Button("Restore from Draft") && orphan.Draft != null)
                 restored = orphan;
@@ -106,7 +108,7 @@ internal sealed class OrphanedGroupsPanel
                 : "Bring the Script back from this machine's Draft. Compile to store it in the level again");
         }
 
-        return restored;
+        return (imported, restored);
     }
 
     /// <summary>
@@ -118,7 +120,7 @@ internal sealed class OrphanedGroupsPanel
         gui.AddSpacingIfLayoutFrameNotEmpty();
         var rect = gui.AddSingleRowRect(default);
         var clicked = gui.Button(gui.GetNextControlId(), rect, in gui.Style.Foldout.Button, out _);
-        gui.TooltipAtLastControl("Blocks of Scripts whose text the level no longer holds. They can't be recompiled");
+        gui.TooltipAtLastControl("Blocks of Scripts whose text the level no longer holds. Import or restore one to compile it again");
 
         var spacing = gui.Style.Layout.InnerSpacing;
         var content = ImButton.CalculateContentRect(gui, rect);
@@ -134,6 +136,11 @@ internal sealed class OrphanedGroupsPanel
         gui.Text("Orphaned Groups", settings, WindowColors.Warning, labelRect);
         gui.Text(countText, settings, WindowColors.Warning, countRect);
         return clicked;
+    }
+
+    public void ShowMessage(string message)
+    {
+        _message = message;
     }
 
     public void ShowRestored(ScriptEntry entry)

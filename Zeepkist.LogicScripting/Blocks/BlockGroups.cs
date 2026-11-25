@@ -23,6 +23,15 @@ internal static class BlockGroups
         return GetScriptId(block) != null;
     }
 
+    /// <summary>
+    /// Whether the block is in the Block Group of a Script other than <paramref name="scriptId"/>, which may be null.
+    /// </summary>
+    public static bool IsInOtherGroup(BlockProperties block, ScriptId scriptId)
+    {
+        var group = GetScriptId(block);
+        return group != null && group != scriptId;
+    }
+
     public static bool IsInGroup(LEV_LevelEditorCentral central, string uid, ScriptId scriptId)
     {
         var block = LevelBlocks.Find(central, uid);

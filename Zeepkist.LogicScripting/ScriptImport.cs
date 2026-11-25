@@ -12,15 +12,21 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 namespace TNRD.Zeepkist.LogicScripting;
 
 /// <summary>
-/// Makes the selected blocks the Block Group of a new Script that describes them, where they stand, as one undo step.
+/// Makes blocks in the level, the selected ones or an Orphaned Group's, the Block Group of a Script that describes them,
+/// where they stand, as one undo step.
 /// </summary>
 internal static class ScriptImport
 {
+    /// <summary>
+    /// What an imported Script is called when nothing else names it, before <see cref="ScriptList.GetFreeName"/>.
+    /// </summary>
+    public const string DefaultName = "Imported";
+
     private const string UndoLabel = "Logic Scripting Import";
     private const string NothingSelectedMessage = "Select blocks in the level first";
 
     /// <summary>
-    /// The level editor, or null with the reason nothing can be imported now.
+    /// The level editor, or null with the reason no selected blocks can be imported now.
     /// </summary>
     public static LEV_LevelEditorCentral GetCentral(out string blocker)
     {
@@ -33,14 +39,42 @@ internal static class ScriptImport
     }
 
     /// <summary>
-    /// Returns the Script the level now holds, or null when the level is unchanged, with the result line either way.
+    /// Makes the selected blocks a new Script. Returns the Script the level now holds, or null when the level is
+    /// unchanged, with the result line either way.
     /// </summary>
-    public static StoredScript Run(string name, StartupCheck check, ManualLogSource logger, out string message)
+    public static StoredScript RunSelected(string name, StartupCheck check, ManualLogSource logger, out string message)
     {
         var central = GetCentral(out message);
+        return central == null ? null : Run(central, [.. central.selection.list], ScriptId.New(), name, check, logger, out message);
+    }
+
+    /// <summary>
+    /// Like <see cref="RunSelected"/>, with the blocks tagged for an Orphaned Group, whatever is selected, and its Script
+    /// id, so they keep their tags.
+    /// </summary>
+    public static StoredScript RunOrphan(ScriptId id, string name, StartupCheck check, ManualLogSource logger, out string message)
+    {
+        var central = LevelEdit.GetCentral(out message);
         if (central == null)
             return null;
 
+        var group = BlockGroups.Find(central, id);
+        if (group.Count > 0)
+            return Run(central, group, id, name, check, logger, out message);
+
+        message = "Nothing imported: the group has no blocks in the level";
+        return null;
+    }
+
+    private static StoredScript Run(
+        LEV_LevelEditorCentral central,
+        IReadOnlyList<BlockProperties> blocks,
+        ScriptId id,
+        string name,
+        StartupCheck check,
+        ManualLogSource logger,
+        out string message)
+    {
         check.RunOnce();
         if (!check.CanPlace)
         {
@@ -48,27 +82,39 @@ internal static class ScriptImport
             return null;
         }
 
-        var selected = central.selection.list.ToList();
         var import = BlockImport.Import(
-            [.. InTextOrder(selected).Select(Read)],
-            [.. selected.SelectMany(ReadWires)],
+            [.. InTextOrder(blocks).Select(b => Read(b, id))],
+            [.. blocks.SelectMany(ReadWires)],
             FindTogglerTargets(central),
             check.DisabledBlockIds,
-            (uid, imported) => PlacedBlocks.Find(central, uid, imported.Contains));
+            (uid, imported) => PlacedBlocks.Find(central, uid, imported.Contains, id));
         if (!import.Succeeded)
         {
             message = $"Nothing imported: {import.Refusal}";
             return null;
         }
 
-        var blocks = selected.Where(b => import.ImportedUids.Contains(b.UID)).ToList();
-        var script = new StoredScript(ScriptId.New(), name, import.Text, ScriptCarrier.LanguageVersion);
+        var taken = blocks.Where(b => import.ImportedUids.Contains(b.UID)).ToList();
+
+        // An Orphaned Group's block that stays leaves the group, or the next Compile would replace it
+        var left = blocks.Where(b => !import.ImportedUids.Contains(b.UID) && BlockGroups.GetScriptId(b) == id).ToList();
+        var script = new StoredScript(id, name, import.Text, ScriptCarrier.LanguageVersion);
         try
         {
             // The carrier's yaw turns the next Compile's layout, so a tilted or scaled block only carries the text when
             // every block is
-            var carrier = blocks.FirstOrDefault(b => !RecompilePlacement.IsReshaped(b)) ?? blocks[0];
-            BlockBatch.Change(central, blocks, block => TakeIn(block, script, block == carrier), UndoLabel);
+            var carrier = taken.FirstOrDefault(b => !RecompilePlacement.IsReshaped(b)) ?? taken[0];
+            BlockBatch.Change(
+                central,
+                [.. taken, .. left],
+                block =>
+                {
+                    if (left.Contains(block))
+                        LevelScripts.Untag(block.customBlockEditProperties);
+                    else
+                        TakeIn(block, script, block == carrier);
+                },
+                UndoLabel);
         }
         catch (Exception e)
         {
@@ -77,9 +123,9 @@ internal static class ScriptImport
             return null;
         }
 
-        message = blocks.Count == 1
+        message = taken.Count == 1
             ? $"Imported 1 block as \"{name}\". The next Compile replaces it with a new layout"
-            : $"Imported {blocks.Count} blocks as \"{name}\". The next Compile replaces them with a new layout";
+            : $"Imported {taken.Count} blocks as \"{name}\". The next Compile replaces them with a new layout";
         if (import.Kept.Count == 1)
             message += ". 1 stayed as a placed block: it uses settings a Script can't write";
         else if (import.Kept.Count > 1)
@@ -115,13 +161,16 @@ internal static class ScriptImport
             .ThenBy(b => b.UID, StringComparer.Ordinal);
     }
 
-    private static ImportedBlock Read(BlockProperties block)
+    /// <summary>
+    /// A block in the group of the Script with the id, which the import makes the text of, isn't in another's.
+    /// </summary>
+    private static ImportedBlock Read(BlockProperties block, ScriptId id)
     {
         var properties = block.customBlockEditProperties;
         return new ImportedBlock(
             block.UID,
             block.blockID,
-            BlockGroups.IsInAnyGroup(block),
+            BlockGroups.IsInOtherGroup(block, id),
             properties?.n,
             properties?.t,
             properties?.f);

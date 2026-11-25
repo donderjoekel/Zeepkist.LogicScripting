@@ -14,7 +14,8 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 public static class BlockImport
 {
     /// <param name="blocks">
-    /// The selected blocks. Those a Script can't create stay outside blocks, like the blocks that aren't selected.
+    /// The selected blocks, or an Orphaned Group's. Those a Script can't create stay outside blocks, like the rest of the
+    /// level's.
     /// </param>
     /// <param name="wires">Every Wire with an end on one of them, each once or once from either end.</param>
     /// <param name="togglerTargets">The UIDs of the blocks the level's Togglers target, or null for none.</param>
@@ -107,7 +108,7 @@ public static class BlockImport
     {
         return kept.Count == 1
             ? kept[0].Reason
-            : $"a Script can't write any of the selected blocks: {string.Join(", ", kept.Select(k => k.Reason))}";
+            : $"a Script can't write any of the blocks: {string.Join(", ", kept.Select(k => k.Reason))}";
     }
 
     private static bool IsCreatable(ImportedBlock block)

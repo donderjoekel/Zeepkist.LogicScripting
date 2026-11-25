@@ -464,7 +464,7 @@ public class BlockImportKeptTests
         AssertRefused(new ImportLevel([KeptMath()]), "math \"m\" has a Setting a Script can't write, \"oi2\"", "m");
         AssertRefused(
             new ImportLevel([KeptMath(), new ImportedBlock("t", TogglerId), new ImportedBlock("lamp", LampId)]),
-            "a Script can't write any of the selected blocks: math \"m\" has a Setting a Script can't write, \"oi2\", "
+            "a Script can't write any of the blocks: math \"m\" has a Setting a Script can't write, \"oi2\", "
             + "toggler \"t\" has no targets, which a Script has to give",
             "m",
             "t",
