@@ -21,7 +21,12 @@ internal sealed class OrphanedGroupsPanel
     private readonly ManualLogSource _logger;
     private string _message = string.Empty;
 
+    // Set by the in-game tests
+    private OrphanedGroup _pressedImport;
+
     public string Message => _message;
+
+    public bool IsInputPending => _pressedImport != null;
 
     public OrphanedGroupsPanel(ManualLogSource logger)
     {
@@ -40,6 +45,19 @@ internal sealed class OrphanedGroupsPanel
     public static string GetName(OrphanedGroup orphan)
     {
         return orphan.Draft?.Name ?? "Unnamed";
+    }
+
+    /// <summary>
+    /// Presses Import on the group's row the next time it's drawn.
+    /// </summary>
+    public void PressImport(OrphanedGroup orphan)
+    {
+        _pressedImport = orphan;
+    }
+
+    public void CancelInput()
+    {
+        _pressedImport = null;
     }
 
     public void ClearMessage()
@@ -93,8 +111,11 @@ internal sealed class OrphanedGroupsPanel
             if (gui.Button("Select", selectRect))
                 Select(orphan);
 
-            if (gui.Button("Import"))
+            if (gui.Button("Import") || orphan == _pressedImport)
+            {
                 imported = orphan;
+                _pressedImport = null;
+            }
 
             gui.TooltipAtLastControl("Make a Script from these blocks, which stay as they are until you compile it");
 

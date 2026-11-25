@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
@@ -8,6 +9,8 @@ namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 /// </summary>
 internal sealed class ImportOrphanStep : ScenarioStep
 {
+    private const float DrawSeconds = 2;
+
     public ImportOrphanStep(string name)
     {
         Name = name;
@@ -24,9 +27,19 @@ internal sealed class ImportOrphanStep : ScenarioStep
         if (orphan == null)
             yield break;
 
-        if (context.Window.ImportOrphan(orphan) is { } error)
-            context.Fail(error);
+        var window = context.Window;
+        window.PressImportOrphan(orphan);
+        yield return context.WaitUntil(() => !window.IsOrphanInputPending, DrawSeconds);
+        if (window.IsOrphanInputPending)
+        {
+            window.CancelOrphanInput();
+            context.Fail("the group's row wasn't drawn: the Scripts side or the Orphaned Groups are collapsed");
+            yield break;
+        }
 
-        yield return null;
+        if (window.Orphans.Any(o => o.Id == orphan.Id))
+            context.Fail(window.OrphanMessage);
+        else
+            context.Detail = window.OrphanMessage;
     }
 }

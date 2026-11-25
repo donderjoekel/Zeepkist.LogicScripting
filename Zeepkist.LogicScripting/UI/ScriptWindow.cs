@@ -319,24 +319,22 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     }
 
     /// <summary>
-    /// Returns the Script made from the group's blocks, after selecting it, or null with why not as the group list's
-    /// result line.
+    /// Selects the Script made from the group's blocks, or makes none. The group list's result line says which, or why
+    /// not.
     /// </summary>
-    private ScriptEntry ImportOrphan(OrphanedGroup orphan)
+    private void ImportOrphan(OrphanedGroup orphan)
     {
         var name = _scripts.GetFreeName(orphan.Draft?.Name ?? ScriptImport.DefaultName);
         var stored = ScriptImport.RunOrphan(orphan.Id, name, _startupCheck, _logger, out var message);
-        ScriptEntry entry = null;
         if (stored != null)
         {
-            entry = _scripts.AddImportedOrphan(stored);
+            var entry = _scripts.AddImportedOrphan(stored);
             _draftSaver.TakeAsSaved(entry);
             Select(entry);
         }
 
         // Selecting clears it
         _orphanedGroupsPanel.ShowMessage(message);
-        return entry;
     }
 
     private void RestoreOrphan(OrphanedGroup orphan)
