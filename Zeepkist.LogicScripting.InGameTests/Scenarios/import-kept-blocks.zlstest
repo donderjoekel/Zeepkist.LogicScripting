@@ -44,14 +44,14 @@ import-selected
 expect-list-result Imported 4 blocks as "Imported". The next Compile replaces them with a new layout. 3 stayed as placed blocks: they use settings a Script can't write
 expect-text # math "
 expect-text " has a Setting a Script can't write, "oi2"
-expect-text math_2 = placed("
+expect-text math_1 = placed("
 expect-text # random "
 expect-text " has a min above its max, which a Script can't write
 expect-text random_1 = placed("
 expect-text # toggler "
 expect-text " has no targets, which a Script has to give
 expect-text toggler_1 = placed("
-expect-text math_1 = math(math_2,
+expect-text power_display(math_1 - 2)
 expect-no-errors
 expect-blocks-unmoved g n m o p r t
 screenshot imported

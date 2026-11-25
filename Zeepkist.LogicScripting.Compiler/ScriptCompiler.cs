@@ -56,7 +56,7 @@ public static class ScriptCompiler
         List<CompiledBlock> blocks = [];
         foreach (var block in graph.Blocks)
         {
-            blocks.Add(new CompiledBlock(block.Type, block.Style, block.Settings, cells[block.Index], yaw));
+            blocks.Add(new CompiledBlock(block.Type, block.Style, block.Settings, cells[block.Index], yaw, block.Position));
         }
 
         List<CompiledWire> wires = [];

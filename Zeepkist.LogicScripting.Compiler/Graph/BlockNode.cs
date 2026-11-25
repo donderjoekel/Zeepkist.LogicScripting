@@ -9,9 +9,10 @@ internal sealed class BlockNode
     private readonly List<Setting> _settings;
     private readonly int _index;
 
-    public BlockNode(int index, BlockType type, BlockStyle style, IEnumerable<Setting> settings)
+    public BlockNode(int index, Position position, BlockType type, BlockStyle style, IEnumerable<Setting> settings)
     {
         _index = index;
+        Position = position;
         Type = type;
         Style = style;
         _settings = [.. settings];
@@ -19,7 +20,7 @@ internal sealed class BlockNode
     }
 
     public BlockNode(string uid, BlockType type, BlockStyle style, PlacedBlock placed)
-        : this(0, type, style, placed.Settings)
+        : this(0, default, type, style, placed.Settings)
     {
         Uid = uid;
         Placed = placed;
@@ -31,6 +32,11 @@ internal sealed class BlockNode
     public int Index => IsPlaced
         ? throw new InvalidOperationException($"Block {Uid} is already in the level, so it has no index")
         : _index;
+
+    /// <summary>
+    /// The call, operator or literal that places the block; only a block the Compile places has one.
+    /// </summary>
+    public Position Position { get; }
 
     /// <summary>
     /// Null for a block the Compile places.

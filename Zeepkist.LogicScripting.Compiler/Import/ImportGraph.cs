@@ -43,6 +43,16 @@ internal sealed class ImportGraph
     /// </summary>
     public IReadOnlyList<KeptBlock> Kept => _kept;
 
+    /// <summary>
+    /// The blocks to import and the outside blocks they reach.
+    /// </summary>
+    public int BlockCount => _blocks.Count + _outside.Count;
+
+    public ImportedBlock GetImported(string uid)
+    {
+        return _blocks[_indices[uid]];
+    }
+
     public bool IsImported(string uid)
     {
         return _indices.ContainsKey(uid);
@@ -66,7 +76,7 @@ internal sealed class ImportGraph
     /// </summary>
     public IReadOnlyList<BlockConnector> GetOutputs(string uid)
     {
-        return GetType(uid).GetOutputs(IsImported(uid) ? _blocks[_indices[uid]].Settings : _outside[uid].Settings);
+        return GetType(uid).GetOutputs(IsImported(uid) ? GetImported(uid).Settings : _outside[uid].Settings);
     }
 
     /// <summary>
@@ -241,7 +251,7 @@ internal sealed class ImportGraph
 
     private int GetBlockId(string uid)
     {
-        return IsImported(uid) ? _blocks[_indices[uid]].BlockId : _outside[uid].BlockId;
+        return IsImported(uid) ? GetImported(uid).BlockId : _outside[uid].BlockId;
     }
 
     private static bool HasConnector(IReadOnlyList<BlockConnector> connectors, int index)

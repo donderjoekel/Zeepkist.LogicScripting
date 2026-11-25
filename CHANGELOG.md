@@ -63,6 +63,8 @@ All notable changes to Logic Scripting are listed here.
   with a comment above its `placed(...)` that says why, and the result line says how many stayed.
   It says which block or wire is the reason when it can't import a selection.
   Blocks that feed back through a `delay` import too. A loop of wires without one is refused, naming its blocks.
+  The text uses operators and numbers, like `trigger_1 > 0`, writes a block used once inside the line that uses it,
+  and has a blank line between separate circuits. Generators of the same power become one at the next Compile, as numbers share one.
 
 ### Changed
 

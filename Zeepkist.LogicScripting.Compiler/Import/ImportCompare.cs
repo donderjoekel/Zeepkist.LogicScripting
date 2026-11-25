@@ -11,20 +11,19 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 internal static class ImportCompare
 {
     /// <summary>
-    /// The first difference, or null. The text has one call per block and no literals, which would share a Generator,
-    /// so the compiled blocks come in the text's order. <paramref name="lines"/> are the text's, to say which block an
-    /// error is about.
+    /// The first difference, or null. Where the text says it writes a block pairs it with the compiled one, and any
+    /// pairing under which all the blocks and Wires are the same proves they are.
     /// </summary>
     public static string FindDifference(
         ImportGraph graph,
-        IReadOnlyList<ImportedBlock> ordered,
-        CompileResult compiled,
-        IReadOnlyList<ImportLine> lines = null)
+        IReadOnlyList<ImportedBlock> blocks,
+        ImportedText text,
+        CompileResult compiled)
     {
         if (!compiled.Succeeded)
         {
             var error = compiled.Errors[0];
-            var uid = lines?[error.Position.Line - 1].Uid;
+            var uid = text.Lines[error.Position.Line - 1].Uid;
             if (graph.Kept.FirstOrDefault(k => k.Uid == uid) is { } kept)
                 return $"{kept.Reason}, and it can't stay as a placed block: {error.Message}";
 
@@ -32,21 +31,33 @@ internal static class ImportCompare
             return $"its text doesn't compile{place}: {error.Message}";
         }
 
-        if (compiled.Blocks.Count != ordered.Count)
-            return $"its text compiles to {compiled.Blocks.Count} blocks, not {ordered.Count}";
+        var expected = blocks.Count - text.Shared.Count;
+        if (compiled.Blocks.Count != expected)
+            return $"its text compiles to {compiled.Blocks.Count} blocks, not {expected}";
 
-        for (var i = 0; i < ordered.Count; i++)
+        var uids = compiled.Blocks.Select(b => FindUid(text, b)).ToList();
+        for (var i = 0; i < uids.Count; i++)
         {
-            if (FindDifference(ordered[i], compiled.Blocks[i]) is { } difference)
+            if (uids[i] == null)
+                return $"its text compiles to a {compiled.Blocks[i].Type.Function} that isn't one of the blocks";
+        }
+
+        if (uids.Distinct().Count() != uids.Count)
+            return "its text compiles to several blocks for one";
+
+        var byUid = Enumerable.Range(0, uids.Count).ToDictionary(i => uids[i], i => compiled.Blocks[i]);
+        foreach (var block in blocks)
+        {
+            if (FindDifference(block, text, byUid) is { } difference)
                 return difference;
         }
 
         HashSet<(string From, int FromConnector, string To, int ToConnector)> missing =
-            [.. graph.Wires.Select(w => (w.FromUid, w.FromConnector, w.ToUid, w.ToConnector))];
+            [.. graph.Wires.Select(w => (GetSharedUid(text, w.FromUid), w.FromConnector, w.ToUid, w.ToConnector))];
         foreach (var wire in compiled.Wires.Concat(compiled.PlacedWires))
         {
-            var to = GetUid(wire.To, ordered);
-            if (!missing.Remove((GetUid(wire.From, ordered), wire.FromConnector, to, wire.ToConnector)))
+            var to = GetUid(wire.To, uids);
+            if (!missing.Remove((GetUid(wire.From, uids), wire.FromConnector, to, wire.ToConnector)))
                 return $"its text gives {graph.Describe(to)} a Wire it doesn't have";
         }
 
@@ -80,9 +91,34 @@ internal static class ImportCompare
         return GetValue(setting) == (fresh == null ? null : GetValue(fresh));
     }
 
-    private static string GetUid(WireEnd end, IReadOnlyList<ImportedBlock> ordered)
+    /// <summary>
+    /// The block the text says it writes there, whatever its type, so a type that differs is found and named.
+    /// </summary>
+    private static string FindUid(ImportedText text, CompiledBlock compiled)
     {
-        return end.IsPlaced ? end.Uid : ordered[end.Block].Uid;
+        return text.Places.TryGetValue((compiled.Position, compiled.Type), out var uid)
+            ? uid
+            : text.Places.Where(p => p.Key.Position.CompareTo(compiled.Position) == 0).Select(p => p.Value).FirstOrDefault();
+    }
+
+    private static string GetUid(WireEnd end, IReadOnlyList<string> uids)
+    {
+        return end.IsPlaced ? end.Uid : uids[end.Block];
+    }
+
+    private static string GetSharedUid(ImportedText text, string uid)
+    {
+        return text.Shared.TryGetValue(uid, out var shared) ? shared : uid;
+    }
+
+    private static string FindDifference(ImportedBlock block, ImportedText text, IReadOnlyDictionary<string, CompiledBlock> byUid)
+    {
+        if (!byUid.TryGetValue(GetSharedUid(text, block.Uid), out var compiled))
+            return $"its text leaves out {BlockImport.Describe(block)}";
+
+        return text.Shared.ContainsKey(block.Uid) && compiled.Type != BlockManifest.Generator
+            ? $"its text shares {BlockImport.Describe(block)}, and only Generators can be shared"
+            : FindDifference(block, compiled);
     }
 
     private static string FindDifference(ImportedBlock block, CompiledBlock compiled)
@@ -110,7 +146,7 @@ internal static class ImportCompare
     /// The values that differ from what a fresh block of the type stores, which a Compile's block stores too unless
     /// the Script gives another.
     /// </summary>
-    private static Dictionary<(SettingKind Kind, string Key), string> GetValues(IReadOnlyList<Setting> settings, BlockType type)
+    public static Dictionary<(SettingKind Kind, string Key), string> GetValues(IReadOnlyList<Setting> settings, BlockType type)
     {
         Dictionary<(SettingKind Kind, string Key), string> values = [];
         foreach (var setting in settings)

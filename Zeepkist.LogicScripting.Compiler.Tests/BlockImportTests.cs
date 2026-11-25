@@ -45,7 +45,7 @@ public class BlockImportTests
     {
         var compiled = ScriptCompiler.Compile(text, 0);
         Assert.True(compiled.Succeeded);
-        var (blocks, wires) = Read(compiled);
+        var (blocks, wires) = CompiledSignatures.Read(compiled);
 
         foreach (var selection in new[] { blocks, Enumerable.Reverse(blocks).ToList() })
         {
@@ -54,13 +54,13 @@ public class BlockImportTests
             Assert.Null(import.Refusal);
             var again = ScriptCompiler.Compile(import.Text, 0);
             Assert.True(again.Succeeded);
-            Assert.Equal(Describe(compiled), Describe(again));
+            Assert.Equal(CompiledSignatures.Describe(compiled), CompiledSignatures.Describe(again));
             Assert.Equal(compiled.Wires.Count, again.Wires.Count);
         }
     }
 
     [Fact]
-    public void TheText_HasOneLinePerBlock_EachNameAboveItsUse()
+    public void ABlockWithAnInputAnOperatorDoesNotWire_IsACall()
     {
         var import = BlockImport.Import(
             [
@@ -74,10 +74,7 @@ public class BlockImportTests
         Assert.Null(import.Refusal);
         Assert.Equal(
             """
-            generator_1 = generator()
-            generator_2 = generator(power: 5)
-            logic_1 = logic(generator_2, op_in: generator_1, op: or)
-            power_display_1 = power_display(logic_1, hide: true, style: compact)
+            power_display(logic(5, op_in: 0, op: or), hide: true, style: compact)
             """.Replace("\r\n", "\n"),
             import.Text);
     }
@@ -89,7 +86,7 @@ public class BlockImportTests
             [new ImportedBlock("g", GeneratorId), new ImportedBlock("d", DisplayId)],
             [new ImportedWire("g", 0, "d", 0), new ImportedWire("g", 0, "d", 0)]);
 
-        Assert.Equal("generator_1 = generator()\npower_display_1 = power_display(generator_1)", import.Text);
+        Assert.Equal("power_display(0)", import.Text);
     }
 
     [Fact]
@@ -105,7 +102,7 @@ public class BlockImportTests
             ],
             []);
 
-        Assert.Equal("power_display_1 = power_display()", import.Text);
+        Assert.Equal("power_display()", import.Text);
     }
 
     [Fact]
@@ -115,7 +112,7 @@ public class BlockImportTests
             [new ImportedBlock("d", DisplayId, ints: Ints(("new", 0)), texts: Texts(("oi2", "0"), ("oi3", "")), floats: Floats(("x1", 0)))],
             []);
 
-        Assert.Equal("power_display_1 = power_display()", import.Text);
+        Assert.Equal("power_display()", import.Text);
     }
 
     [Theory]
@@ -144,9 +141,9 @@ public class BlockImportTests
     }
 
     [Theory]
-    [InlineData(0, "simple_telemetry_1 = simple_telemetry()\npower_display_1 = power_display(simple_telemetry_1.state)")]
-    [InlineData(1, "simple_telemetry_1 = simple_telemetry(mode: local_velocity)\npower_display_1 = power_display(simple_telemetry_1.z)")]
-    [InlineData(2, "simple_telemetry_1 = simple_telemetry(mode: global_velocity)\npower_display_1 = power_display(simple_telemetry_1.heading)")]
+    [InlineData(0, "state_1 = simple_telemetry().state\npower_display(state_1)")]
+    [InlineData(1, "z_1 = simple_telemetry(mode: local_velocity).z\npower_display(z_1)")]
+    [InlineData(2, "heading_1 = simple_telemetry(mode: global_velocity).heading\npower_display(heading_1)")]
     public void AnOutputOfSeveral_IsNamedAsTheModeNamesIt(int mode, string text)
     {
         var import = BlockImport.Import(
@@ -163,7 +160,7 @@ public class BlockImportTests
             [new ImportedBlock("g", GeneratorId), new ImportedBlock("d1", DeathId, ints: Ints(("xpr", 2))), new ImportedBlock("d2", DeathId)],
             [new ImportedWire("g", 0, "d1", 0)]);
 
-        Assert.Equal("generator_1 = generator()\ndeath(generator_1, player: 2)\ndeath()", import.Text);
+        Assert.Equal("death(0, player: 2)\n\ndeath()", import.Text);
     }
 
     [Fact]
@@ -173,7 +170,7 @@ public class BlockImportTests
             [new ImportedBlock("g", GeneratorId, ints: Ints(("lbhd", 1))), new ImportedBlock("d", DisplayId, ints: Ints(("lbhd", 1)))],
             [new ImportedWire("g", 0, "d", 0)]);
 
-        Assert.Equal("default hide: true\ngenerator_1 = generator()\npower_display_1 = power_display(generator_1)", import.Text);
+        Assert.Equal("default hide: true\n\npower_display(0)", import.Text);
     }
 
     [Fact]
@@ -181,7 +178,7 @@ public class BlockImportTests
     {
         var import = BlockImport.Import([new ImportedBlock("d", DisplayId, ints: Ints(("lbhd", 1)))], []);
 
-        Assert.Equal("default hide: true\npower_display_1 = power_display()", import.Text);
+        Assert.Equal("default hide: true\n\npower_display()", import.Text);
     }
 
     [Fact]
@@ -238,12 +235,11 @@ public class BlockImportTests
     }
 
     [Fact]
-    public void TwoDelaysFeedingEachOther_OnlyTheFirstRefersAhead()
+    public void TwoDelaysFeedingEachOther_OnlyTheFirstHasAName()
     {
         AssertText(
             """
-            delay_1 = delay(delay_2, ticks: 5)
-            delay_2 = delay(delay_1, ticks: 6)
+            delay_1 = delay(delay(delay_1, ticks: 6), ticks: 5)
             """,
             [Delay("d", 5), Delay("e", 6)],
             new ImportedWire("d", 1, "e", 0),
@@ -255,11 +251,10 @@ public class BlockImportTests
     {
         AssertText(
             """
-            generator_1 = generator()
             delay_1 = delay(logic_2, ticks: 5)
-            logic_1 = logic(generator_1, delay_1, op: or)
-            logic_2 = logic(logic_1, logic_1)
-            power_display_1 = power_display(logic_2)
+            logic_1 = 0 | delay_1
+            logic_2 = logic_1 & logic_1
+            power_display(logic_2)
             """,
             [
                 new ImportedBlock("p", DisplayId),
@@ -281,10 +276,7 @@ public class BlockImportTests
     {
         AssertText(
             """
-            delay_1 = delay(logic_3, ticks: 5)
-            logic_1 = logic(delay_1)
-            logic_2 = logic(delay_1, op: or)
-            logic_3 = logic(logic_1, logic_2)
+            delay_1 = delay(logic(delay_1) & logic(delay_1, op: or), ticks: 5)
             """,
             [
                 new ImportedBlock("a", LogicId),
@@ -306,8 +298,7 @@ public class BlockImportTests
             """
             delay_1 = delay(logic_1, ticks: 5)
             logic_1 = logic(delay_1)
-            delay_2 = delay(logic_1, ticks: 6)
-            delay_3 = delay(delay_2, ticks: 7)
+            delay(delay(logic_1, ticks: 6), ticks: 7)
             """,
             [Delay("f", 7), Delay("e", 6), Delay("d"), new ImportedBlock("l", LogicId)],
             new ImportedWire("l", 3, "d", 0),
@@ -317,13 +308,11 @@ public class BlockImportTests
     }
 
     [Fact]
-    public void ADelayThatAnotherOneTakesOutOfItsLoops_DoesNotReferAhead()
+    public void ADelayThatAnotherOneTakesOutOfItsLoops_NeedsNoName()
     {
         AssertText(
             """
-            delay_1 = delay(delay_2, ticks: 5)
-            logic_1 = logic(delay_1)
-            delay_2 = delay(logic_1, ticks: 6)
+            delay_1 = delay(delay(logic(delay_1), ticks: 6), ticks: 5)
             """,
             [Delay("d"), Delay("e", 6), new ImportedBlock("l", LogicId)],
             new ImportedWire("d", 1, "l", 0),
@@ -338,8 +327,8 @@ public class BlockImportTests
         var output = type.Outputs[1];
         AssertText(
             $"""
-            delay_1 = delay(demultiplexer_1.{output.Name}, ticks: 5)
-            demultiplexer_1 = demultiplexer(delay_1)
+            delay_1 = delay({output.Name}_1, ticks: 5)
+            {output.Name}_1 = demultiplexer(delay_1).{output.Name}
             """,
             [new ImportedBlock("m", type.DefaultStyle.BlockId), Delay("d")],
             new ImportedWire("d", 1, "m", type.Inputs[0].Index),
@@ -519,7 +508,7 @@ public class BlockImportTests
 
         AssertRefused("random \"r\" has a min above its max, which a Script can't write", [blocks[0]]);
         Assert.Equal(
-            "generator_1 = generator()\nrandom_1 = random(max_in: generator_1, min: 5)",
+            "random(max_in: 0, min: 5)",
             BlockImport.Import(blocks, [new ImportedWire("g", 0, "r", 1)]).Text);
     }
 
@@ -540,31 +529,108 @@ public class BlockImportTests
     }
 
     [Theory]
-    [InlineData("generator_1 = generator()\npower_display_1 = power_display(generator_1)", null)]
-    [InlineData("generator_1 = generator()", "its text compiles to 1 blocks, not 2")]
-    [InlineData("generator_1 = generator()\ngenerator_2 = generator()", "its text doesn't give power_display \"d\" its own type and style")]
-    [InlineData("generator_1 = generator()\npower_display_1 = power_display(generator_1, style: compact)", "its text doesn't give power_display \"d\" its own type and style")]
-    [InlineData("generator_1 = generator(power: 2)\npower_display_1 = power_display(generator_1)", "generator \"g\" has a value for power that a Script can't write")]
-    [InlineData("generator_1 = generator()\npower_display_1 = power_display()", "its text misses a Wire into power_display \"d\"")]
-    [InlineData("generator_1 = generator()\npower_display_1 = power_display(power_display_1)", "its text doesn't compile: 'power_display_1' can't refer to itself outside delay(...)")]
+    [InlineData("a = generator()\nb = power_display(a)", null)]
+    [InlineData("a = generator()", "its text compiles to 1 blocks, not 2")]
+    [InlineData("a = generator()\nb = generator()", "its text doesn't give power_display \"d\" its own type and style")]
+    [InlineData("a = generator()\nb = power_display(a, style: compact)", "its text doesn't give power_display \"d\" its own type and style")]
+    [InlineData("a = generator(power: 2)\nb = power_display(a)", "generator \"g\" has a value for power that a Script can't write")]
+    [InlineData("a = generator()\nb = power_display()", "its text misses a Wire into power_display \"d\"")]
+    [InlineData("a = generator()\nb = power_display(b)", "its text doesn't compile: 'b' can't refer to itself outside delay(...)")]
+    [InlineData("a = generator()\nelsewhere = power_display(a)", "its text compiles to a power_display that isn't one of the blocks")]
     public void TheCompare_CatchesTextThatCompilesToSomethingElse(string text, string difference)
     {
         ImportedBlock[] blocks = [new ImportedBlock("g", GeneratorId), new ImportedBlock("d", DisplayId)];
         var graph = new ImportGraph(blocks);
         Assert.Null(graph.AddWire(new ImportedWire("g", 0, "d", 0)));
 
-        Assert.Equal(difference, ImportCompare.FindDifference(graph, blocks, ScriptCompiler.Compile(text, 0)));
+        Assert.Equal(difference, Compare(graph, blocks, text, [(1, "g"), (2, "d")], []));
     }
 
     [Fact]
     public void TheCompare_CatchesAWireTheBlocksDoNotHave()
     {
         ImportedBlock[] blocks = [new ImportedBlock("g", GeneratorId), new ImportedBlock("d", DisplayId)];
-        var compiled = ScriptCompiler.Compile("generator_1 = generator()\npower_display_1 = power_display(generator_1)", 0);
 
         Assert.Equal(
             "its text gives power_display \"d\" a Wire it doesn't have",
-            ImportCompare.FindDifference(new ImportGraph(blocks), blocks, compiled));
+            Compare(new ImportGraph(blocks), blocks, "a = generator()\nb = power_display(a)", [(1, "g"), (2, "d")], []));
+    }
+
+    [Fact]
+    public void TheCompare_CatchesTwoBlocksForOne()
+    {
+        ImportedBlock[] blocks = [new ImportedBlock("g", GeneratorId), new ImportedBlock("h", GeneratorId)];
+
+        Assert.Equal(
+            "its text compiles to several blocks for one",
+            Compare(new ImportGraph(blocks), blocks, "a = generator()\nb = generator()", [(1, "g"), (2, "g")], []));
+    }
+
+    [Fact]
+    public void TheCompare_CatchesTwinsWithEachOthersWires()
+    {
+        // Each twin alone looks the same, so only the Wires tell them apart
+        ImportedBlock[] blocks = [Delay("d"), Delay("e"), new ImportedBlock("p", DisplayId)];
+        var graph = new ImportGraph(blocks);
+        Assert.Null(graph.AddWire(new ImportedWire("d", 1, "e", 0)));
+        Assert.Null(graph.AddWire(new ImportedWire("e", 1, "d", 0)));
+        Assert.Null(graph.AddWire(new ImportedWire("d", 1, "p", 0)));
+        (int, string)[] places = [(1, "d"), (2, "e"), (3, "p")];
+
+        Assert.Null(Compare(graph, blocks, "a = delay(b, ticks: 5)\nb = delay(a, ticks: 5)\nc = power_display(a)", places, []));
+        Assert.Equal(
+            "its text gives delay \"d\" a Wire it doesn't have",
+            Compare(graph, blocks, "a = delay(a, ticks: 5)\nb = delay(b, ticks: 5)\nc = power_display(a)", places, []));
+        Assert.Equal(
+            "its text gives power_display \"p\" a Wire it doesn't have",
+            Compare(graph, blocks, "a = delay(b, ticks: 5)\nb = delay(a, ticks: 5)\nc = power_display(b)", places, []));
+    }
+
+    [Theory]
+    [InlineData("5", "5", "a = generator(power: 5)\nb = logic(a, a)", null)]
+    [InlineData("5", "6", "a = generator(power: 5)\nb = logic(a, a)", "generator \"h\" has a value for power that a Script can't write")]
+    [InlineData("5", "5", "a = generator(power: 5)\nb = logic(a)", "its text misses a Wire into logic \"l\"")]
+    [InlineData("5", "5", "a = generator(power: 5)\nb = logic(a, a, a)", "its text gives logic \"l\" a Wire it doesn't have")]
+    public void TheCompare_AllowsSharedGeneratorsOfTheSamePower(string power, string otherPower, string text, string difference)
+    {
+        ImportedBlock[] blocks =
+        [
+            new ImportedBlock("g", GeneratorId, texts: Texts(("lbp", power))),
+            new ImportedBlock("h", GeneratorId, texts: Texts(("lbp", otherPower))),
+            new ImportedBlock("l", LogicId)
+        ];
+        var graph = new ImportGraph(blocks);
+        Assert.Null(graph.AddWire(new ImportedWire("g", 0, "l", 0)));
+        Assert.Null(graph.AddWire(new ImportedWire("h", 0, "l", 1)));
+
+        Assert.Equal(difference, Compare(graph, blocks, text, [(1, "g"), (2, "l")], new Dictionary<string, string> { ["h"] = "g" }));
+    }
+
+    [Fact]
+    public void TheCompare_AllowsNoOtherBlockToBeShared()
+    {
+        ImportedBlock[] blocks = [new ImportedBlock("d", DisplayId), new ImportedBlock("e", DisplayId)];
+
+        Assert.Equal(
+            "its text shares power_display \"e\", and only Generators can be shared",
+            Compare(new ImportGraph(blocks), blocks, "a = power_display()", [(1, "d")], new Dictionary<string, string> { ["e"] = "d" }));
+    }
+
+    /// <summary>
+    /// Compares the text as if an import wrote it, each place being where a line's one-letter name is given a block.
+    /// </summary>
+    private static string Compare(
+        ImportGraph graph,
+        IReadOnlyList<ImportedBlock> blocks,
+        string text,
+        IReadOnlyList<(int Line, string Uid)> places,
+        Dictionary<string, string> shared)
+    {
+        var imported = new ImportedText(
+            [.. text.Split('\n').Select(l => new ImportLine(null, l))],
+            places.ToDictionary(p => (new Position(p.Line, 5), graph.GetType(p.Uid)), p => p.Uid),
+            shared);
+        return ImportCompare.FindDifference(graph, blocks, imported, ScriptCompiler.Compile(text, 0));
     }
 
     /// <summary>
@@ -603,8 +669,8 @@ public class BlockImportTests
         Assert.Null(import.Refusal);
         var compiled = ScriptCompiler.Compile(import.Text, 0);
         Assert.True(compiled.Succeeded);
-        var (compiledBlocks, compiledWires) = Read(compiled);
-        Assert.Equal(Describe(blocks, wires), Describe(compiledBlocks, compiledWires));
+        var (compiledBlocks, compiledWires) = CompiledSignatures.Read(compiled);
+        Assert.Equal(CompiledSignatures.Describe(blocks, wires), CompiledSignatures.Describe(compiledBlocks, compiledWires));
     }
 
     /// <summary>
@@ -669,54 +735,6 @@ public class BlockImportTests
         Assert.False(import.Succeeded);
         Assert.Null(import.Text);
         Assert.Equal(refusal, import.Refusal);
-    }
-
-    /// <summary>
-    /// The compiled blocks as the level would hold them.
-    /// </summary>
-    private static (List<ImportedBlock> Blocks, List<ImportedWire> Wires) Read(CompileResult compiled)
-    {
-        var blocks = compiled.Blocks.Select((block, i) => new ImportedBlock(
-            Uid(i),
-            block.Style.BlockId,
-            ints: block.Settings.Where(s => s.Kind == SettingKind.Int).ToDictionary(s => s.Key, s => s.IntValue),
-            texts: block.Settings.Where(s => s.Kind == SettingKind.Text).ToDictionary(s => s.Key, s => s.TextValue)));
-        var wires = compiled.Wires.Select(w => new ImportedWire(Uid(w.From.Block), w.FromConnector, Uid(w.To.Block), w.ToConnector));
-        return (blocks.ToList(), wires.ToList());
-    }
-
-    /// <summary>
-    /// Each block with everything wired into it, sorted, so it doesn't depend on the order of the lines. A Setting at
-    /// its default counts as left out.
-    /// </summary>
-    private static List<string> Describe(CompileResult compiled)
-    {
-        var (blocks, wires) = Read(compiled);
-        return Describe(blocks, wires);
-    }
-
-    private static List<string> Describe(List<ImportedBlock> blocks, List<ImportedWire> wires)
-    {
-        return blocks.Select(b => Describe(b, blocks, wires)).OrderBy(d => d, System.StringComparer.Ordinal).ToList();
-    }
-
-    private static string Describe(ImportedBlock block, List<ImportedBlock> blocks, List<ImportedWire> wires)
-    {
-        var settings = block.Settings
-            .Select(s => (s.Key, Value: s.Kind == SettingKind.Int ? s.IntValue.ToString(CultureInfo.InvariantCulture) : s.TextValue))
-            .Where(s => s.Value != "0")
-            .Select(s => $"{s.Key}={s.Value}")
-            .OrderBy(s => s, System.StringComparer.Ordinal);
-        var inputs = wires
-            .Where(w => w.ToUid == block.Uid)
-            .OrderBy(w => w.ToConnector)
-            .Select(w => $"{w.ToConnector}<-{w.FromConnector}.{Describe(blocks.Single(b => b.Uid == w.FromUid), blocks, wires)}");
-        return $"{block.BlockId}[{string.Join(" ", settings)}]({string.Join(" ", inputs)})";
-    }
-
-    private static string Uid(int index)
-    {
-        return $"uid{index}";
     }
 
     private static Dictionary<string, int> Ints(params (string Key, int Value)[] values)

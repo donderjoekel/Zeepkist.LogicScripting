@@ -56,9 +56,9 @@ public class BlockImportKeptTests
             $"""
             # {function} "k" {reason}
             {function}_1 = placed("k")
-            generator_1 = generator()
-            {function}_1(generator_1)
-            power_display_1 = power_display({function}_1)
+
+            {function}_1(0)
+            power_display({function}_1)
             """,
             "g",
             "k",
@@ -82,8 +82,8 @@ public class BlockImportKeptTests
             $"""
             # force_giver "f" has a Setting a Script can't write, "{key}"
             force_giver_1 = placed("f")
-            generator_1 = generator()
-            force_giver_1(generator_1)
+
+            force_giver_1(0)
             """,
             "g",
             "f");
@@ -101,8 +101,8 @@ public class BlockImportKeptTests
             """
             # property_multiplier "m" has a Setting a Script can't write, "x3"
             property_multiplier_1 = placed("m")
-            generator_1 = generator()
-            property_multiplier_1(generator_1)
+
+            property_multiplier_1(0)
             """,
             "g",
             "m");
@@ -136,9 +136,9 @@ public class BlockImportKeptTests
             $"""
             # delay "d" {reason}
             delay_1 = placed("d")
-            generator_1 = generator()
-            delay_1(generator_1)
-            power_display_1 = power_display(delay_1)
+
+            delay_1(0)
+            power_display(delay_1)
             """,
             "g",
             "d",
@@ -155,8 +155,8 @@ public class BlockImportKeptTests
             """
             # toggler "t" has no targets, which a Script has to give
             toggler_1 = placed("t")
-            generator_1 = generator()
-            toggler_1(generator_1)
+
+            toggler_1(0)
             """,
             "g",
             "t");
@@ -172,7 +172,8 @@ public class BlockImportKeptTests
             """
             # toggler "t" has a value for targets that a Script can't write
             toggler_1 = placed("t")
-            generator_1 = generator()
+
+            generator()
             """,
             "g",
             "t");
@@ -190,6 +191,7 @@ public class BlockImportKeptTests
             """
             # math "m" has a Setting a Script can't write, "oi2"
             math_1 = placed("m")
+
             toggler(targets: [math_1])
             """,
             "m",
@@ -209,7 +211,8 @@ public class BlockImportKeptTests
             logic_1 = placed("l")
             # power_display "p" has a value for hide that a Script can't write
             power_display_1 = placed("p")
-            generator_1 = generator()
+
+            generator()
             """,
             "g",
             "l",
@@ -274,7 +277,8 @@ public class BlockImportKeptTests
             """
             # logic "l" has a Setting a Script can't write, "agenerator()"
             logic_1 = placed("l")
-            generator_1 = generator()
+
+            generator()
             """,
             "g",
             "l");
@@ -296,9 +300,10 @@ public class BlockImportKeptTests
             math_1 = placed("m")
             # math "n" has a Setting a Script can't write, "oi2"
             math_2 = placed("n")
-            generator_1 = generator()
-            math_1(generator_1)
-            power_display_1 = power_display(math_2)
+
+            math_1(0)
+
+            power_display(math_2)
             """,
             "g",
             "m",
@@ -306,6 +311,33 @@ public class BlockImportKeptTests
             "p");
 
         Assert.Equal(2, import.Kept.Count);
+    }
+
+    [Fact]
+    public void GeneratorsOfTheSamePower_ShareALiteral_IntoAKeptBlockToo()
+    {
+        var level = new ImportLevel(
+            [Generator("g"), Generator("h"), KeptMath(), Display()],
+            new ImportedWire("g", 0, "m", 0),
+            new ImportedWire("h", 0, "p", 0));
+
+        var import = level.Import("g", "h", "m", "p");
+
+        Assert.Null(import.Refusal);
+        Assert.Equal(
+            """
+            # math "m" has a Setting a Script can't write, "oi2"
+            math_1 = placed("m")
+
+            math_1(0)
+
+            power_display(0)
+            """.Replace("\r\n", "\n"),
+            import.Text);
+        Assert.Equal(["g", "h", "p"], import.ImportedUids.OrderBy(u => u));
+        var compiled = level.Compile(import);
+        Assert.Equal(2, compiled.Blocks.Count);
+        Assert.Single(compiled.PlacedWires);
     }
 
     [Fact]
@@ -320,8 +352,8 @@ public class BlockImportKeptTests
             # math "m" has a Setting a Script can't write, "oi2"
             math_1 = placed("m")
             lamp_1 = placed("lamp")
-            logic_1 = logic(math_1)
-            lamp_1(logic_1)
+
+            lamp_1(logic(math_1))
             """,
             "m",
             "l",
@@ -335,7 +367,8 @@ public class BlockImportKeptTests
             new ImportLevel([KeptMath(), Display()], new ImportedWire("m", 3, "p", 0)),
             """
             math_1 = placed("m")
-            power_display_1 = power_display(math_1)
+
+            power_display(math_1)
             """,
             "p");
 
@@ -351,9 +384,11 @@ public class BlockImportKeptTests
             new ImportLevel([hidden, KeptMath()]),
             """
             default hide: true
+
             # math "m" has a Setting a Script can't write, "oi2"
             math_1 = placed("m")
-            generator_1 = generator()
+
+            generator()
             """,
             "g",
             "m");
@@ -371,9 +406,8 @@ public class BlockImportKeptTests
             """
             # math "m" has a Setting a Script can't write, "oi2"
             math_1 = placed("m")
-            delay_1 = delay(math_1, ticks: 1)
-            logic_1 = logic(delay_1)
-            math_1(logic_1)
+
+            math_1(logic(delay(math_1, ticks: 1)))
             """,
             "m",
             "l",
@@ -391,8 +425,8 @@ public class BlockImportKeptTests
             """
             # delay "d" has no ticks, which a Script has to give
             delay_1 = placed("d")
-            logic_1 = logic(delay_1)
-            delay_1(logic_1)
+
+            delay_1(logic(delay_1))
             """,
             "l",
             "d");

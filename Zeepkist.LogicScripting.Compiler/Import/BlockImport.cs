@@ -8,7 +8,8 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
 /// <summary>
 /// Writes blocks already in the level as the text of a Script: the text compiles to the same blocks, Settings and Wires,
-/// or the import is refused. A block with Settings a Script can't write stays in the level, and the text refers to it.
+/// except that Generators of the same power may become one, or the import is refused. A block with Settings a Script
+/// can't write stays in the level, and the text refers to it.
 /// </summary>
 public static class BlockImport
 {
@@ -71,11 +72,10 @@ public static class BlockImport
         if (ordered == null)
             return ImportResult.Refused($"a loop of Wires has no Delay in it: {string.Join(", ", loop.Select(Describe))}");
 
-        var lines = ImportText.Write(graph, ordered);
-        var text = string.Join("\n", lines.Select(l => l.Text));
-        var compiled = ScriptCompiler.Compile(text, 0, disabledBlockIds, FindOutsideBlock);
-        refusal = ImportCompare.FindDifference(graph, ordered, compiled, lines);
-        return refusal == null ? ImportResult.Written(text, uids, kept) : ImportResult.Refused(refusal);
+        var text = ImportText.Write(graph, ordered);
+        var compiled = ScriptCompiler.Compile(text.Text, 0, disabledBlockIds, FindOutsideBlock);
+        refusal = ImportCompare.FindDifference(graph, ordered, text, compiled);
+        return refusal == null ? ImportResult.Written(text.Text, uids, kept) : ImportResult.Refused(refusal);
     }
 
     /// <summary>
