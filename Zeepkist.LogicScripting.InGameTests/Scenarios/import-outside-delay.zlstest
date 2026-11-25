@@ -1,0 +1,60 @@
+# A latch that feeds back through a Delay imports with Placed Block References to the trigger and the lamp around it
+open-window
+place-block trigger as t
+place-block logic as l
+set-block-setting l op or
+place-block delay as d
+set-block-setting d ticks 1
+place-block lamp as m
+wire-blocks t out to l a
+wire-blocks d out to l b
+wire-blocks l out to d x
+wire-blocks l out to m red
+move-block t 0 0 32
+move-block l 16 0 0
+move-block d 32 0 0
+move-block m 48 0 0
+remember-blocks t l d m
+
+select-blocks m d l t
+import-selected
+expect-list-result Imported 2 blocks as "Imported"
+expect-text trigger_1 = placed("
+expect-text lamp_1 = placed("
+expect-text delay_1 = delay(logic_1, ticks: 1)
+expect-text logic_1 = logic(trigger_1, delay_1, op: or)
+expect-text lamp_1(red: logic_1)
+expect-no-errors
+expect-blocks-unmoved t l d m
+screenshot imported
+
+# The Compile's latch has the same Wires, inside and out
+compile
+expect-result Replaced 2 → 2 blocks
+expect-blocks 4
+name-group-block Imported logic as l2
+name-group-block Imported delay as d2
+expect-wire t out to l2 a
+expect-wire d2 out to l2 b
+expect-wire l2 out to d2 x
+expect-wire l2 out to m red
+expect-wires m 1
+expect-wires t 1
+screenshot compiled
+
+# Both undos put the lamp's Wire back
+undo
+wait 1
+expect-wire t out to l a
+expect-wire d out to l b
+expect-wire l out to d x
+expect-wire l out to m red
+expect-wires m 1
+undo
+wait 1
+expect-blocks-unmoved t l d m
+expect-wire l out to m red
+expect-wires m 1
+select-group Imported
+expect-list-result "Imported" has no blocks in the level
+expect-no-exceptions

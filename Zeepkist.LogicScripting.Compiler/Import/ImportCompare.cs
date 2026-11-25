@@ -12,12 +12,21 @@ internal static class ImportCompare
 {
     /// <summary>
     /// The first difference, or null. The text has one call per block and no literals, which would share a Generator,
-    /// so the compiled blocks come in the text's order.
+    /// so the compiled blocks come in the text's order. <paramref name="lines"/> are the text's, to say which block an
+    /// error is about.
     /// </summary>
-    public static string FindDifference(ImportGraph graph, IReadOnlyList<ImportedBlock> ordered, CompileResult compiled)
+    public static string FindDifference(
+        ImportGraph graph,
+        IReadOnlyList<ImportedBlock> ordered,
+        CompileResult compiled,
+        IReadOnlyList<ImportLine> lines = null)
     {
         if (!compiled.Succeeded)
-            return $"its text doesn't compile: {compiled.Errors[0].Message}";
+        {
+            var error = compiled.Errors[0];
+            var place = lines?[error.Position.Line - 1].Uid is { } uid ? $" at {graph.Describe(uid)}" : "";
+            return $"its text doesn't compile{place}: {error.Message}";
+        }
 
         if (compiled.Blocks.Count != ordered.Count)
             return $"its text compiles to {compiled.Blocks.Count} blocks, not {ordered.Count}";
@@ -28,18 +37,16 @@ internal static class ImportCompare
                 return difference;
         }
 
-        var indices = Enumerable.Range(0, ordered.Count).ToDictionary(i => ordered[i].Uid);
-        HashSet<(int From, int FromConnector, int To, int ToConnector)> missing =
-            [.. graph.Wires.Select(w => (indices[w.FromUid], w.FromConnector, indices[w.ToUid], w.ToConnector))];
-        foreach (var wire in compiled.Wires)
+        HashSet<(string From, int FromConnector, string To, int ToConnector)> missing =
+            [.. graph.Wires.Select(w => (w.FromUid, w.FromConnector, w.ToUid, w.ToConnector))];
+        foreach (var wire in compiled.Wires.Concat(compiled.PlacedWires))
         {
-            if (!missing.Remove((wire.From.Block, wire.FromConnector, wire.To.Block, wire.ToConnector)))
-                return $"its text gives {BlockImport.Describe(ordered[wire.To.Block])} a Wire it doesn't have";
+            var to = GetUid(wire.To, ordered);
+            if (!missing.Remove((GetUid(wire.From, ordered), wire.FromConnector, to, wire.ToConnector)))
+                return $"its text gives {graph.Describe(to)} a Wire it doesn't have";
         }
 
-        return missing.Count > 0
-            ? $"its text misses a Wire into {BlockImport.Describe(ordered[missing.First().To])}"
-            : null;
+        return missing.Count > 0 ? $"its text misses a Wire into {graph.Describe(missing.First().To)}" : null;
     }
 
     /// <summary>
@@ -58,6 +65,11 @@ internal static class ImportCompare
             return setting.TextValue;
 
         return number == 0 ? null : number.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string GetUid(WireEnd end, IReadOnlyList<ImportedBlock> ordered)
+    {
+        return end.IsPlaced ? end.Uid : ordered[end.Block].Uid;
     }
 
     private static string FindDifference(ImportedBlock block, CompiledBlock compiled)

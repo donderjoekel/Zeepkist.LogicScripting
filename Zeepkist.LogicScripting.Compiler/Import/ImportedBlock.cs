@@ -63,6 +63,34 @@ public sealed class ImportedBlock
         return Settings.Where(s => s.Key == setting.Key && ImportCompare.GetValue(s) != null).ToList();
     }
 
+    /// <summary>
+    /// The UIDs stored for a <see cref="SettingType.Targets"/> Setting.
+    /// </summary>
+    internal IReadOnlyList<string> FindTargets(BlockSetting setting)
+    {
+        return GetTargetKeys(setting).Where(t => !string.IsNullOrEmpty(t)).ToList();
+    }
+
+    /// <summary>
+    /// A Script stores its targets under the first keys, without a gap, and each once.
+    /// </summary>
+    internal bool HasWritableTargets(BlockSetting setting)
+    {
+        var targets = FindTargets(setting);
+        return targets.Count > 0
+            && targets.Distinct().Count() == targets.Count
+            && targets.SequenceEqual(GetTargetKeys(setting).Take(targets.Count));
+    }
+
+    private IEnumerable<string> GetTargetKeys(BlockSetting setting)
+    {
+        for (var i = 1; i <= BlockSetting.MaxTargets; i++)
+        {
+            var key = setting.Key + i.ToString(CultureInfo.InvariantCulture);
+            yield return Settings.FirstOrDefault(s => s.Kind == SettingKind.Text && s.Key == key)?.TextValue;
+        }
+    }
+
     private static IEnumerable<KeyValuePair<string, TValue>> WithoutReserved<TValue>(IReadOnlyDictionary<string, TValue> stored)
     {
         return (stored ?? new Dictionary<string, TValue>()).Where(s => !IsReserved(s.Key));

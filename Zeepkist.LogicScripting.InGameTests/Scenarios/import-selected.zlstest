@@ -28,13 +28,9 @@ open-window
 
 # What can't be imported, with the block that's the reason, leaves the level as it was
 place-block lamp as m
-select-blocks g m
-expect-step-fails import-selected because a Script can't create lamp "
-select-blocks g l p
-expect-step-fails import-selected because which isn't selected
-select-blocks h g l
-expect-step-fails import-selected because which isn't selected
-expect-list-result Nothing imported: logic "
+select-blocks m
+expect-step-fails import-selected because a Script can't create any of the selected blocks
+expect-list-result Nothing imported: a Script
 expect-blocks 5
 expect-wires l 3
 

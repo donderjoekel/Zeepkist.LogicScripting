@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
 /// <summary>
@@ -5,9 +7,10 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 /// </summary>
 public sealed class ImportResult
 {
-    private ImportResult(string text, string refusal)
+    private ImportResult(string text, IReadOnlyCollection<string> importedUids, string refusal)
     {
         Text = text;
+        ImportedUids = importedUids;
         Refusal = refusal;
     }
 
@@ -17,19 +20,24 @@ public sealed class ImportResult
     public string Text { get; }
 
     /// <summary>
+    /// The UIDs of the selected blocks that become the Script's Block Group, none when the import is refused.
+    /// </summary>
+    public IReadOnlyCollection<string> ImportedUids { get; }
+
+    /// <summary>
     /// Which block or Wire is the reason, or null when the import isn't refused.
     /// </summary>
     public string Refusal { get; }
 
     public bool Succeeded => Refusal == null;
 
-    public static ImportResult Written(string text)
+    public static ImportResult Written(string text, IReadOnlyCollection<string> importedUids)
     {
-        return new ImportResult(text, null);
+        return new ImportResult(text, importedUids, null);
     }
 
     public static ImportResult Refused(string refusal)
     {
-        return new ImportResult(null, refusal);
+        return new ImportResult(null, [], refusal);
     }
 }

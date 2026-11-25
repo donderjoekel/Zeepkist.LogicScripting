@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler;
@@ -13,6 +14,14 @@ internal static class PlacedBlocks
     /// </summary>
     public static PlacedBlock Find(LEV_LevelEditorCentral central, string uid, ScriptId scriptId)
     {
+        return Find(central, uid, other => BlockGroups.IsInGroup(central, other, scriptId));
+    }
+
+    /// <summary>
+    /// Leaves the blocks the next Compile replaces out of the block's Wires.
+    /// </summary>
+    public static PlacedBlock Find(LEV_LevelEditorCentral central, string uid, Func<string, bool> isReplaced)
+    {
         var block = LevelBlocks.Find(central, uid);
         if (block == null)
             return null;
@@ -24,16 +33,16 @@ internal static class PlacedBlocks
         List<int> wiredInputs = [];
         foreach (var input in type.Inputs)
         {
-            if (GetWires(block, input.Index).Any(w => !BlockGroups.IsInGroup(central, w.targetUID, scriptId)))
+            if (GetWires(block, input.Index).Any(w => !isReplaced(w.targetUID)))
                 wiredInputs.Add(input.Index);
         }
 
-        return new PlacedBlock(block.blockID, GetSettings(block, type), wiredInputs, GetDownstream(central, block, type, scriptId), isInBlockGroup);
+        return new PlacedBlock(block.blockID, GetSettings(block, type), wiredInputs, GetDownstream(central, block, type, isReplaced), isInBlockGroup);
     }
 
     /// <summary>
     /// The block's ID, Settings and Block Group only, for the editor's help, which looks up every reference on each
-    /// edit and has no use for the Wires <see cref="Find"/> follows.
+    /// edit and has no use for the Wires <see cref="Find(LEV_LevelEditorCentral, string, ScriptId)"/> follows.
     /// </summary>
     public static PlacedBlock FindWithoutWires(LEV_LevelEditorCentral central, string uid)
     {
@@ -58,10 +67,13 @@ internal static class PlacedBlocks
     }
 
     /// <summary>
-    /// Stops at Delays, which pass a Signal on only in the next Tick, and at the compiling Script's own Block Group,
-    /// which the Compile replaces.
+    /// Stops at Delays, which pass a Signal on only in the next Tick, and at the blocks the Compile replaces.
     /// </summary>
-    private static HashSet<string> GetDownstream(LEV_LevelEditorCentral central, BlockProperties start, BlockType startType, ScriptId scriptId)
+    private static HashSet<string> GetDownstream(
+        LEV_LevelEditorCentral central,
+        BlockProperties start,
+        BlockType startType,
+        Func<string, bool> isReplaced)
     {
         HashSet<string> reached = [];
         Stack<(BlockProperties Block, BlockType Type)> open = new([(start, startType)]);
@@ -72,7 +84,7 @@ internal static class PlacedBlocks
             {
                 foreach (var wire in GetWires(block, output.Index))
                 {
-                    if (BlockGroups.IsInGroup(central, wire.targetUID, scriptId) || !reached.Add(wire.targetUID))
+                    if (isReplaced(wire.targetUID) || !reached.Add(wire.targetUID))
                         continue;
 
                     var next = LevelBlocks.Find(central, wire.targetUID);
