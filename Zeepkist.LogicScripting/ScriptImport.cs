@@ -50,7 +50,7 @@ internal static class ScriptImport
 
         var blocks = central.selection.list.ToList();
         var import = BlockImport.Import(
-            [.. blocks.Select(Read)],
+            [.. InTextOrder(blocks).Select(Read)],
             [.. blocks.SelectMany(ReadWires)],
             FindTogglerTargets(central),
             check.DisabledBlockIds);
@@ -93,6 +93,19 @@ internal static class ScriptImport
         properties.SetStringDictionaryValue(BlockGroupTag.Key, BlockGroupTag.Create(script.Id, block.UID));
         if (isCarrier)
             LevelScripts.Write(properties, script);
+    }
+
+    /// <summary>
+    /// The order the lines take where the Wires leave it open, whatever order the blocks were selected in: by place in
+    /// the level. A UID is random, so it only decides between blocks at the same place.
+    /// </summary>
+    private static IEnumerable<BlockProperties> InTextOrder(IEnumerable<BlockProperties> blocks)
+    {
+        return blocks
+            .OrderBy(b => b.transform.position.x)
+            .ThenBy(b => b.transform.position.z)
+            .ThenBy(b => b.transform.position.y)
+            .ThenBy(b => b.UID, StringComparer.Ordinal);
     }
 
     private static ImportedBlock Read(BlockProperties block)

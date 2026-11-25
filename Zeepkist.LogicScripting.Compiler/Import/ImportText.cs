@@ -16,8 +16,8 @@ internal static class ImportText
     /// </summary>
     public static string Write(ImportGraph graph, IReadOnlyList<ImportedBlock> ordered)
     {
-        Dictionary<string, string> names = [];
-        Dictionary<string, int> counts = [];
+        // All of them first, as a Delay can refer to a block below it
+        var names = NameBlocks(ordered);
         List<string> lines = [];
         var hidesAll = ordered.All(b => b.FindValues(BlockSetting.Hide).Count > 0);
         if (hidesAll)
@@ -34,20 +34,31 @@ internal static class ImportText
                 arguments.Add($"{BlockType.StyleName}: {style.Name}");
 
             var call = $"{type.Function}({string.Join(", ", arguments)})";
-            if (type.Outputs.Count == 0)
-            {
-                lines.Add(call);
-                continue;
-            }
-
-            counts.TryGetValue(type.Function, out var count);
-            counts[type.Function] = count + 1;
-            var name = $"{type.Function}_{count + 1}";
-            names.Add(block.Uid, name);
-            lines.Add($"{name} = {call}");
+            lines.Add(names.TryGetValue(block.Uid, out var name) ? $"{name} = {call}" : call);
         }
 
         return string.Join("\n", lines);
+    }
+
+    /// <summary>
+    /// The name of each block that has outputs, by UID.
+    /// </summary>
+    private static Dictionary<string, string> NameBlocks(IReadOnlyList<ImportedBlock> ordered)
+    {
+        Dictionary<string, string> names = [];
+        Dictionary<string, int> counts = [];
+        foreach (var block in ordered)
+        {
+            var type = BlockManifest.GetPlacedType(block.BlockId);
+            if (type.Outputs.Count == 0)
+                continue;
+
+            counts.TryGetValue(type.Function, out var count);
+            counts[type.Function] = count + 1;
+            names.Add(block.Uid, $"{type.Function}_{count + 1}");
+        }
+
+        return names;
     }
 
     /// <summary>
