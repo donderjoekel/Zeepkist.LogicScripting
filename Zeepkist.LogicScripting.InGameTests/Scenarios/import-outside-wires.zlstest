@@ -22,9 +22,7 @@ import-selected
 expect-list-result Imported 2 blocks as "Imported". The next Compile replaces them with a new layout
 expect-text trigger_1 = placed("
 expect-text lamp_1 = placed("
-expect-text generator_1 = generator(power: 5)
-expect-text logic_1 = logic(trigger_1, generator_1, op: or)
-expect-text lamp_1(generator_1, logic_1)
+expect-text lamp_1(5, trigger_1 | 5)
 expect-no-errors
 expect-blocks 4
 expect-blocks-unmoved t g l m
@@ -80,8 +78,7 @@ import-selected
 expect-list-result Imported 1 block as "Imported"
 expect-text trigger_1 = placed("
 expect-text generator_1 = placed("
-expect-text logic_1 = logic(trigger_1, generator_1, op: or)
-expect-text lamp_1(red: logic_1)
+expect-text lamp_1(red: trigger_1 | generator_1)
 expect-no-errors
 compile
 expect-result Replaced 1 → 1 block

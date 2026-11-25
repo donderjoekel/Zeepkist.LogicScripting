@@ -1,0 +1,89 @@
+# An import writes operators, numbers and nested calls with a blank line between circuits, and compiles to the same logic
+open-window
+place-start
+
+# (3 + 4) * 2 on a display, with two Generators of power 2 that become one
+place-block generator as three
+set-block-setting three power 3
+place-block generator as four
+set-block-setting four power 4
+place-block generator as two
+set-block-setting two power 2
+place-block generator as otherTwo
+set-block-setting otherTwo power 2
+place-block math as sum
+place-block math as product
+set-block-setting product op multiply
+place-block math as rest
+set-block-setting rest op subtract
+place-block power_display as p
+wire-blocks three out to sum a
+wire-blocks four out to sum b
+wire-blocks sum out to product a
+wire-blocks two out to product b
+wire-blocks product out to rest a
+wire-blocks otherTwo out to rest b
+wire-blocks rest out to p x
+
+# A circuit of its own: a Generator that is off, inverted
+place-block generator as zero
+place-block digitizer as not
+set-block-setting not invert true
+place-block passthrough as q
+wire-blocks zero out to not x
+wire-blocks not out to q x
+
+# Not on top of each other, so the order of the lines doesn't hang on the blocks' random UIDs
+move-block three 0 0 0
+move-block four 0 0 16
+move-block two 0 0 32
+move-block otherTwo 0 0 48
+move-block sum 16 0 0
+move-block product 32 0 0
+move-block rest 48 0 0
+move-block p 64 0 -8
+move-block zero 80 0 0
+move-block not 96 0 0
+move-block q 112 0 0
+
+test-mode
+wait 2
+expect-display p 12
+expect-signal q x 1
+screenshot test-before
+back-to-editor
+open-window
+
+remember-blocks three four two otherTwo sum product rest p zero not q
+select-blocks q not zero p rest product sum otherTwo two four three
+import-selected
+expect-list-result Imported 11 blocks as "Imported"
+expect-text power_display((3 + 4) * 2 - 2)
+expect-text passthrough(!0)
+expect-no-errors
+expect-blocks 11
+expect-blocks-unmoved three four two otherTwo sum product rest p zero not q
+expect-wire otherTwo out to rest b
+screenshot imported
+
+# The two Generators of power 2 become one, and the display shows the same number
+compile
+expect-result Replaced 11 → 10 blocks
+expect-blocks 10
+name-group-block Imported power_display as p2
+name-group-block Imported passthrough as q2
+test-mode
+wait 2
+expect-display p2 12
+expect-signal q2 x 1
+screenshot test-compiled
+back-to-editor
+open-window
+
+# One undo brings the eleven back
+undo
+wait 1
+expect-blocks 11
+expect-blocks-unmoved three four two otherTwo sum product rest p zero not q
+expect-wire otherTwo out to rest b
+expect-no-exceptions

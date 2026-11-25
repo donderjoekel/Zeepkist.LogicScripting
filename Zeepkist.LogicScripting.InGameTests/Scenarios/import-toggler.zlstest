@@ -31,10 +31,9 @@ expect-blocks 5
 select-blocks tog on m
 import-selected
 expect-list-result Imported 2 blocks as "Imported"
-expect-text generator_1 = generator(power: 3)
-expect-text toggler(generator_1, targets: [lamp_1, generator_2])
+expect-text toggler(3, targets: [lamp_1, generator_1])
 expect-text lamp_1 = placed("
-expect-text generator_2 = placed("
+expect-text generator_1 = placed("
 expect-no-errors
 compile
 expect-result Replaced 2 → 2 blocks
@@ -50,7 +49,7 @@ select-blocks h
 expect-step-fails import-selected because a Toggler targets generator "
 select-blocks tog2 on2
 import-selected
-expect-text toggler(generator_1, targets: [lamp_1, generator_2])
+expect-text toggler(3, targets: [lamp_1, generator_1])
 expect-no-errors
 
 # A Toggler that isn't selected is wired like another outside block
@@ -59,7 +58,7 @@ wire-blocks g out to plain x
 select-blocks g
 import-selected
 expect-text toggler_1 = placed("
-expect-text toggler_1(generator_1)
+expect-text toggler_1(0)
 expect-no-errors
 
 # A Toggler without targets can't be written

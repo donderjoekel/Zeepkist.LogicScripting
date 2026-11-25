@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Import;
+using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using Xunit;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
@@ -41,7 +42,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Trigger(), Logic()], new ImportedWire("t", 0, "l", 1));
 
-        AssertImports(level, "trigger_1 = placed(\"t\")\nlogic_1 = logic(b: trigger_1)", "l");
+        AssertImports(level, "trigger_1 = placed(\"t\")\n\nlogic(b: trigger_1)", "l");
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([new ImportedBlock("s", SensorId), Logic()], new ImportedWire("s", 2, "l", 0));
 
-        AssertImports(level, "distance_sensor_1 = placed(\"s\")\nlogic_1 = logic(distance_sensor_1.y)", "l");
+        AssertImports(level, "distance_sensor_1 = placed(\"s\")\n\nlogic(distance_sensor_1.y)", "l");
     }
 
     [Fact]
@@ -58,7 +59,7 @@ public class BlockImportOutsideTests
         var telemetry = new ImportedBlock("s", TelemetryId, ints: new Dictionary<string, int> { ["xbs"] = 2 });
         var level = new ImportLevel([telemetry, Logic()], new ImportedWire("s", 3, "l", 0));
 
-        AssertImports(level, "simple_telemetry_1 = placed(\"s\")\nlogic_1 = logic(simple_telemetry_1.heading)", "l");
+        AssertImports(level, "simple_telemetry_1 = placed(\"s\")\n\nlogic(simple_telemetry_1.heading)", "l");
     }
 
     [Fact]
@@ -66,7 +67,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Logic(), Lamp()], new ImportedWire("l", 3, "lamp", 1));
 
-        AssertImports(level, "lamp_1 = placed(\"lamp\")\nlogic_1 = logic()\nlamp_1(red: logic_1)", "l");
+        AssertImports(level, "lamp_1 = placed(\"lamp\")\n\nlamp_1(red: logic())", "l");
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public class BlockImportOutsideTests
 
         AssertImports(
             level,
-            "trigger_1 = placed(\"t\")\nlamp_1 = placed(\"lamp\")\nlogic_1 = logic(trigger_1)\nlamp_1(logic_1)",
+            "trigger_1 = placed(\"t\")\nlamp_1 = placed(\"lamp\")\n\nlamp_1(logic(trigger_1))",
             "l");
     }
 
@@ -101,10 +102,11 @@ public class BlockImportOutsideTests
             """
             trigger_1 = placed("t")
             lamp_1 = placed("lamp")
-            logic_1 = logic(trigger_1, trigger_1)
-            logic_2 = logic(trigger_1)
-            lamp_1(logic_1, logic_1, range: logic_2)
-            generator_1 = generator()
+
+            logic_1 = trigger_1 & trigger_1
+            lamp_1(logic_1, logic_1, range: logic(trigger_1))
+
+            generator()
             """.Replace("\r\n", "\n"),
             "a",
             "b",
@@ -121,7 +123,7 @@ public class BlockImportOutsideTests
 
         AssertImports(
             level,
-            "lamp_1 = placed(\"x\")\nlamp_2 = placed(\"y\")\ngenerator_1 = generator()\nlamp_1(generator_1)\nlamp_2(generator_1)",
+            "lamp_1 = placed(\"x\")\nlamp_2 = placed(\"y\")\n\nlamp_1(0)\n\nlamp_2(0)",
             "g");
     }
 
@@ -130,7 +132,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Logic("out"), Logic("l")], new ImportedWire("out", 3, "l", 0));
 
-        AssertImports(level, "logic_2 = placed(\"out\")\nlogic_1 = logic(logic_2)", "l");
+        AssertImports(level, "logic_1 = placed(\"out\")\n\nlogic(logic_1)", "l");
     }
 
     [Fact]
@@ -140,7 +142,7 @@ public class BlockImportOutsideTests
             [Trigger(), new ImportedBlock("l", LogicId, ints: new Dictionary<string, int> { ["lbhd"] = 1 })],
             new ImportedWire("t", 0, "l", 0));
 
-        AssertImports(level, "default hide: true\ntrigger_1 = placed(\"t\")\nlogic_1 = logic(trigger_1)", "l");
+        AssertImports(level, "default hide: true\n\ntrigger_1 = placed(\"t\")\n\nlogic(trigger_1)", "l");
     }
 
     [Fact]
@@ -154,7 +156,7 @@ public class BlockImportOutsideTests
 
         AssertImports(
             level,
-            "trigger_1 = placed(\"t\")\nlamp_1 = placed(\"lamp\")\nlogic_1 = logic(trigger_1)\nlamp_1(logic_1)",
+            "trigger_1 = placed(\"t\")\nlamp_1 = placed(\"lamp\")\n\nlamp_1(logic(trigger_1))",
             "t",
             "l",
             "lamp",
@@ -182,7 +184,7 @@ public class BlockImportOutsideTests
         var random = new ImportedBlock("r", RandomId, texts: new Dictionary<string, string> { ["xv1"] = "5" });
         var level = new ImportLevel([Trigger(), random], new ImportedWire("t", 0, "r", 1));
 
-        AssertImports(level, "trigger_1 = placed(\"t\")\nrandom_1 = random(max_in: trigger_1, min: 5)", "r");
+        AssertImports(level, "trigger_1 = placed(\"t\")\n\nrandom(max_in: trigger_1, min: 5)", "r");
     }
 
     [Fact]
@@ -199,6 +201,7 @@ public class BlockImportOutsideTests
             block_1 = placed("door")
             lamp_1 = placed("lamp")
             logic_1 = placed("out")
+
             toggler(trigger_1, targets: [block_1, lamp_1, logic_1])
             """.Replace("\r\n", "\n"),
             "tog",
@@ -212,7 +215,7 @@ public class BlockImportOutsideTests
 
         AssertImports(
             level,
-            "lamp_1 = placed(\"lamp\")\ngenerator_1 = generator()\nlamp_1(generator_1)\ntoggler(targets: [lamp_1])",
+            "lamp_1 = placed(\"lamp\")\n\nlamp_1(0)\n\ntoggler(targets: [lamp_1])",
             "g",
             "tog");
     }
@@ -224,7 +227,7 @@ public class BlockImportOutsideTests
             [Generator(), Toggler("tog", "door"), new ImportedBlock("door", DoorId)],
             new ImportedWire("g", 0, "tog", 0));
 
-        AssertImports(level, "toggler_1 = placed(\"tog\")\ngenerator_1 = generator()\ntoggler_1(generator_1)", "g");
+        AssertImports(level, "toggler_1 = placed(\"tog\")\n\ntoggler_1(0)", "g");
     }
 
     [Fact]
@@ -238,7 +241,7 @@ public class BlockImportOutsideTests
 
         AssertImports(
             level,
-            "passthrough_1 = placed(\"p\")\ndelay_1 = delay(passthrough_1, ticks: 1)\nlogic_1 = logic(delay_1)\npassthrough_1(logic_1)",
+            "passthrough_1 = placed(\"p\")\n\npassthrough_1(logic(delay(passthrough_1, ticks: 1)))",
             "l",
             "d");
     }
@@ -248,7 +251,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Logic(), Delay()], new ImportedWire("l", 3, "d", 0), new ImportedWire("d", 1, "l", 0));
 
-        AssertImports(level, "delay_1 = placed(\"d\")\nlogic_1 = logic(delay_1)\ndelay_1(logic_1)", "l");
+        AssertImports(level, "delay_1 = placed(\"d\")\n\ndelay_1(logic(delay_1))", "l");
     }
 
     [Fact]
@@ -304,8 +307,9 @@ public class BlockImportOutsideTests
             """
             trigger_1 = placed("t")
             lamp_1 = placed("lamp")
+
             delay_1 = delay(logic_1, ticks: 1)
-            logic_1 = logic(trigger_1, delay_1)
+            logic_1 = trigger_1 & delay_1
             lamp_1(logic_1, delay_1)
             """.Replace("\r\n", "\n"),
             "l",
@@ -326,9 +330,9 @@ public class BlockImportOutsideTests
             level,
             """
             passthrough_1 = placed("p")
-            delay_1 = delay(logic_1, ticks: 1)
+
+            delay_1 = delay(delay_1 & passthrough_1, ticks: 1)
             passthrough_1(delay_1)
-            logic_1 = logic(delay_1, passthrough_1)
             """.Replace("\r\n", "\n"),
             "l",
             "d");
@@ -509,7 +513,14 @@ public class BlockImportOutsideTests
 
         Assert.Equal(
             "its text misses a Wire into lamp \"lamp\"",
-            ImportCompare.FindDifference(graph, blocks, ScriptCompiler.Compile("generator()", 0, null, Find)));
+            ImportCompare.FindDifference(
+                graph,
+                blocks,
+                new ImportedText(
+                    [new ImportLine("g", "generator()")],
+                    new Dictionary<(Position, BlockType), string> { [(new Position(1, 1), BlockManifest.Generator)] = "g" },
+                    new Dictionary<string, string>()),
+                ScriptCompiler.Compile("generator()", 0, null, Find)));
     }
 
     /// <summary>

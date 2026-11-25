@@ -71,15 +71,12 @@ remember-blocks g n dm s m p d q t r k
 select-blocks g n dm s m p d q t r k
 import-selected
 expect-list-result Imported 11 blocks as "Imported"
-expect-text generator_1 = generator(power: 9)
-expect-text generator_2 = generator(power: 2)
-expect-text demultiplexer_1 = demultiplexer(generator_2, generator_1)
-expect-text passthrough_1 = passthrough(demultiplexer_1.ch2, style: skinny_1h)
-expect-text math_1 = math(passthrough_1, generator_2, op: subtract, hide: true)
-expect-text power_display_1 = power_display(math_1)
-expect-text delay_1 = delay(power_display_1, ticks: 5)
-expect-text simple_telemetry_1 = simple_telemetry(mode: global_velocity)
-expect-text power_display(simple_telemetry_1.heading)
+expect-text ch2_1 = demultiplexer(2, 9).ch2
+expect-text passthrough_1 = passthrough(ch2_1, style: skinny_1h)
+expect-text math_1 = math(passthrough_1, 2, op: subtract, hide: true)
+expect-text power_display(delay(power_display(math_1), ticks: 5))
+expect-text heading_1 = simple_telemetry(mode: global_velocity).heading
+expect-text power_display(heading_1)
 expect-text parking(player: 2)
 expect-no-errors
 expect-blocks-unmoved g n dm s m p d q t r k
@@ -117,7 +114,7 @@ wire-blocks h1 out to h2 x
 select-blocks h1 h2
 import-selected
 expect-text default hide: true
-expect-text power_display_1 = power_display(generator_1)
+expect-text power_display(0)
 expect-no-errors
 compile
 expect-result Replaced 2 → 2 blocks
@@ -130,7 +127,7 @@ press-prompt keep-blocks
 select-blocks h3 h4
 import-selected
 expect-text default hide: true
-expect-text power_display_1 = power_display(generator_1)
+expect-text power_display(0)
 expect-no-errors
 
 # A style the startup check turned off is named

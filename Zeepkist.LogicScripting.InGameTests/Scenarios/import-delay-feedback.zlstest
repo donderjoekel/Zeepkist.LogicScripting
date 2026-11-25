@@ -51,9 +51,8 @@ remember-blocks t g eq l d p
 select-blocks t g eq l d p
 import-selected
 expect-list-result Imported 6 blocks as "Imported"
-expect-text delay_1 = delay(logic_1, ticks: 1)
-expect-text logic_1 = logic(math_1, delay_1, op: or)
-expect-text power_display_1 = power_display(delay_1)
+expect-text delay_1 = delay(ticker() == 400 | delay_1, ticks: 1)
+expect-text power_display(delay_1)
 expect-no-errors
 expect-blocks-unmoved t g eq l d p
 expect-wire l out to d x
@@ -64,8 +63,7 @@ undo
 wait 1
 select-blocks p d l eq g t
 import-selected
-expect-text delay_1 = delay(logic_1, ticks: 1)
-expect-text logic_1 = logic(math_1, delay_1, op: or)
+expect-text delay_1 = delay(ticker() == 400 | delay_1, ticks: 1)
 expect-no-errors
 screenshot imported
 
@@ -115,8 +113,7 @@ wire-blocks a out to b x
 wire-blocks b out to a x
 select-blocks b a
 import-selected
-expect-text delay_1 = delay(delay_2, ticks: 4)
-expect-text delay_2 = delay(delay_1, ticks: 5)
+expect-text delay_1 = delay(delay(delay_1, ticks: 5), ticks: 4)
 compile
 expect-result Replaced 2 → 2 blocks
 expect-no-exceptions

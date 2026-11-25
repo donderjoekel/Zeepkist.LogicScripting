@@ -23,7 +23,7 @@ expect-blocks 2
 select-blocks g p
 import-selected
 expect-list-result Imported 2 blocks as "Imported"
-expect-text generator_1 = generator(power: 5)
+expect-text power_display(5)
 save-level imported
 open-delete Imported
 press-prompt keep-blocks
@@ -36,8 +36,7 @@ expect-blocks 2
 expect-blocks-unmoved g p
 expect-wire g out to p x
 select-script Imported
-expect-text generator_1 = generator(power: 5)
-expect-text power_display_1 = power_display(generator_1)
+expect-text power_display(5)
 select-group Imported
 expect-list-result Selected 2 blocks of "Imported"
 
@@ -56,7 +55,7 @@ set-block-setting g2 power 7
 select-blocks p2 g2
 import-selected
 expect-list-result Imported 2 blocks as "Imported 2"
-expect-text generator_1 = generator(power: 7)
+expect-text power_display(7)
 screenshot copy-imported
 
 # And the level file has both Scripts. Deleting the new one first drops its Draft, which the window would show instead
@@ -67,11 +66,11 @@ expect-list-result kept its 2 blocks
 load-level copy
 expect-blocks 4
 select-script Imported 2
-expect-text generator_1 = generator(power: 7)
+expect-text power_display(7)
 select-group Imported 2
 expect-list-result Selected 2 blocks of "Imported 2"
 select-script Imported
-expect-text generator_1 = generator(power: 5)
+expect-text power_display(5)
 select-group Imported
 expect-list-result Selected 2 blocks of "Imported"
 expect-blocks-unmoved g p
