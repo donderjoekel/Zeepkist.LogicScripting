@@ -8,6 +8,7 @@ using Imui.Rendering;
 using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
+using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
@@ -25,6 +26,20 @@ internal sealed class OrphanedGroupsPanel
         _logger = logger;
     }
 
+    /// <summary>
+    /// The result line as the list was last drawn, empty when it drew none, and the Unity frame that was in, for the
+    /// in-game tests.
+    /// </summary>
+    public (int Frame, string Text) DrawnMessage { get; private set; } = (-1, string.Empty);
+
+    /// <summary>
+    /// What the row calls the group.
+    /// </summary>
+    public static string GetName(OrphanedGroup orphan)
+    {
+        return orphan.Draft?.Name ?? "Unnamed";
+    }
+
     public void ClearMessage()
     {
         _message = string.Empty;
@@ -36,6 +51,7 @@ internal sealed class OrphanedGroupsPanel
     /// </summary>
     public OrphanedGroup Draw(ImGui gui, IReadOnlyList<OrphanedGroup> orphanedGroups, ref bool collapsed)
     {
+        DrawnMessage = (Time.frameCount, string.Empty);
         if (orphanedGroups.Count == 0)
         {
             _message = string.Empty;
@@ -47,7 +63,10 @@ internal sealed class OrphanedGroupsPanel
 
         var restored = collapsed ? null : DrawGroups(gui, orphanedGroups);
         if (_message.Length > 0)
+        {
             gui.Text(_message, wrap: true);
+            DrawnMessage = (Time.frameCount, _message);
+        }
 
         return restored;
     }
@@ -57,7 +76,7 @@ internal sealed class OrphanedGroupsPanel
         OrphanedGroup restored = null;
         foreach (var orphan in orphanedGroups)
         {
-            var name = orphan.Draft?.Name ?? "Unnamed";
+            var name = GetName(orphan);
             gui.Text(orphan.BlockCount == 1 ? $"{name}, 1 block" : $"{name}, {orphan.BlockCount} blocks", wrap: true);
 
             // Three short buttons share a row and the long one gets its own, so both fit the narrow Scripts side

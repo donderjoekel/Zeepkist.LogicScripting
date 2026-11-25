@@ -7,6 +7,7 @@ using BepInEx.Logging;
 using Imui.Core;
 using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
+using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 using TNRD.Zeepkist.LogicScripting.UI;
 using UnityEngine;
 using ZeepSDK.Utilities;
@@ -123,6 +124,27 @@ internal sealed class StepContext
     {
         var list = Window.ShownList;
         Fail($"no {list.Noun} named \"{name}\" on the shown tab", name, string.Join(", ", list.Names));
+    }
+
+    /// <summary>
+    /// The Orphaned Groups the window lists, for a step's result.
+    /// </summary>
+    public string DescribeOrphans()
+    {
+        var orphans = Window.Orphans.Select(o => $"\"{OrphanedGroupsPanel.GetName(o)}\" with {o.BlockCount} blocks and {(o.Draft == null ? "no Draft" : "a Draft")}");
+        return Window.Orphans.Count == 0 ? "no Orphaned Groups" : string.Join(", ", orphans);
+    }
+
+    /// <summary>
+    /// The Orphaned Group whose row has the name, or null after failing the step when there's none.
+    /// </summary>
+    public OrphanedGroup RequireOrphan(string name)
+    {
+        var orphan = Window.FindOrphan(name);
+        if (orphan == null)
+            Fail($"no Orphaned Group is called \"{name}\"", name, DescribeOrphans());
+
+        return orphan;
     }
 
     /// <summary>

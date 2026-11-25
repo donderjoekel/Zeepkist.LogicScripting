@@ -45,6 +45,15 @@ internal sealed class DraftStore
         _loaded[draft.Id] = draft;
     }
 
+    public void Delete(ScriptId id)
+    {
+        var name = GetFileName(id);
+        if (_storage.JsonFileExists(name))
+            _storage.DeleteJsonFile(name);
+
+        _loaded[id] = null;
+    }
+
     private Draft Load(ScriptId id)
     {
         var name = GetFileName(id);
