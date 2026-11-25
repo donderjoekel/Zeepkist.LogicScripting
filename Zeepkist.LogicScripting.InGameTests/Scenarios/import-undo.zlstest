@@ -10,7 +10,7 @@ select-blocks g p
 import-selected
 expect-list-result Imported 2 blocks as "Imported"
 expect-blocks-unmoved g p
-expect-text power_display_1 = power_display(generator_1, hide: true)
+expect-text power_display(0, hide: true)
 
 undo
 wait 1

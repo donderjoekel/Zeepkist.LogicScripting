@@ -253,7 +253,7 @@ internal sealed partial class GraphBuilder
             Error(origin, $"'{type.Describe(style)}' {MessageFragments.TurnedOff}");
         }
 
-        return _graph.AddBlock(type, style, settings);
+        return _graph.AddBlock(origin.Position, type, style, settings);
     }
 
     private Resolved Fail(SyntaxNode node, string message)

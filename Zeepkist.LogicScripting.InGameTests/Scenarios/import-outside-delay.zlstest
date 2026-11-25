@@ -22,7 +22,7 @@ expect-list-result Imported 2 blocks as "Imported"
 expect-text trigger_1 = placed("
 expect-text lamp_1 = placed("
 expect-text delay_1 = delay(logic_1, ticks: 1)
-expect-text logic_1 = logic(trigger_1, delay_1, op: or)
+expect-text logic_1 = trigger_1 | delay_1
 expect-text lamp_1(red: logic_1)
 expect-no-errors
 expect-blocks-unmoved t l d m

@@ -25,9 +25,9 @@ internal sealed class BlockGraph
     /// </summary>
     public List<PlacedBlockReference> PlacedBlockReferences { get; } = [];
 
-    public BlockNode AddBlock(BlockType type, BlockStyle style, params Setting[] settings)
+    public BlockNode AddBlock(Position position, BlockType type, BlockStyle style, params Setting[] settings)
     {
-        var block = new BlockNode(Blocks.Count, type, style, settings);
+        var block = new BlockNode(Blocks.Count, position, type, style, settings);
         Blocks.Add(block);
         return block;
     }
