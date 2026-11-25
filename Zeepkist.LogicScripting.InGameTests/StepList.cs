@@ -112,6 +112,10 @@ internal static class StepList
         ["place-block"] = PlaceBlock,
         ["set-block-setting"] = SetBlockSetting,
         ["name-group-block"] = NameGroupBlock,
+        ["wire-blocks"] = (step, argument) => new WireBlocksStep(ReadWire(step, argument)),
+        ["select-blocks"] = SelectBlocks,
+        ["expect-wire"] = (step, argument) => new ExpectWireStep(ReadWire(step, argument)),
+        ["expect-wires"] = ExpectWires,
         ["turn-off-style"] = TurnOffStyle,
         ["insert-selected"] = (step, argument) => None(step, argument, new InsertSelectedStep()),
         ["undo"] = (step, argument) => None(step, argument, new UndoStep()),
@@ -123,6 +127,7 @@ internal static class StepList
         ["screenshot"] = (step, argument) => new ScreenshotStep(StepArgument.FileName(step, argument)),
         ["expect-blank-screenshot"] = (step, argument) => new ExpectBlankScreenshotStep(StepArgument.FileName(step, argument)),
         ["expect-no-exceptions"] = (step, argument) => None(step, argument, new ExpectNoExceptionsStep()),
+        ["expect-step-fails"] = ExpectStepFails,
         ["log"] = (step, argument) => new LogStep(StepArgument.Text(step, argument, "the text to log")),
     };
 
@@ -249,6 +254,62 @@ internal static class StepList
 
         var name = StepArgument.FileName($"{step} ... as", words[words.Length - 1]);
         return new NameGroupBlockStep(string.Join(" ", words.Take(words.Length - 3)), words[words.Length - 3], name);
+    }
+
+    /// <summary>
+    /// <c>&lt;name&gt; &lt;output&gt; to &lt;name&gt; &lt;input&gt;</c>. Whether the blocks have the output and input is
+    /// only known once they're placed, so the step checks that when it runs.
+    /// </summary>
+    private static WireArgument ReadWire(string step, string argument)
+    {
+        var what = "a placed block's name and output, 'to', and a placed block's name and input, such as g out to l a";
+        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length != 5 || words[2] != "to")
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        return new WireArgument(StepArgument.FileName(step, words[0]), words[1], StepArgument.FileName(step, words[3]), words[4]);
+    }
+
+    private static ScenarioStep SelectBlocks(string step, string argument)
+    {
+        var what = "placed blocks' names, each once, such as g l";
+        var names = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        if (names.Distinct().Count() != names.Length)
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        return new SelectBlocksStep([.. names.Select(name => StepArgument.FileName(step, name))]);
+    }
+
+    private static ScenarioStep ExpectWires(string step, string argument)
+    {
+        var what = "a placed block's name and how many Wires it has, such as l 2";
+        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length != 2)
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        return new ExpectWiresStep(StepArgument.FileName(step, words[0]), StepArgument.Count(step, words[1]));
+    }
+
+    /// <summary>
+    /// <c>&lt;step&gt; because &lt;text&gt;</c>, split at the last <c>because</c>, so the step's own text can hold one.
+    /// </summary>
+    private static ScenarioStep ExpectStepFails(string step, string argument)
+    {
+        const string separator = " because ";
+        var what = "a step of one line, 'because' and text its failure contains, such as expect-blocks 1 because 0 Logic Blocks";
+        var at = StepArgument.Text(step, argument, what).LastIndexOf(separator, StringComparison.Ordinal);
+        if (at < 0)
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        var inner = argument.Substring(0, at).Trim();
+        var space = inner.IndexOf(' ');
+        var name = space < 0 ? inner : inner.Substring(0, space);
+        if (name == SetText || name == step)
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        var created = Create(name, space < 0 ? string.Empty : inner.Substring(space + 1).Trim())
+            ?? throw new ScenarioFormatException($"unknown step '{name}'");
+        return new ExpectStepFailsStep(created, argument.Substring(at + separator.Length).Trim());
     }
 
     /// <summary>

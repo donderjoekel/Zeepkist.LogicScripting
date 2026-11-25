@@ -34,6 +34,14 @@ internal sealed class PlacedBlockNames
     }
 
     /// <summary>
+    /// Null when no block with the UID was placed or named.
+    /// </summary>
+    public string FindName(string uid)
+    {
+        return _uids.Where(u => u.Value == uid).Select(u => u.Key).FirstOrDefault();
+    }
+
+    /// <summary>
     /// Writes each <c>{uid:&lt;name&gt;}</c> in <paramref name="text"/> as that block's UID. Returns null, with the
     /// first name no block was placed or named as in <paramref name="unknown"/>, when there is one.
     /// </summary>

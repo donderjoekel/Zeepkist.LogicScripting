@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using BepInEx.Logging;
 using Imui.Core;
+using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.UI;
 using UnityEngine;
@@ -129,6 +130,56 @@ internal sealed class StepContext
             Fail($"no Logic Block type is called '{function}'");
 
         return type;
+    }
+
+    /// <summary>
+    /// The block the Scenario gave the name, or null after failing the step when there's none in the level.
+    /// </summary>
+    public NamedBlock RequireNamedBlock(LEV_LevelEditorCentral central, string name)
+    {
+        if (!PlacedBlocks.TryGetUid(name, out var uid))
+        {
+            Fail($"no block was placed or named as \"{name}\": add place-block ... as {name} or name-group-block first", "a placed block's name", PlacedBlocks.Listed);
+            return null;
+        }
+
+        var block = NamedBlock.Find(central, name, uid, out var error);
+        if (block == null)
+            Fail(error);
+
+        return block;
+    }
+
+    /// <summary>
+    /// The Wire between the named blocks' Connectors, whether the level has it or not, or null after failing the step
+    /// when one of the blocks or Connectors doesn't exist.
+    /// </summary>
+    public BlockWire RequireWire(LEV_LevelEditorCentral central, WireArgument wire, out NamedBlock from, out NamedBlock to)
+    {
+        to = null;
+        from = RequireNamedBlock(central, wire.From);
+        if (from == null)
+            return null;
+
+        to = RequireNamedBlock(central, wire.To);
+        if (to == null)
+            return null;
+
+        var output = NamedBlock.FindConnector(wire.From, "output", from.Outputs, wire.Output, out var error);
+        if (output == null)
+        {
+            Fail(error);
+            return null;
+        }
+
+        var input = NamedBlock.FindConnector(wire.To, "input", to.Type.Inputs, wire.Input, out error);
+        if (input == null)
+        {
+            Fail(error);
+            return null;
+        }
+
+        return new BlockWire(from.Block.UID, output.Index, to.Block.UID, input.Index);
     }
 
     /// <summary>
