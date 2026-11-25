@@ -82,6 +82,7 @@ public class StepListTests
     [InlineData("place-block lamp", typeof(PlaceBlockStep))]
     [InlineData("place-block lamp as lamp", typeof(PlaceBlockStep))]
     [InlineData("set-block-setting t mode global_velocity", typeof(SetBlockSettingStep))]
+    [InlineData("set-stored-setting m text oi2 5", typeof(SetStoredSettingStep))]
     [InlineData("name-group-block Lights logic as l", typeof(NameGroupBlockStep))]
     [InlineData("wire-blocks g out to l a", typeof(WireBlocksStep))]
     [InlineData("wire-dependency-loop l out to g a", typeof(WireDependencyLoopStep))]
@@ -591,6 +592,50 @@ public class StepListTests
     }
 
     [Fact]
+    public void SetStoredSetting_AName_AKind_AKey_ThenAValue()
+    {
+        var step = Assert.IsType<SetStoredSettingStep>(Assert.Single(ScenarioParser.Parse("steps", "set-stored-setting m float x3  0.5", out _).Steps));
+
+        Assert.Equal("m", step.Name);
+        Assert.Equal(StoredKind.Float, step.Kind);
+        Assert.Equal("x3", step.Key);
+        Assert.Equal("0.5", step.Value);
+    }
+
+    [Theory]
+    [InlineData("set-stored-setting")]
+    [InlineData("set-stored-setting m text oi2")]
+    [InlineData("set-stored-setting m text oi2 5 6")]
+    [InlineData("set-stored-setting m word oi2 5")]
+    [InlineData("set-stored-setting m 2 oi2 5")]
+    [InlineData("set-stored-setting m Text oi2 5")]
+    public void SetStoredSetting_TakesFourWords(string line)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains("set-stored-setting takes a placed block's name, int, float or text", error);
+    }
+
+    [Theory]
+    [InlineData("set-stored-setting m int x47 five", "int, not 'five'")]
+    [InlineData("set-stored-setting m int x47 1.5", "int, not '1.5'")]
+    [InlineData("set-stored-setting m float x3 half", "float, not 'half'")]
+    public void SetStoredSetting_ANumberHasToBeOne(string line, string error)
+    {
+        ScenarioParser.Parse("steps", line, out var actual);
+
+        Assert.Contains($"set-stored-setting takes a number for {error}", actual);
+    }
+
+    [Fact]
+    public void SetStoredSetting_TakesANameOfLettersDigitsDashesAndUnderscores()
+    {
+        ScenarioParser.Parse("steps", "set-stored-setting a}b text oi2 5", out var error);
+
+        Assert.Contains("takes a name of letters", error);
+    }
+
+    [Fact]
     public void SetBlockSetting_TakesANameOfLettersDigitsDashesAndUnderscores()
     {
         ScenarioParser.Parse("steps", "set-block-setting a}b mode basic", out var error);
@@ -1016,6 +1061,7 @@ public class StepListTests
     [InlineData("wire-select-blocks.zlstest")]
     [InlineData("signals-and-positions.zlstest")]
     [InlineData("import-selected-edges.zlstest")]
+    [InlineData("set-stored-setting.zlstest")]
     [InlineData("import-delay-feedback.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {

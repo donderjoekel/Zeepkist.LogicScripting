@@ -111,6 +111,7 @@ internal static class StepList
         ["type"] = (step, argument) => new TypeStep(StepArgument.Text(step, argument, "the text to type")),
         ["place-block"] = PlaceBlock,
         ["set-block-setting"] = SetBlockSetting,
+        ["set-stored-setting"] = SetStoredSetting,
         ["name-group-block"] = NameGroupBlock,
         ["wire-blocks"] = (step, argument) => new WireBlocksStep(ReadWire(step, argument)),
         ["wire-dependency-loop"] = (step, argument) => new WireDependencyLoopStep(ReadWire(step, argument)),
@@ -252,6 +253,36 @@ internal static class StepList
             throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
 
         return new SetBlockSettingStep(StepArgument.FileName(step, words[0]), words[1], words[2]);
+    }
+
+    /// <summary>
+    /// <c>&lt;name&gt; int|float|text &lt;key&gt; &lt;value&gt;</c>. A number's value is read here, as the step takes
+    /// it as it's written, and writes it the same way.
+    /// </summary>
+    private static ScenarioStep SetStoredSetting(string step, string argument)
+    {
+        var what = "a placed block's name, int, float or text, the key it's stored under and its value, such as m text oi2 5";
+        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        StoredKind? kind = words.Length != 4 ? null : words[1] switch
+        {
+            "int" => StoredKind.Int,
+            "float" => StoredKind.Float,
+            "text" => StoredKind.Text,
+            _ => null
+        };
+        if (kind == null)
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        var isNumber = kind switch
+        {
+            StoredKind.Int => int.TryParse(words[3], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _),
+            StoredKind.Float => float.TryParse(words[3], NumberStyles.Float, CultureInfo.InvariantCulture, out _),
+            _ => true
+        };
+        if (!isNumber)
+            throw new ScenarioFormatException($"{step} takes a number for {words[1]}, not '{words[3]}'");
+
+        return new SetStoredSettingStep(StepArgument.FileName(step, words[0]), kind.Value, words[2], words[3]);
     }
 
     /// <summary>
