@@ -158,6 +158,40 @@ public sealed class BlockSetting
         }
     }
 
+    /// <summary>
+    /// The reverse of <see cref="ToSetting"/>: the word or whole number a Script gives the Setting for it to store
+    /// <paramref name="stored"/>, or null when no value does. Not for <see cref="SettingType.Targets"/>.
+    /// </summary>
+    public string ToText(Setting stored)
+    {
+        switch (Type)
+        {
+            case SettingType.Number:
+                return stored.Kind == SettingKind.Text
+                    && long.TryParse(stored.TextValue, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number)
+                    && number >= Minimum
+                    && number <= Maximum
+                        ? number.ToString(CultureInfo.InvariantCulture)
+                        : null;
+
+            case SettingType.Bool:
+                return stored.Kind != SettingKind.Int ? null : stored.IntValue switch
+                {
+                    0 => "false",
+                    1 => "true",
+                    _ => null
+                };
+
+            case SettingType.Targets:
+                throw new InvalidOperationException($"{Name} takes a list of placed blocks, not one value");
+
+            default:
+                return stored.Kind == SettingKind.Int && stored.IntValue >= 0 && stored.IntValue < Options.Count
+                    ? Options[stored.IntValue]
+                    : null;
+        }
+    }
+
     public Setting Choose(string option)
     {
         var index = IndexOf(option);

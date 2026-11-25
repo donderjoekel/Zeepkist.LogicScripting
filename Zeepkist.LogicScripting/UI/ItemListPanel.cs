@@ -7,7 +7,7 @@ namespace TNRD.Zeepkist.LogicScripting.UI;
 
 /// <summary>
 /// A list of Scripts or Libraries in a scroll region, and per entry Rename and Delete. Under the list is a footer pinned
-/// to the bottom of the tab, which holds whichever prompt is open, the result line, and New as its bottom row.
+/// to the bottom of the tab, which holds whichever prompt is open, the result line, and the buttons, with New as the bottom row.
 /// </summary>
 internal abstract class ItemListPanel<T> : IListPanel
     where T : class
@@ -21,7 +21,7 @@ internal abstract class ItemListPanel<T> : IListPanel
     private ImRect _tab;
     private ImRect _list;
     private ImRect _prompts;
-    private ImRect _newRow;
+    private ImRect _buttons;
     private float _minListHeight;
     private float _rowHeight;
     private PromptButton? _pressed;
@@ -51,7 +51,7 @@ internal abstract class ItemListPanel<T> : IListPanel
         : _namePrompt.IsOpen ? ListPrompt.New
         : ListPrompt.None;
 
-    public ListFooterLayout FooterLayout => new(_tab, _list, _prompts, _newRow, _promptsHeight, _minListHeight, _rowHeight);
+    public ListFooterLayout FooterLayout => new(_tab, _list, _prompts, _buttons, _promptsHeight, _minListHeight, _rowHeight);
     public bool IsInputPending => _pressed != null || _clicked != null;
 
     public IReadOnlyList<PromptButton> PromptButtons => OpenPrompt switch
@@ -70,6 +70,11 @@ internal abstract class ItemListPanel<T> : IListPanel
     /// Null for none.
     /// </summary>
     protected virtual string NewTooltip => null;
+
+    /// <summary>
+    /// Whether the footer has a row above New, for <see cref="DrawImport"/>.
+    /// </summary>
+    protected virtual bool HasImport => false;
 
     public void ReleaseFocus()
     {
@@ -107,7 +112,7 @@ internal abstract class ItemListPanel<T> : IListPanel
         _tab = rect;
         _rowHeight = gui.GetRowHeight();
         _minListHeight = GetMinListHeight(gui);
-        _newRow = rect.TakeBottom(WindowRegion.GetRowHeight(gui), out var rest);
+        _buttons = rect.TakeBottom(WindowRegion.GetRowHeight(gui) * (HasImport ? 2 : 1), out var rest);
         _prompts = rest.TakeBottom(FooterSplit.GetFooterHeight(rest.H, _promptsHeight, _minListHeight), out _list);
 
         // A scope each, so an entry coming or going doesn't change the id, and with it the focus and text, of the name
@@ -128,13 +133,17 @@ internal abstract class ItemListPanel<T> : IListPanel
         gui.Canvas.Rect(new ImRect(_prompts.X, _prompts.Top - 1, _prompts.W, 1), gui.Style.Window.Box.BorderColor);
         gui.PushId("footer");
 
-        // Only the prompts scroll when there's no room for them, so New stays in view
+        // Only the prompts scroll when there's no room for them, so the buttons stay in view
         WindowRegion.Begin(gui, _prompts);
         var made = DrawPrompts(gui);
         WindowRegion.End(gui, out var contentHeight);
         _promptsHeight = contentHeight > 0 ? contentHeight + (spacing * 2) : 0;
 
-        DrawNew(gui, _newRow.WithPadding(spacing));
+        var newRow = _buttons.TakeBottom(WindowRegion.GetRowHeight(gui), out var importRow);
+        if (HasImport)
+            made = DrawImport(gui, importRow.WithPadding(spacing)) ?? made;
+
+        DrawNew(gui, newRow.WithPadding(spacing));
         gui.PopId();
         return made;
     }
@@ -223,6 +232,21 @@ internal abstract class ItemListPanel<T> : IListPanel
             gui.TooltipAtLastControl(NewTooltip);
     }
 
+    /// <summary>
+    /// Returns the entry the player imported, or null.
+    /// </summary>
+    protected virtual T DrawImport(ImGui gui, ImRect rect)
+    {
+        return null;
+    }
+
+    protected void ClosePrompts()
+    {
+        _renamed = null;
+        _namePrompt.Close();
+        _deletePrompt.Close();
+    }
+
     public void OpenNew()
     {
         _deletePrompt.Close();
@@ -290,9 +314,7 @@ internal abstract class ItemListPanel<T> : IListPanel
         if (error != null)
             return null;
 
-        _renamed = null;
-        _namePrompt.Close();
-        _deletePrompt.Close();
+        ClosePrompts();
         Message = string.Empty;
         return Add(name);
     }

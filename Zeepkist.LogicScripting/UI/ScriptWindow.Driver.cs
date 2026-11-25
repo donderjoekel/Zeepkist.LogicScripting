@@ -393,6 +393,20 @@ internal sealed partial class ScriptWindow
         }
 
         /// <summary>
+        /// Like Import selected on the Scripts tab, which selects the Script it makes. Returns why it made none, or null.
+        /// </summary>
+        public string ImportSelected()
+        {
+            ShowTab(libraries: false);
+            var entry = _window._scriptListPanel.ImportSelected();
+            if (entry == null)
+                return _window._scriptListPanel.Message;
+
+            _window.Select(entry);
+            return null;
+        }
+
+        /// <summary>
         /// Like Ctrl+Enter in the editor. Returns the result line, which says why when Compile can't run, or null when
         /// the check it runs first on unchecked text found errors, which the error list shows.
         /// </summary>

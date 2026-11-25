@@ -10,13 +10,17 @@ using TNRD.Zeepkist.LogicScripting.Storage;
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
 /// <summary>
-/// The window's Scripts with their marks, New, and per Script Rename, Select group and Delete.
+/// The window's Scripts with their marks, New, Import selected, and per Script Rename, Select group and Delete.
 /// </summary>
 internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
 {
     public const string Help = "Right-click a Script to rename it, select its blocks or delete it";
 
+    private const string ImportedName = "Imported";
+    private const string ImportHelp = "Make a Script from the selected Logic Blocks, which stay as they are until you compile it";
+
     private readonly ManualLogSource _logger;
+    private readonly StartupCheck _startupCheck;
     private readonly ScriptList _scripts;
     private readonly DraftSaver _draftSaver;
     private readonly Action<ScriptEntry> _deleted;
@@ -24,10 +28,16 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
     /// <summary>
     /// <paramref name="deleted"/> is called with a Script after Delete dropped it from <paramref name="scripts"/>.
     /// </summary>
-    public ScriptListPanel(ManualLogSource logger, ScriptList scripts, DraftSaver draftSaver, Action<ScriptEntry> deleted)
+    public ScriptListPanel(
+        ManualLogSource logger,
+        StartupCheck startupCheck,
+        ScriptList scripts,
+        DraftSaver draftSaver,
+        Action<ScriptEntry> deleted)
         : base("Script")
     {
         _logger = logger;
+        _startupCheck = startupCheck;
         _scripts = scripts;
         _draftSaver = draftSaver;
         _deleted = deleted;
@@ -35,6 +45,42 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
 
     protected override IReadOnlyList<ScriptEntry> Entries => _scripts.Entries;
     protected override string EmptyText => "None yet in this level. New Script makes one, and right-clicking a Script renames it, selects its blocks or deletes it.";
+
+    protected override bool HasImport => true;
+
+    /// <summary>
+    /// Like <see cref="ItemListPanel{T}.GetMinHeight"/>, with Import selected's row.
+    /// </summary>
+    public static float GetMinHeightWithImport(ImGui gui)
+    {
+        return GetMinHeight(gui) + WindowRegion.GetRowHeight(gui);
+    }
+
+    protected override ScriptEntry DrawImport(ImGui gui, ImRect rect)
+    {
+        var central = ScriptImport.GetCentral(out var blocker);
+        gui.BeginReadOnly(blocker != null);
+        var clicked = gui.Button(central == null ? "Import selected" : $"Import selected ({central.selection.list.Count})", rect);
+        gui.EndReadOnly();
+        gui.TooltipAtLastControl(blocker ?? ImportHelp);
+        return clicked && blocker == null ? ImportSelected() : null;
+    }
+
+    /// <summary>
+    /// What Import selected does. Returns the new Script, or null with why not as the result line.
+    /// </summary>
+    public ScriptEntry ImportSelected()
+    {
+        ClosePrompts();
+        var stored = ScriptImport.Run(_scripts.GetFreeName(ImportedName), _startupCheck, _logger, out var message);
+        Message = message;
+        if (stored == null)
+            return null;
+
+        var entry = _scripts.Add(stored);
+        _draftSaver.Request();
+        return entry;
+    }
 
     protected override string GetName(ScriptEntry entry)
     {

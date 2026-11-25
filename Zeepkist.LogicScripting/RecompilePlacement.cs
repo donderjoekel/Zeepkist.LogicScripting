@@ -60,7 +60,7 @@ internal sealed class RecompilePlacement : CompilePlacement
     /// <summary>
     /// Whether the block is scaled or tilted away from how <see cref="CompiledBlockJson"/> places it.
     /// </summary>
-    private static bool IsReshaped(BlockProperties block)
+    internal static bool IsReshaped(BlockProperties block)
     {
         var scale = block.transform.localScale;
         var isScaled = Mathf.Abs(scale.x - 1) > ScaleTolerance

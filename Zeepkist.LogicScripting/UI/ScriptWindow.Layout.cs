@@ -198,14 +198,14 @@ internal sealed partial class ScriptWindow
 
     /// <summary>
     /// The window is no shorter than the Scripts side's tab bar and either tab's minimum: two list rows, a row of the
-    /// open prompt and New, with a row of the libraries.json warning while it shows. Nor is it shorter than the center's
+    /// open prompt and New, with a row for Import selected or the libraries.json warning while it shows. Nor is it shorter than the center's
     /// minimum: the name row and the editor's minimum, with a row of the startup check's and the storage warning while
     /// they show.
     /// </summary>
     private float GetMinHeight(ImGui gui)
     {
         var spacing = gui.Style.Layout.Spacing;
-        var minTabHeight = Mathf.Max(ScriptListPanel.GetMinHeight(gui), LibraryListPanel.GetMinHeightWithWarning(gui, ShowsLibraryReadFailed));
+        var minTabHeight = Mathf.Max(ScriptListPanel.GetMinHeightWithImport(gui), LibraryListPanel.GetMinHeightWithWarning(gui, ShowsLibraryReadFailed));
         var minScriptsHeight = GetPanelHeaderHeight(gui) + ImTabsPane.GetTabBarHeight(gui) + (spacing * 2) + minTabHeight;
 
         // The center's padding, and a row of the startup check's warnings with the spacing under it

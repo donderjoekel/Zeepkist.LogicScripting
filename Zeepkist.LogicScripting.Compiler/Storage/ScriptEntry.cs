@@ -1,7 +1,8 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 
 /// <summary>
-/// A Script as the window holds it. Its name and text are the window's own: only a Compile stores them in the level.
+/// A Script as the window holds it. Its name and text are the window's own: only a Compile or an Import stores them in
+/// the level.
 /// </summary>
 public sealed class ScriptEntry
 {

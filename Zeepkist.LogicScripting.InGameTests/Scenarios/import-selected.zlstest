@@ -1,0 +1,83 @@
+# Blocks wired by hand import into a Script as its Block Group, and nothing else about them changes
+open-window
+expect-step-fails import-selected because Select blocks in the level first
+place-start
+place-block generator as g
+set-block-setting g power 5
+place-block generator as h
+place-block logic as l
+set-block-setting l op or
+place-block power_display as p
+wire-blocks g out to l a
+wire-blocks h out to l b
+wire-blocks l out to p x
+select-blocks g h l p
+screenshot before
+test-mode
+wait 2
+screenshot test-before
+back-to-editor
+open-window
+
+# What can't be imported, with the block that's the reason, leaves the level as it was
+place-block math as m
+select-blocks g m
+expect-step-fails import-selected because isn't a type Import takes: generator, logic, power_display
+select-blocks g l p
+expect-step-fails import-selected because which isn't selected
+select-blocks h g l
+expect-step-fails import-selected because which isn't selected
+expect-list-result Nothing imported: logic "
+expect-blocks 5
+expect-wires l 3
+
+select-blocks g h l p
+import-selected
+expect-list-result Imported 4 blocks as "Imported". The next Compile replaces them with a new layout
+expect-text generator_1 = generator(power: 5)
+expect-text generator_2 = generator()
+expect-text logic_1 = logic(generator_1, generator_2, op: or)
+expect-text power_display_1 = power_display(logic_1)
+expect-no-errors
+expect-footer-in-view
+expect-blocks 5
+expect-wire g out to l a
+expect-wire h out to l b
+expect-wire l out to p x
+screenshot imported
+
+# The same number in test mode, and the level still has the Script after it's loaded again
+test-mode
+wait 2
+screenshot test-imported
+back-to-editor
+open-window
+select-group Imported
+expect-list-result Selected 4 blocks of "Imported"
+
+# A block in a Block Group can't be imported again
+expect-step-fails import-selected because is in a Block Group
+
+# Deleting the Script and undoing that brings it back from the text in the level
+open-delete Imported
+press-prompt keep-blocks
+expect-list-result kept its 4 blocks
+undo
+wait 1
+select-script Imported
+expect-text logic_1 = logic(generator_1, generator_2, op: or)
+
+# A Compile replaces the imported blocks, and the display shows the same number
+compile
+expect-result Replaced 4 → 4 blocks
+expect-blocks 5
+name-group-block Imported power_display as display
+name-group-block Imported logic as gate
+expect-wire gate out to display x
+expect-wires gate 3
+test-mode
+wait 2
+screenshot test-compiled
+back-to-editor
+expect-blocks 5
+expect-no-exceptions

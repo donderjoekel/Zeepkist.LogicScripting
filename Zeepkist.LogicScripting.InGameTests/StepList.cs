@@ -118,6 +118,7 @@ internal static class StepList
         ["expect-wires"] = ExpectWires,
         ["turn-off-style"] = TurnOffStyle,
         ["insert-selected"] = (step, argument) => None(step, argument, new InsertSelectedStep()),
+        ["import-selected"] = (step, argument) => None(step, argument, new ImportSelectedStep()),
         ["undo"] = (step, argument) => None(step, argument, new UndoStep()),
         ["redo"] = (step, argument) => None(step, argument, new RedoStep()),
         ["place-start"] = (step, argument) => None(step, argument, new PlaceStartStep()),

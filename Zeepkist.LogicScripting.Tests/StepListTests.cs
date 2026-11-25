@@ -90,6 +90,7 @@ public class StepListTests
     [InlineData("expect-step-fails expect-blocks 1 because 0 Logic Blocks", typeof(ExpectStepFailsStep))]
     [InlineData("turn-off-style lamp", typeof(TurnOffStyleStep))]
     [InlineData("insert-selected", typeof(InsertSelectedStep))]
+    [InlineData("import-selected", typeof(ImportSelectedStep))]
     [InlineData("undo", typeof(UndoStep))]
     [InlineData("redo", typeof(RedoStep))]
     [InlineData("place-start", typeof(PlaceStartStep))]
