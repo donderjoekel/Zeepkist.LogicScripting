@@ -173,6 +173,59 @@ internal sealed partial class ScriptWindow
         }
 
         /// <summary>
+        /// The Orphaned Groups the Scripts tab lists.
+        /// </summary>
+        public IReadOnlyList<OrphanedGroup> Orphans => _window._scripts.OrphanedGroups;
+
+        /// <inheritdoc cref="OrphanedGroupsPanel.DrawnMessage"/>
+        public (int Frame, string Text) OrphanResult => _window._orphanedGroupsPanel.DrawnMessage;
+
+        /// <summary>
+        /// The Orphaned Group whose row has the name, the first of several, or null when there's none.
+        /// </summary>
+        public OrphanedGroup FindOrphan(string name)
+        {
+            return Orphans.FirstOrDefault(o => OrphanedGroupsPanel.GetName(o) == name);
+        }
+
+        /// <summary>
+        /// Like Restore from Draft on the group's row on the Scripts tab, which selects the Script. The group needs a
+        /// Draft, or the button is grayed out.
+        /// </summary>
+        public void RestoreOrphan(OrphanedGroup orphan)
+        {
+            ShowTab(libraries: false);
+            _window.Select(_window.RestoreOrphan(orphan));
+        }
+
+        /// <summary>
+        /// Leaves the Orphaned Groups as on a machine that never had their Scripts, from when the window is next drawn.
+        /// </summary>
+        public void DeleteOrphanDrafts()
+        {
+            foreach (var orphan in Orphans)
+            {
+                _window._drafts.Delete(orphan.Id);
+            }
+
+            _window._readLevelChanges = null;
+        }
+
+        /// <summary>
+        /// The Scripts side's width as it was last drawn.
+        /// </summary>
+        public float DrawnScriptsWidth => _window._drawnScriptsWidth;
+
+        /// <summary>
+        /// Like dragging the Scripts side's edge until it's this wide, which it is from the next frame, as near as its
+        /// minimum and the rest of the window let it.
+        /// </summary>
+        public void SetScriptsWidth(float width)
+        {
+            _window._state.Scripts.Size = width;
+        }
+
+        /// <summary>
         /// Like dragging the window's edge until it's this tall, which it is from the next frame.
         /// </summary>
         public void SetWindowHeight(float height)
@@ -274,8 +327,8 @@ internal sealed partial class ScriptWindow
         }
 
         /// <summary>
-        /// What a Scenario can change that the window keeps into the next one: its size and position, the shown tabs,
-        /// the Reference tab's filter and the warnings the tests turn on. A window that was never drawn has no rect, for
+        /// What a Scenario can change that the window keeps into the next one: its size and position, the Scripts side's
+        /// width, the shown tabs, the Reference tab's filter and the warnings the tests turn on. A window that was never drawn has no rect, for
         /// the one it first opens at. The styles the tests turn off aren't in it, as none are at the start of a run.
         /// </summary>
         public KeptState RememberKeptState()
@@ -286,7 +339,8 @@ internal sealed partial class ScriptWindow
                 _window._showReference,
                 _window._referencePanel.Filter,
                 _window._showLibraryReadFailed,
-                _window._showStartupWarning);
+                _window._showStartupWarning,
+                _window._state.Scripts.Size);
         }
 
         /// <summary>
@@ -308,6 +362,7 @@ internal sealed partial class ScriptWindow
                 _window._requestedRect.MoveTo(new Vector2(rect.X, rect.Top));
             }
 
+            SetScriptsWidth(state.ScriptsSize);
             ShowTab(state.ShowLibraries);
             ShowBlocksTab(state.ShowReference);
             _window._referencePanel.SetFilter(state.ReferenceFilter);

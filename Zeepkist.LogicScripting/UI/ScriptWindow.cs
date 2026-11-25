@@ -299,16 +299,19 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         _state.OrphanedGroupsCollapsed = collapsed;
         gui.PopId();
         if (orphan != null)
-        {
-            var restored = _scripts.Restore(orphan);
-            _orphanedGroupsPanel.ShowRestored(restored);
-            selected = restored;
-            _draftSaver.Request();
-        }
+            selected = RestoreOrphan(orphan);
 
         selected = _scriptListPanel.EndList(gui) ?? selected;
         if (selected != null)
             Select(selected);
+    }
+
+    private ScriptEntry RestoreOrphan(OrphanedGroup orphan)
+    {
+        var restored = _scripts.Restore(orphan);
+        _orphanedGroupsPanel.ShowRestored(restored);
+        _draftSaver.Request();
+        return restored;
     }
 
     private void DrawLibrariesTab(ImGui gui, ImRect rect)

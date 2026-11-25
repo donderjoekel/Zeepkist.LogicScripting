@@ -13,7 +13,8 @@ internal readonly struct KeptState
         bool showReference,
         string referenceFilter,
         bool showLibraryReadFailed,
-        bool showStartupWarning)
+        bool showStartupWarning,
+        float scriptsSize)
     {
         WindowRect = windowRect;
         ShowLibraries = showLibraries;
@@ -21,6 +22,7 @@ internal readonly struct KeptState
         ReferenceFilter = referenceFilter;
         ShowLibraryReadFailed = showLibraryReadFailed;
         ShowStartupWarning = showStartupWarning;
+        ScriptsSize = scriptsSize;
     }
 
     /// <summary>
@@ -43,8 +45,13 @@ internal readonly struct KeptState
     public bool ShowLibraryReadFailed { get; }
     public bool ShowStartupWarning { get; }
 
+    /// <summary>
+    /// The width the Scripts side was resized to, or zero when it never was.
+    /// </summary>
+    public float ScriptsSize { get; }
+
     public KeptState WithWindowRect(ImRect windowRect)
     {
-        return new KeptState(windowRect, ShowLibraries, ShowReference, ReferenceFilter, ShowLibraryReadFailed, ShowStartupWarning);
+        return new KeptState(windowRect, ShowLibraries, ShowReference, ReferenceFilter, ShowLibraryReadFailed, ShowStartupWarning, ScriptsSize);
     }
 }

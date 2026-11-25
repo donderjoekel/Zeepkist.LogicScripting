@@ -51,6 +51,9 @@ internal sealed partial class ScriptWindow
     /// </summary>
     private int _referenceDrawnFrame = -1;
 
+    // Kept for the in-game tests
+    private float _drawnScriptsWidth;
+
     /// <summary>
     /// The storage warning as the frame began, which its minimum height counts, and the Script or Library it's for. The
     /// center shows it while that's still the one selected: one selected while drawing, such as by clicking it in the
@@ -313,6 +316,7 @@ internal sealed partial class ScriptWindow
         var scriptsWidth = scriptsCollapsed
             ? collapsedWidth
             : GetPanelSize(_state.Scripts.Size, DefaultScriptsWidth, minScriptsWidth, maxScriptsWidth);
+        _drawnScriptsWidth = scriptsWidth;
         var maxBlocksWidth = area.W - MinCenterWidth - scriptsWidth;
         var blocksWidth = blocksCollapsed
             ? collapsedWidth

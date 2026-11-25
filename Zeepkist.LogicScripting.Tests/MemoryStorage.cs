@@ -90,7 +90,7 @@ internal sealed class MemoryStorage : IModStorage
 
     public void DeleteJsonFile(string name)
     {
-        throw new NotSupportedException();
+        _jsonFiles.Remove(name);
     }
 
     public bool BlobFileExists(string name)
