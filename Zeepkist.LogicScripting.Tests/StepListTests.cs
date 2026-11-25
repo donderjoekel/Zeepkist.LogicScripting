@@ -88,6 +88,11 @@ public class StepListTests
     [InlineData("expect-wire g out to l a", typeof(ExpectWireStep))]
     [InlineData("expect-wires l 2", typeof(ExpectWiresStep))]
     [InlineData("expect-step-fails expect-blocks 1 because 0 Logic Blocks", typeof(ExpectStepFailsStep))]
+    [InlineData("remember-blocks g l", typeof(RememberBlocksStep))]
+    [InlineData("expect-blocks-unmoved g l", typeof(ExpectBlocksUnmovedStep))]
+    [InlineData("move-block l 16 0 -8", typeof(MoveBlockStep))]
+    [InlineData("expect-signal l a 1", typeof(ExpectSignalStep))]
+    [InlineData("expect-display p 1", typeof(ExpectDisplayStep))]
     [InlineData("turn-off-style lamp", typeof(TurnOffStyleStep))]
     [InlineData("insert-selected", typeof(InsertSelectedStep))]
     [InlineData("import-selected", typeof(ImportSelectedStep))]
@@ -702,6 +707,69 @@ public class StepListTests
     }
 
     [Fact]
+    public void RememberBlocksAndExpectBlocksUnmoved_ReadTheNames_InOrder()
+    {
+        var remember = Assert.IsType<RememberBlocksStep>(Assert.Single(ScenarioParser.Parse("steps", "remember-blocks l  g", out _).Steps));
+        var expect = Assert.IsType<ExpectBlocksUnmovedStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-blocks-unmoved l g", out _).Steps));
+
+        Assert.Equal(["l", "g"], remember.Names);
+        Assert.Equal(["l", "g"], expect.Names);
+    }
+
+    [Theory]
+    [InlineData("remember-blocks", "remember-blocks takes placed blocks' names, each once")]
+    [InlineData("remember-blocks g g", "remember-blocks takes placed blocks' names, each once")]
+    [InlineData("expect-blocks-unmoved", "expect-blocks-unmoved takes placed blocks' names, each once")]
+    [InlineData("move-block l 1 2", "move-block takes a placed block's name and how far to move it")]
+    [InlineData("move-block l 1 2 x", "move-block takes a placed block's name and how far to move it")]
+    [InlineData("move-block a}b 1 2 3", "takes a name of letters")]
+    [InlineData("expect-signal l a", "expect-signal takes a placed block's name, its input and a whole number")]
+    [InlineData("expect-signal l a 1.5", "expect-signal takes a placed block's name, its input and a whole number")]
+    [InlineData("expect-display p", "expect-display takes a placed Power Display's name and what it shows")]
+    public void ThePositionAndSignalSteps_WithAWrongArgument_Fail(string line, string message)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains(message, error);
+    }
+
+    [Fact]
+    public void MoveBlock_AName_ThenAnOffset()
+    {
+        var step = Assert.IsType<MoveBlockStep>(Assert.Single(ScenarioParser.Parse("steps", "move-block l 16 0 -0.5", out _).Steps));
+
+        Assert.Equal(("l", 16f, 0f, -0.5f), (step.Name, step.X, step.Y, step.Z));
+    }
+
+    [Fact]
+    public void ExpectSignal_AName_ThenAnInput_ThenASignal()
+    {
+        var step = Assert.IsType<ExpectSignalStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-signal l op_in -9000000000", out _).Steps));
+
+        Assert.Equal(("l", "op_in", -9000000000L), (step.Name, step.Input, step.Signal));
+    }
+
+    [Fact]
+    public void ExpectDisplay_AName_ThenTheRestOfTheLine()
+    {
+        var step = Assert.IsType<ExpectDisplayStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-display p 1 2", out _).Steps));
+
+        Assert.Equal(("p", "1 2"), (step.Name, step.Text));
+    }
+
+    [Fact]
+    public void BlockPose_FindsWhatChanged()
+    {
+        var pose = new BlockPose((16, 0, -8), (0, 90, 0), (1, 1, 1));
+
+        Assert.Empty(pose.FindChanges(new BlockPose((16.0005f, 0, -8), (360, 90, -0.0005f), (1, 1, 1))));
+        Assert.Equal(["position"], pose.FindChanges(new BlockPose((16, 0.01f, -8), (0, 90, 0), (1, 1, 1))));
+        Assert.Equal(["rotation"], pose.FindChanges(new BlockPose((16, 0, -8), (0, 91, 0), (1, 1, 1))));
+        Assert.Equal(["scale"], pose.FindChanges(new BlockPose((16, 0, -8), (0, 90, 0), (1, 1, 1.5f))));
+        Assert.Equal(["position", "rotation", "scale"], pose.FindChanges(new BlockPose((0, 0, 0), (0, 0, 0), (2, 2, 2))));
+    }
+
+    [Fact]
     public void ExpectStepFails_AStep_ThenTheReasonAfterTheLastBecause()
     {
         var step = Assert.IsType<ExpectStepFailsStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-step-fails expect-text a because b because the text doesn't contain it", out _).Steps));
@@ -880,6 +948,7 @@ public class StepListTests
     [InlineData("placed-after-test-mode.zlstest")]
     [InlineData("readme-screenshots.zlstest")]
     [InlineData("wire-select-blocks.zlstest")]
+    [InlineData("signals-and-positions.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {
         var text = RepoFiles.Read($"Zeepkist.LogicScripting.InGameTests/Scenarios/{file}");

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Logging;
 using Imui.Core;
@@ -55,6 +56,11 @@ internal sealed class StepContext
     /// What remember-window-rect remembered, for the rest of the scenario, or null.
     /// </summary>
     public ImRect? RememberedWindowRect { get; set; }
+
+    /// <summary>
+    /// What remember-blocks remembered, by the block's name, for the rest of the scenario.
+    /// </summary>
+    public Dictionary<string, BlockPose> RememberedPoses { get; } = [];
 
     /// <summary>
     /// The window's rect the first time a Scenario of the run drew it, which the run puts back before each Scenario after
@@ -137,13 +143,34 @@ internal sealed class StepContext
     /// </summary>
     public NamedBlock RequireNamedBlock(LEV_LevelEditorCentral central, string name)
     {
-        if (!PlacedBlocks.TryGetUid(name, out var uid))
+        var uid = RequireUid(name);
+        if (uid == null)
+            return null;
+
+        var block = NamedBlock.Find(central, name, uid, out var error);
+        if (block == null)
+            Fail(error);
+
+        return block;
+    }
+
+    /// <summary>
+    /// The block the Scenario gave the name, as it runs in test mode, or null after failing the step when the game isn't
+    /// in test mode or the running level has no such block.
+    /// </summary>
+    public RunningBlock RequireRunningBlock(string name)
+    {
+        if (!TestModeControls.IsActive)
         {
-            Fail($"no block was placed or named as \"{name}\": add place-block ... as {name} or name-group-block first", "a placed block's name", PlacedBlocks.Listed);
+            Fail("not in test mode: add test-mode first");
             return null;
         }
 
-        var block = NamedBlock.Find(central, name, uid, out var error);
+        var uid = RequireUid(name);
+        if (uid == null)
+            return null;
+
+        var block = RunningBlock.Find(name, uid, out var error);
         if (block == null)
             Fail(error);
 
@@ -350,5 +377,17 @@ internal sealed class StepContext
             Fail("no Script or Library selected: add new-script, select-script, new-library or select-library first");
 
         return Window.HasText;
+    }
+
+    /// <summary>
+    /// The UID of the block the Scenario gave the name, or null after failing the step when it gave none.
+    /// </summary>
+    private string RequireUid(string name)
+    {
+        if (PlacedBlocks.TryGetUid(name, out var uid))
+            return uid;
+
+        Fail($"no block was placed or named as \"{name}\": add place-block ... as {name} or name-group-block first", "a placed block's name", PlacedBlocks.Listed);
+        return null;
     }
 }

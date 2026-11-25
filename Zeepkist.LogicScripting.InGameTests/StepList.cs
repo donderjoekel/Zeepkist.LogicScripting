@@ -113,9 +113,14 @@ internal static class StepList
         ["set-block-setting"] = SetBlockSetting,
         ["name-group-block"] = NameGroupBlock,
         ["wire-blocks"] = (step, argument) => new WireBlocksStep(ReadWire(step, argument)),
-        ["select-blocks"] = SelectBlocks,
+        ["select-blocks"] = (step, argument) => new SelectBlocksStep(ReadBlockNames(step, argument)),
         ["expect-wire"] = (step, argument) => new ExpectWireStep(ReadWire(step, argument)),
         ["expect-wires"] = ExpectWires,
+        ["remember-blocks"] = (step, argument) => new RememberBlocksStep(ReadBlockNames(step, argument)),
+        ["expect-blocks-unmoved"] = (step, argument) => new ExpectBlocksUnmovedStep(ReadBlockNames(step, argument)),
+        ["move-block"] = MoveBlock,
+        ["expect-signal"] = ExpectSignal,
+        ["expect-display"] = ExpectDisplay,
         ["turn-off-style"] = TurnOffStyle,
         ["insert-selected"] = (step, argument) => None(step, argument, new InsertSelectedStep()),
         ["import-selected"] = (step, argument) => None(step, argument, new ImportSelectedStep()),
@@ -271,14 +276,56 @@ internal static class StepList
         return new WireArgument(StepArgument.FileName(step, words[0]), words[1], StepArgument.FileName(step, words[3]), words[4]);
     }
 
-    private static ScenarioStep SelectBlocks(string step, string argument)
+    private static IReadOnlyList<string> ReadBlockNames(string step, string argument)
     {
         var what = "placed blocks' names, each once, such as g l";
         var names = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
         if (names.Distinct().Count() != names.Length)
             throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
 
-        return new SelectBlocksStep([.. names.Select(name => StepArgument.FileName(step, name))]);
+        return [.. names.Select(name => StepArgument.FileName(step, name))];
+    }
+
+    private static ScenarioStep MoveBlock(string step, string argument)
+    {
+        var what = "a placed block's name and how far to move it along x, y and z, such as l 16 0 -8";
+        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length != 4 || !TryReadOffset(words[1], out var x) || !TryReadOffset(words[2], out var y) || !TryReadOffset(words[3], out var z))
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        return new MoveBlockStep(StepArgument.FileName(step, words[0]), x, y, z);
+    }
+
+    private static bool TryReadOffset(string text, out float offset)
+    {
+        return float.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out offset);
+    }
+
+    /// <summary>
+    /// <c>&lt;name&gt; &lt;input&gt; &lt;signal&gt;</c>. Whether the block has the input is only known once it's placed,
+    /// so the step checks that when it runs.
+    /// </summary>
+    private static ScenarioStep ExpectSignal(string step, string argument)
+    {
+        var what = "a placed block's name, its input and a whole number, such as l a 1";
+        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length != 3 || !long.TryParse(words[2], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var signal))
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        return new ExpectSignalStep(StepArgument.FileName(step, words[0]), words[1], signal);
+    }
+
+    /// <summary>
+    /// <c>&lt;name&gt; &lt;text&gt;</c>, where the text is the rest of the line.
+    /// </summary>
+    private static ScenarioStep ExpectDisplay(string step, string argument)
+    {
+        var what = "a placed Power Display's name and what it shows, such as p 1";
+        var space = StepArgument.Text(step, argument, what).IndexOf(' ');
+        if (space < 0)
+            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+
+        return new ExpectDisplayStep(StepArgument.FileName(step, argument.Substring(0, space)), argument.Substring(space + 1).Trim());
     }
 
     private static ScenarioStep ExpectWires(string step, string argument)
