@@ -1,0 +1,35 @@
+# A Math block with an override of its b input, which no Script can give, uses it instead of the Wire
+place-start
+place-block generator as g
+set-block-setting g power 9
+place-block generator as n
+set-block-setting n power 2
+place-block math as m
+set-block-setting m op multiply
+place-block power_display as p
+wire-blocks g out to m a
+wire-blocks n out to m b
+wire-blocks m out to p x
+move-block p 16 0 -8
+test-mode
+wait 2
+expect-display p 18
+back-to-editor
+
+set-stored-setting m text oi2 5
+test-mode
+wait 2
+expect-signal m b 2
+expect-display p 45
+back-to-editor
+
+# One undo takes it back
+undo
+wait 1
+test-mode
+wait 2
+expect-display p 18
+back-to-editor
+
+expect-step-fails set-stored-setting nope text oi2 5 because no block was placed or named as "nope"
+expect-no-exceptions
