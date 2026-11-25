@@ -117,4 +117,52 @@ select-blocks prop
 import-selected
 expect-text property_multiplier(
 expect-no-errors
+
+# place-block places a type's first style, so a Compile places the others
+new-script Skinny 1
+set-text
+passthrough(style: skinny_1h)
+end
+compile
+name-group-block Skinny 1 passthrough as skinny1
+open-delete Skinny 1
+press-prompt keep-blocks
+select-blocks skinny1
+import-selected
+expect-text passthrough_1 = passthrough(style: skinny_1h)
+new-script Skinny 2
+set-text
+passthrough(style: skinny_2h)
+end
+compile
+name-group-block Skinny 2 passthrough as skinny2
+open-delete Skinny 2
+press-prompt keep-blocks
+select-blocks skinny2
+import-selected
+expect-text passthrough_1 = passthrough(style: skinny_2h)
+new-script Skinny 3
+set-text
+passthrough(style: skinny_3h)
+end
+compile
+name-group-block Skinny 3 passthrough as skinny3
+open-delete Skinny 3
+press-prompt keep-blocks
+select-blocks skinny3
+import-selected
+expect-text passthrough_1 = passthrough(style: skinny_3h)
+new-script Compact
+set-text
+power_display(1, style: compact)
+end
+compile
+name-group-block Compact generator as compactgen
+name-group-block Compact power_display as compact
+open-delete Compact
+press-prompt keep-blocks
+select-blocks compactgen compact
+import-selected
+expect-text power_display_1 = power_display(generator_1, style: compact)
+expect-no-errors
 expect-no-exceptions

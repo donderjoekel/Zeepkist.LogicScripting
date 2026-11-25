@@ -121,6 +121,17 @@ expect-no-errors
 compile
 expect-result Replaced 2 → 2 blocks
 
+# The Compile's blocks are hidden too
+name-group-block Imported 2 generator as h3
+name-group-block Imported 2 power_display as h4
+open-delete Imported 2
+press-prompt keep-blocks
+select-blocks h3 h4
+import-selected
+expect-text default hide: true
+expect-text power_display_1 = power_display(generator_1)
+expect-no-errors
+
 # A style the startup check turned off is named
 place-block pulser as off
 turn-off-style pulser
