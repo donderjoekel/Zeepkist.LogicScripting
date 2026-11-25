@@ -90,7 +90,7 @@ internal static class PlacedBlocks
     /// <summary>
     /// Each holds the block and Connector at the Wire's other end.
     /// </summary>
-    private static List<ConnectionStruct> GetWires(BlockProperties block, int connector)
+    public static List<ConnectionStruct> GetWires(BlockProperties block, int connector)
     {
         return block.allConnectorHubsOnThisBlock.TryGetValue(connector, out var hub) && hub != null
             ? hub.GetThisHubsConnectionStructs() ?? []

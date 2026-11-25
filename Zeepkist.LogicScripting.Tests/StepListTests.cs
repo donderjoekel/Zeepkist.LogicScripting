@@ -83,6 +83,11 @@ public class StepListTests
     [InlineData("place-block lamp as lamp", typeof(PlaceBlockStep))]
     [InlineData("set-block-setting t mode global_velocity", typeof(SetBlockSettingStep))]
     [InlineData("name-group-block Lights logic as l", typeof(NameGroupBlockStep))]
+    [InlineData("wire-blocks g out to l a", typeof(WireBlocksStep))]
+    [InlineData("select-blocks g l", typeof(SelectBlocksStep))]
+    [InlineData("expect-wire g out to l a", typeof(ExpectWireStep))]
+    [InlineData("expect-wires l 2", typeof(ExpectWiresStep))]
+    [InlineData("expect-step-fails expect-blocks 1 because 0 Logic Blocks", typeof(ExpectStepFailsStep))]
     [InlineData("turn-off-style lamp", typeof(TurnOffStyleStep))]
     [InlineData("insert-selected", typeof(InsertSelectedStep))]
     [InlineData("undo", typeof(UndoStep))]
@@ -610,6 +615,143 @@ public class StepListTests
     }
 
     [Theory]
+    [InlineData("wire-blocks speed-gauge  heading to l op_in", "speed-gauge heading to l op_in")]
+    [InlineData("wire-blocks to out to to a", "to out to to a")]
+    public void WireBlocks_AnOutput_ThenAnInput(string line, string wire)
+    {
+        var step = Assert.IsType<WireBlocksStep>(Assert.Single(ScenarioParser.Parse("steps", line, out _).Steps));
+
+        Assert.Equal(wire, step.Wire.ToString());
+    }
+
+    [Fact]
+    public void ExpectWire_AnOutput_ThenAnInput()
+    {
+        var step = Assert.IsType<ExpectWireStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-wire g out to l a", out _).Steps));
+
+        Assert.Equal(("g", "out", "l", "a"), (step.Wire.From, step.Wire.Output, step.Wire.To, step.Wire.Input));
+    }
+
+    [Theory]
+    [InlineData("wire-blocks")]
+    [InlineData("wire-blocks g to l a")]
+    [InlineData("wire-blocks g out l a")]
+    [InlineData("wire-blocks g out into l a")]
+    [InlineData("wire-blocks g out to l a b")]
+    [InlineData("expect-wire")]
+    [InlineData("expect-wire g out to l")]
+    public void TheWireSteps_TakeAnOutput_To_AndAnInput(string line)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains("takes a placed block's name and output, 'to', and a placed block's name and input", error);
+    }
+
+    [Theory]
+    [InlineData("wire-blocks a}b out to l a")]
+    [InlineData("wire-blocks g out to a}b a")]
+    [InlineData("expect-wire a}b out to l a")]
+    [InlineData("select-blocks g a}b")]
+    [InlineData("expect-wires a}b 1")]
+    public void TheNamedBlockSteps_TakeNamesOfLettersDigitsDashesAndUnderscores(string line)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains("takes a name of letters", error);
+    }
+
+    [Theory]
+    [InlineData("select-blocks g", "g")]
+    [InlineData("select-blocks l  g lamp-1", "l g lamp-1")]
+    public void SelectBlocks_ReadsTheNames_InOrder(string line, string names)
+    {
+        var step = Assert.IsType<SelectBlocksStep>(Assert.Single(ScenarioParser.Parse("steps", line, out _).Steps));
+
+        Assert.Equal(names, string.Join(" ", step.Names));
+    }
+
+    [Theory]
+    [InlineData("select-blocks")]
+    [InlineData("select-blocks g l g")]
+    public void SelectBlocks_TakesNames_EachOnce(string line)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains("select-blocks takes placed blocks' names, each once", error);
+    }
+
+    [Fact]
+    public void ExpectWires_AName_ThenACount()
+    {
+        var step = Assert.IsType<ExpectWiresStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-wires l 0", out _).Steps));
+
+        Assert.Equal(("l", 0), (step.Name, step.Count));
+    }
+
+    [Theory]
+    [InlineData("expect-wires", "takes a placed block's name and how many Wires it has")]
+    [InlineData("expect-wires l", "takes a placed block's name and how many Wires it has")]
+    [InlineData("expect-wires l 1 2", "takes a placed block's name and how many Wires it has")]
+    [InlineData("expect-wires l -1", "takes a whole number of 0 or more")]
+    public void ExpectWires_WithAWrongArgument_Fails(string line, string message)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains(message, error);
+    }
+
+    [Fact]
+    public void ExpectStepFails_AStep_ThenTheReasonAfterTheLastBecause()
+    {
+        var step = Assert.IsType<ExpectStepFailsStep>(Assert.Single(ScenarioParser.Parse("steps", "expect-step-fails expect-text a because b because the text doesn't contain it", out _).Steps));
+
+        Assert.Equal("a because b", Assert.IsType<ExpectTextStep>(step.Step).Text);
+        Assert.Equal("the text doesn't contain it", step.Reason);
+    }
+
+    [Theory]
+    [InlineData("expect-step-fails", "expect-step-fails takes a step of one line")]
+    [InlineData("expect-step-fails expect-blocks 1", "expect-step-fails takes a step of one line")]
+    [InlineData("expect-step-fails expect-blocks 1 because", "expect-step-fails takes a step of one line")]
+    [InlineData("expect-step-fails set-text because no Script", "expect-step-fails takes a step of one line")]
+    [InlineData("expect-step-fails expect-step-fails undo because a because b", "expect-step-fails takes a step of one line")]
+    [InlineData("expect-step-fails nope because it isn't one", "unknown step 'nope'")]
+    [InlineData("expect-step-fails expect-blocks many because 0", "expect-blocks takes a whole number of 0 or more, not 'many'")]
+    public void ExpectStepFails_TakesAStepOfOneLine_AndAReason(string line, string message)
+    {
+        ScenarioParser.Parse("steps", line, out var error);
+
+        Assert.Contains(message, error);
+    }
+
+    [Fact]
+    public void FindConnector_FindsItByName()
+    {
+        var input = NamedBlock.FindConnector("l", "input", BlockManifest.Logic.Inputs, "op_in", out var error);
+
+        Assert.Null(error);
+        Assert.Equal(2, input.Index);
+    }
+
+    [Fact]
+    public void FindConnector_AnOutputOfAMode_IsThatModesOutput()
+    {
+        var output = NamedBlock.FindConnector("t", "output", BlockManifest.SimpleTelemetry.GetOutputs("global_velocity"), "heading", out _);
+
+        Assert.Equal(3, output.Index);
+    }
+
+    [Fact]
+    public void FindConnector_AnUnknownName_SaysWhichThereAre()
+    {
+        Assert.Null(NamedBlock.FindConnector("l", "input", BlockManifest.Logic.Inputs, "c", out var unknown));
+        Assert.Null(NamedBlock.FindConnector("lamp", "output", BlockManifest.Lamp.Outputs, "out", out var none));
+
+        Assert.Equal("\"l\" has no input called 'c'. Use a, b, op_in", unknown);
+        Assert.Equal("\"lamp\" has no output called 'out'. It has no outputs", none);
+    }
+
+    [Theory]
     [InlineData("turn-off-style lamp", "lamp", null)]
     [InlineData("turn-off-style logic  wide", "logic", "wide")]
     public void TurnOffStyle_AFunction_ThenOptionallyAStyle(string line, string function, string style)
@@ -736,6 +878,7 @@ public class StepListTests
     [InlineData("window-size.zlstest")]
     [InlineData("placed-after-test-mode.zlstest")]
     [InlineData("readme-screenshots.zlstest")]
+    [InlineData("wire-select-blocks.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {
         var text = RepoFiles.Read($"Zeepkist.LogicScripting.InGameTests/Scenarios/{file}");

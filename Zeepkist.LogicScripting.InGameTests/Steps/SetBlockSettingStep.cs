@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Globalization;
 using System.Linq;
-using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
@@ -50,25 +49,12 @@ internal sealed class SetBlockSettingStep : ScenarioStep
         if (central == null)
             yield break;
 
-        if (!context.PlacedBlocks.TryGetUid(Name, out var uid))
-        {
-            context.Fail($"no block was placed or named as \"{Name}\": add place-block ... as {Name} or name-group-block first", "a placed block's name", context.PlacedBlocks.Listed);
+        var named = context.RequireNamedBlock(central, Name);
+        if (named == null)
             yield break;
-        }
 
-        var block = LevelBlocks.Find(central, uid);
-        if (block == null)
-        {
-            context.Fail($"the level has no block with \"{Name}\"'s UID \"{uid}\" any more");
-            yield break;
-        }
-
-        if (!BlockManifest.TryGetBlock(block.blockID, out var type, out _))
-        {
-            context.Fail($"\"{Name}\", block {block.blockID}, isn't a Logic Block type the mod knows");
-            yield break;
-        }
-
+        var block = named.Block;
+        var type = named.Type;
         var setting = type.FindSetting(Setting);
         if (setting == null)
         {

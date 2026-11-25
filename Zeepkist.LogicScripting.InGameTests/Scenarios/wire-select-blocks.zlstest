@@ -1,0 +1,110 @@
+# Blocks placed by hand are wired, selected and checked, each Wire is one undo step, and a Compile keeps them
+place-block generator as g
+place-block logic as l
+place-block lamp as lamp
+place-block power_display as p
+
+wire-blocks g out to l a
+expect-wire g out to l a
+wire-blocks l out to lamp intensity
+expect-wire l out to lamp intensity
+expect-wires g 1
+expect-wires l 2
+expect-wires lamp 1
+expect-wires p 0
+
+# One undo takes one Wire off both blocks, and redo puts it back
+undo
+expect-wires l 1
+expect-wires lamp 0
+expect-wire g out to l a
+redo
+expect-wire l out to lamp intensity
+expect-wires l 2
+
+# An output feeds several inputs
+wire-blocks l out to p x
+expect-wires l 3
+
+# What can't be wired
+expect-step-fails wire-blocks nope out to l b because no block was placed or named as "nope"
+expect-step-fails wire-blocks g out to nope a because no block was placed or named as "nope"
+expect-step-fails wire-blocks g nope to l b because "g" has no output called 'nope'. Use out
+expect-step-fails wire-blocks lamp out to l b because "lamp" has no output called 'out'
+expect-step-fails wire-blocks g out to l nope because "l" has no input called 'nope'. Use a, b, op_in
+expect-step-fails wire-blocks g out to l a because "l"'s input a already has a Wire
+expect-step-fails wire-blocks p out to l a because "l"'s input a already has a Wire
+expect-step-fails wire-blocks p out to l b because closes a Dependency Loop
+expect-step-fails wire-blocks l out to l b because closes a Dependency Loop
+
+# What a check finds wrong
+expect-step-fails expect-wire g out to l b because no Wire g out to l b
+expect-step-fails expect-wire g out to nope a because no block was placed or named as "nope"
+expect-step-fails expect-wires l 2 because g out to l a
+expect-step-fails expect-wires nope 2 because no block was placed or named as "nope"
+
+# None of those changed a Wire
+expect-wire g out to l a
+expect-wires g 1
+expect-wires l 3
+expect-wires p 1
+
+# A Delay makes a cycle that's no Dependency Loop
+place-block delay as d
+wire-blocks p out to d x
+wire-blocks d out to l b
+expect-wire d out to l b
+expect-wires l 4
+
+# An output's name follows the mode the block has in the level
+place-block simple_telemetry as t
+set-block-setting t mode global_velocity
+expect-step-fails wire-blocks t speed to l op_in because "t" has no output called 'speed'
+wire-blocks t heading to l op_in
+expect-wire t heading to l op_in
+
+# Selecting replaces the selection, and a wrong name leaves it as it was
+select-blocks l p lamp
+select-blocks lamp g
+expect-step-fails select-blocks l nope because no block was placed or named as "nope"
+open-window
+new-script Inserted
+insert-selected
+expect-text lamp_1 = placed("
+expect-text generator_1 = placed("
+expect-step-fails expect-text logic_1 because the text doesn't contain it
+expect-step-fails expect-text power_display_1 because the text doesn't contain it
+screenshot selected
+
+# A Compile that wires into a hand-wired block keeps the Wires it had
+new-script Adds
+set-text
+lamp_1 = placed("{uid:lamp}")
+lamp_1(red: 1)
+end
+compile
+expect-result Placed 1 block
+expect-wire l out to lamp intensity
+expect-wires lamp 2
+
+# keep-blocks leaves plain blocks wired, which wire by hand like the others
+new-script Lights
+set-text
+power_display(1 & 1)
+end
+compile
+expect-result Placed 3 blocks
+name-group-block Lights logic as gate
+name-group-block Lights power_display as display
+expect-wire gate out to display x
+expect-wires gate 3
+open-delete Lights
+press-prompt keep-blocks
+expect-list-result kept its 3 blocks
+expect-wire gate out to display x
+expect-wires gate 3
+wire-blocks g out to gate op_in
+expect-wires gate 4
+select-blocks gate display g
+screenshot wired
+expect-no-exceptions
