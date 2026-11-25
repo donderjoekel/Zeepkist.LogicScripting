@@ -15,6 +15,10 @@ set -euo pipefail
 
 app_id=1440670
 steam="${STEAM:-steam}"
+# It's started from another folder
+if [[ "$steam" == */* ]]; then
+    steam="$(realpath -- "$steam")"
+fi
 mod_guid=Zeepkist.LogicScripting
 test_guid=Zeepkist.LogicScripting.InGameTests
 build=1
@@ -353,6 +357,12 @@ collect() {
             if [[ -n "$launch_failure" ]]; then
                 echo "Steam says its launch $launch_failure."
             fi
+            if ((not_started)) && [[ -s "$run_dir/steam.log" ]]; then
+                echo
+                echo "The Steam command printed, last (all of it is in steam.log):"
+                echo
+                tail -n 5 "$run_dir/steam.log" | sed 's/.*/- `&`/'
+            fi
         fi
     } >"$run_dir/results.md"
 }
@@ -510,8 +520,9 @@ jq -n --arg runId "$run_id" '{runId: $runId, scenarios: $ARGS.positional}' --arg
 rm -f "$game_log"
 log "Starting the game"
 launched=1
+# From the home folder, as a Steam that runs in a container has its own /tmp and can't start from a folder in this one
 # Closing the lock for it too, as a Steam process can outlive this script
-"$steam" -applaunch "$app_id" -zls-ingame-test "$run_id" >/dev/null 2>&1 9>&- &
+(cd "$HOME" && exec "$steam" -applaunch "$app_id" -zls-ingame-test "$run_id") >"$run_dir/steam.log" 2>&1 9>&- &
 disown
 
 results="$test_deploy/out/results.json"
@@ -553,7 +564,7 @@ stop_game
 
 restore
 echo
-grep -E '^Display: |^- !\[.*\*\*blank\*\*|^- (PASS|FAIL)|^  - |^## |^\*\*|^No results|^The game didn.t start|^Steam says|^Exceptions logged|^- ([0-9]+× )?`|^None\.$|^Not read' "$run_dir/results.md" | sed 's/\*\*//g; s/`//g'
+grep -E '^Display: |^- !\[.*\*\*blank\*\*|^- (PASS|FAIL)|^  - |^## |^\*\*|^No results|^The game didn.t start|^Steam says|^The Steam command|^Exceptions logged|^- ([0-9]+× )?`|^None\.$|^Not read' "$run_dir/results.md" | sed 's/\*\*//g; s/`//g'
 log "Results in $run_dir"
 if [[ "$passed" == true ]]; then
     log "Passed: $(jq -r '[.Steps[].Scenario | select(. != "")] | unique | join(", ")' "$run_dir/results.json")"
