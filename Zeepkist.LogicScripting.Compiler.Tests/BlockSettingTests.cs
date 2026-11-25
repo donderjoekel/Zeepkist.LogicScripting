@@ -79,5 +79,36 @@ public class BlockSettingTests
         var targets = BlockManifest.All.SelectMany(t => t.Settings).First(s => s.Type == SettingType.Targets);
 
         Assert.Throws<InvalidOperationException>(() => targets.ToSetting("a", out _));
+        Assert.Throws<InvalidOperationException>(() => targets.ToText(Setting.Text(targets.Key, "a")));
+    }
+
+    [Fact]
+    public void ToText_IsTheReverseOfToSetting()
+    {
+        (BlockSetting Setting, string Value)[] cases =
+        [
+            (BlockManifest.SimpleTelemetryMode, "global_velocity"),
+            (BlockManifest.DigitizerInvert, "true"),
+            (BlockManifest.DigitizerInvert, "false"),
+            (BlockManifest.PlayerOrEveryone, "all"),
+            (BlockManifest.OnePlayer, "4"),
+            (BlockManifest.RandomMinimum, "-12"),
+        ];
+
+        Assert.All(cases, c => Assert.Equal(c.Value, c.Setting.ToText(c.Setting.ToSetting(c.Value, out _))));
+    }
+
+    [Fact]
+    public void ToText_AStoredValueNoScriptGives_IsNull()
+    {
+        var ticks = BlockManifest.Delay.FindSetting("ticks");
+
+        Assert.Null(BlockManifest.SimpleTelemetryMode.ToText(Setting.Int("xbs", 3)));
+        Assert.Null(BlockManifest.SimpleTelemetryMode.ToText(Setting.Int("xbs", -1)));
+        Assert.Null(BlockManifest.DigitizerInvert.ToText(Setting.Int("xt1", 2)));
+        Assert.Null(BlockManifest.DigitizerInvert.ToText(Setting.Text("xt1", "1")));
+        Assert.Null(BlockManifest.RandomMinimum.ToText(Setting.Text("xv1", "1.5")));
+        Assert.Null(BlockManifest.RandomMinimum.ToText(Setting.Int("xv1", 1)));
+        Assert.Null(ticks.ToText(Setting.Text("ldl", "0")));
     }
 }

@@ -108,7 +108,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         _draftSaver = new DraftSaver(drafts, _scripts);
         _libraryStore = libraries;
         _librarySaver = new LibrarySaver(libraries);
-        _scriptListPanel = new ScriptListPanel(logger, _scripts, _draftSaver, OnScriptDeleted);
+        _scriptListPanel = new ScriptListPanel(logger, startupCheck, _scripts, _draftSaver, OnScriptDeleted);
         _libraryListPanel = new LibraryListPanel(libraries.Libraries, OnLibraryDeleted);
         _referencePanel = new ReferencePanel(libraries.Libraries);
         _orphanedGroupsPanel = new OrphanedGroupsPanel(logger);

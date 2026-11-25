@@ -41,6 +41,16 @@ public sealed class ScriptList
         return entry;
     }
 
+    /// <summary>
+    /// Adds a Script the level already holds, with its name and text. Take the name from <see cref="GetFreeName"/>.
+    /// </summary>
+    public ScriptEntry Add(StoredScript stored)
+    {
+        var entry = new ScriptEntry(stored.Id, stored.Name, stored.Text) { Stored = stored, HasGroup = true };
+        _entries.Add(entry);
+        return entry;
+    }
+
     public ScriptEntry Find(ScriptId id)
     {
         return _entries.FirstOrDefault(e => e.Id == id);
@@ -112,9 +122,10 @@ public sealed class ScriptList
     }
 
     /// <summary>
-    /// For a level from another mod version or edited by hand: without its name, or with a name already taken.
+    /// <paramref name="name"/> made into one a new Script can have, with a number after it when it's taken: for a Script
+    /// the player hasn't named, or a level from another mod version or edited by hand.
     /// </summary>
-    private string GetFreeName(string name)
+    public string GetFreeName(string name)
     {
         var baseName = new string(name.Where(c => !char.IsControl(c)).ToArray()).Trim();
         if (baseName.Length == 0)

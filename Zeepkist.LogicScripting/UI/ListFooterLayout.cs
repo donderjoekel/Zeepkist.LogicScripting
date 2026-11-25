@@ -7,12 +7,12 @@ namespace TNRD.Zeepkist.LogicScripting.UI;
 /// </summary>
 internal readonly struct ListFooterLayout
 {
-    public ListFooterLayout(ImRect tab, ImRect list, ImRect prompts, ImRect newRow, float promptsHeight, float minListHeight, float rowHeight)
+    public ListFooterLayout(ImRect tab, ImRect list, ImRect prompts, ImRect buttons, float promptsHeight, float minListHeight, float rowHeight)
     {
         Tab = tab;
         List = list;
         Prompts = prompts;
-        NewRow = newRow;
+        Buttons = buttons;
         PromptsHeight = promptsHeight;
         MinListHeight = minListHeight;
         RowHeight = rowHeight;
@@ -30,7 +30,10 @@ internal readonly struct ListFooterLayout
     /// </summary>
     public ImRect Prompts { get; }
 
-    public ImRect NewRow { get; }
+    /// <summary>
+    /// The rows under the prompts: New, and on the Scripts tab Import selected above it.
+    /// </summary>
+    public ImRect Buttons { get; }
 
     /// <summary>
     /// The height the open prompt and the result line take, scrolled out of view or not. Zero with neither.

@@ -4,7 +4,7 @@ using TNRD.Zeepkist.LogicScripting.UI;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the shown tab's footer, the open prompt, the result line and New, lies inside the tab, inside the
+/// Passes when the shown tab's footer, the open prompt, the result line and the buttons, lies inside the tab, inside the
 /// window, with the list above it at least two rows tall. The prompts may scroll when there's no room for all of them,
 /// but get at least a row.
 /// </summary>
@@ -27,8 +27,8 @@ internal sealed class ExpectFooterInViewStep : ScenarioStep
         var hasPrompts = list.OpenPrompt != ListPrompt.None || list.Message.Length > 0;
         if (!RectCheck.Contains(window, layout.Tab))
             context.Fail("the tab reaches outside the window", RectCheck.Describe(window), RectCheck.Describe(layout.Tab));
-        else if (!RectCheck.Contains(layout.Tab, layout.NewRow))
-            context.Fail("New reaches outside the tab", RectCheck.Describe(layout.Tab), RectCheck.Describe(layout.NewRow));
+        else if (!RectCheck.Contains(layout.Tab, layout.Buttons))
+            context.Fail("the buttons reach outside the tab", RectCheck.Describe(layout.Tab), RectCheck.Describe(layout.Buttons));
         else if (layout.List.H < layout.MinListHeight - RectCheck.Tolerance)
             context.Fail("the list is less than two rows tall", $"{RectCheck.Pixels(layout.MinListHeight)} px or more", $"{RectCheck.Pixels(layout.List.H)} px");
         else if (hasPrompts && layout.PromptsHeight <= 0)

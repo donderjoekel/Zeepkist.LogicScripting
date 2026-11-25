@@ -31,6 +31,20 @@ public class ScriptListTests
     }
 
     [Fact]
+    public void AnAddedStoredScript_IsCompiled_AndStaysOneWhenTheLevelIsRead()
+    {
+        var list = new ScriptList();
+        var stored = new StoredScript(_id, list.GetFreeName("Imported"), "x = 1", 1);
+
+        var entry = list.Add(stored);
+
+        Assert.Equal(ScriptMark.None, entry.Mark);
+        list.Update([stored], Groups(_id), NoDraft);
+        Assert.Same(entry, Assert.Single(list.Entries));
+        Assert.Equal("Imported 2", list.GetFreeName("Imported"));
+    }
+
+    [Fact]
     public void AStoredScript_ComesInWithTheLevelsNameAndText()
     {
         var list = new ScriptList();
