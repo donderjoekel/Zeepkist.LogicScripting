@@ -124,6 +124,11 @@ internal static class StepList
         ["turn-off-style"] = TurnOffStyle,
         ["insert-selected"] = (step, argument) => None(step, argument, new InsertSelectedStep()),
         ["import-selected"] = (step, argument) => None(step, argument, new ImportSelectedStep()),
+        ["grab-blocks"] = (step, argument) => None(step, argument, new GrabBlocksStep()),
+        ["drop-blocks"] = (step, argument) => None(step, argument, new DropBlocksStep()),
+        ["paste-blocks"] = PasteBlocks,
+        ["save-level"] = (step, argument) => new SaveLevelStep(StepArgument.FileName(step, argument)),
+        ["load-level"] = LoadLevel,
         ["undo"] = (step, argument) => None(step, argument, new UndoStep()),
         ["redo"] = (step, argument) => None(step, argument, new RedoStep()),
         ["place-start"] = (step, argument) => None(step, argument, new PlaceStartStep()),
@@ -349,15 +354,49 @@ internal static class StepList
         if (at < 0)
             throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
 
-        var inner = argument.Substring(0, at).Trim();
+        var inner = CreateInner(step, argument, argument.Substring(0, at).Trim(), what);
+        return new ExpectStepFailsStep(inner, argument.Substring(at + separator.Length).Trim());
+    }
+
+    /// <summary>
+    /// A step written inside another's line, so it takes one line, and isn't that step itself.
+    /// </summary>
+    private static ScenarioStep CreateInner(string step, string argument, string inner, string what)
+    {
         var space = inner.IndexOf(' ');
         var name = space < 0 ? inner : inner.Substring(0, space);
         if (name == SetText || name == step)
             throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
 
-        var created = Create(name, space < 0 ? string.Empty : inner.Substring(space + 1).Trim())
+        return Create(name, space < 0 ? string.Empty : inner.Substring(space + 1).Trim())
             ?? throw new ScenarioFormatException($"unknown step '{name}'");
-        return new ExpectStepFailsStep(created, argument.Substring(at + separator.Length).Trim());
+    }
+
+    /// <summary>
+    /// <c>as &lt;name&gt;...</c>, a name for each copy.
+    /// </summary>
+    private static ScenarioStep PasteBlocks(string step, string argument)
+    {
+        const string prefix = "as ";
+        if (!argument.StartsWith(prefix, StringComparison.Ordinal))
+            throw new ScenarioFormatException($"{step} takes 'as' and a name for each selected block's copy, such as 'as g2 l2'");
+
+        return new PasteBlocksStep(ReadBlockNames(step, argument.Substring(prefix.Length).Trim()));
+    }
+
+    /// <summary>
+    /// <c>&lt;name&gt;</c>, or <c>&lt;name&gt; while &lt;step&gt;</c> to run a step of one line as the level loads.
+    /// </summary>
+    private static ScenarioStep LoadLevel(string step, string argument)
+    {
+        const string separator = " while ";
+        var what = "a saved level's name, and optionally 'while' and a step of one line to run as it loads";
+        var at = StepArgument.Text(step, argument, what).IndexOf(separator, StringComparison.Ordinal);
+        if (at < 0)
+            return new LoadLevelStep(StepArgument.FileName(step, argument));
+
+        var meanwhile = CreateInner(step, argument, argument.Substring(at + separator.Length).Trim(), what);
+        return new LoadLevelStep(StepArgument.FileName(step, argument.Substring(0, at).Trim()), meanwhile);
     }
 
     /// <summary>

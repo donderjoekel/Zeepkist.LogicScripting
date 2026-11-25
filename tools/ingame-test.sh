@@ -126,6 +126,9 @@ mod_data="$game_data/Mods/$mod_guid"
 set_aside_data="$game_data/zls-ingame-test-mod-data"
 # Test mode and leaving the editor save the level into these, on top of the player's own
 level_saves=(Autosaves Backups)
+# What save-level steps save among the player's own levels starts with this, as TestLevels names it, and so does what
+# other mods save for those levels
+test_level_prefix=zls-ingame-test-
 mod_cfg="$bepinex/config/$mod_guid.cfg"
 test_cfg="$bepinex/config/$test_guid.cfg"
 disabled="$bepinex/zls-ingame-test-disabled"
@@ -368,8 +371,8 @@ collect() {
 }
 
 # Puts the mod's data and config, the test plugin's config and the game's level saves back as they were when the backup
-# in $1 was made. What a backup that was cut off didn't get to stays as it is. Fails when something couldn't be put
-# back, so the backup can stay for the next run to try again.
+# in $1 was made, and removes the levels the run saved. What a backup that was cut off didn't get to stays as it is.
+# Fails when something couldn't be put back, so the backup can stay for the next run to try again.
 put_back() {
     local from="$1" folder failed=0
     if [[ ! -f "$from/had-test-cfg" && -f "$from/backed-up" ]]; then
@@ -390,6 +393,7 @@ put_back() {
             rm -rf "${game_data:?}/$folder" || failed=1
         fi
     done
+    rm -rf -- "${game_data:?}/Levels/$test_level_prefix"* "${game_data:?}/Mods"/*/"$test_level_prefix"* || failed=1
     if [[ -f "$from/had-mod-cfg" ]]; then
         cp -a "$from/$mod_guid.cfg" "$mod_cfg" || failed=1
     elif [[ -f "$from/backed-up" ]]; then
