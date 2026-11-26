@@ -195,8 +195,33 @@ internal sealed partial class ScriptWindow
         public void RestoreOrphan(OrphanedGroup orphan)
         {
             ShowTab(libraries: false);
-            _window.Select(_window.RestoreOrphan(orphan));
+            _window.RestoreOrphan(orphan);
         }
+
+        /// <summary>
+        /// Presses Import on the group's row on the Scripts tab, the next time the row is drawn.
+        /// </summary>
+        public void PressImportOrphan(OrphanedGroup orphan)
+        {
+            ShowTab(libraries: false);
+            _window._orphanedGroupsPanel.PressImport(orphan);
+        }
+
+        /// <summary>
+        /// Whether a press handed to the Orphaned Groups' list waits for it to be drawn.
+        /// </summary>
+        public bool IsOrphanInputPending => _window._orphanedGroupsPanel.IsInputPending;
+
+        /// <inheritdoc cref="OrphanedGroupsPanel.CancelInput"/>
+        public void CancelOrphanInput()
+        {
+            _window._orphanedGroupsPanel.CancelInput();
+        }
+
+        /// <summary>
+        /// The Orphaned Groups' result line, drawn yet or not.
+        /// </summary>
+        public string OrphanMessage => _window._orphanedGroupsPanel.Message;
 
         /// <summary>
         /// Leaves the Orphaned Groups as on a machine that never had their Scripts, from when the window is next drawn.

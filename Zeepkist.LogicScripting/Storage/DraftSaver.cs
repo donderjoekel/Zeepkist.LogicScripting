@@ -27,6 +27,12 @@ internal sealed class DraftSaver
         _saveTime = Time.unscaledTime + Delay;
     }
 
+    /// <inheritdoc cref="DraftChanges.TakeAsSaved"/>
+    public void TakeAsSaved(ScriptEntry entry)
+    {
+        _changes.TakeAsSaved(entry);
+    }
+
     /// <summary>
     /// Call every frame.
     /// </summary>

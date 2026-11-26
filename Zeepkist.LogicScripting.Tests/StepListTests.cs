@@ -102,6 +102,7 @@ public class StepListTests
     [InlineData("delete-carrier Lights", typeof(DeleteCarrierStep))]
     [InlineData("delete-drafts", typeof(DeleteDraftsStep))]
     [InlineData("expect-orphans 1", typeof(ExpectOrphansStep))]
+    [InlineData("import-orphan Lights", typeof(ImportOrphanStep))]
     [InlineData("restore-orphan Lights", typeof(RestoreOrphanStep))]
     [InlineData("expect-orphan-result Restored", typeof(ExpectOrphanResultStep))]
     [InlineData("grab-blocks", typeof(GrabBlocksStep))]
@@ -429,6 +430,7 @@ public class StepListTests
     [InlineData("delete-carrier", "delete-carrier takes a Script's name")]
     [InlineData("delete-drafts now", "delete-drafts takes nothing after it")]
     [InlineData("expect-orphans some", "expect-orphans takes a whole number of 0 or more, not 'some'")]
+    [InlineData("import-orphan", "import-orphan takes an Orphaned Group's name")]
     [InlineData("restore-orphan", "restore-orphan takes an Orphaned Group's name")]
     [InlineData("expect-orphan-result", "expect-orphan-result takes the text to look for, or none")]
     [InlineData("set-window-size", "set-window-size takes a width and a height, each a whole number of pixels above 0")]
@@ -1075,6 +1077,9 @@ public class StepListTests
     [InlineData("import-selected-edges.zlstest")]
     [InlineData("set-stored-setting.zlstest")]
     [InlineData("orphaned-groups.zlstest")]
+    [InlineData("import-orphan.zlstest")]
+    [InlineData("import-orphan-draft.zlstest")]
+    [InlineData("import-orphan-kept.zlstest")]
     [InlineData("import-delay-feedback.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {

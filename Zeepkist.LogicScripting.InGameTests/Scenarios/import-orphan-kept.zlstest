@@ -1,0 +1,37 @@
+# A block of an Orphaned Group with a Setting a Script can't write leaves the group, so the next Compile keeps it
+open-window
+new-script Sums
+set-text
+g = generator(power: 3)
+power_display(math(g, g, op: multiply) & g)
+end
+compile
+expect-result Placed 4 blocks
+name-group-block Sums math as m
+set-stored-setting m text oi2 5
+remember-blocks m
+delete-carrier Sums
+save-level orphaned
+load-level orphaned
+expect-orphans 1
+import-orphan Sums
+expect-orphan-result Imported 2 blocks as "Sums". The next Compile replaces them with a new layout. 1 stayed as a placed block
+expect-orphans 0
+expect-text math_1 = placed("
+expect-no-errors
+compile
+expect-result Replaced 2 → 2 blocks
+expect-blocks-unmoved m
+expect-wires m 1
+
+# The kept block is back in the group
+undo
+wait 1
+undo
+wait 1
+expect-orphans 1
+expect-blocks-unmoved m
+expect-blocks 3
+import-orphan Sums
+expect-orphan-result 1 stayed as a placed block
+expect-no-exceptions

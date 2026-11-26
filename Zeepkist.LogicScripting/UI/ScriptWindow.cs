@@ -108,7 +108,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         _draftSaver = new DraftSaver(drafts, _scripts);
         _libraryStore = libraries;
         _librarySaver = new LibrarySaver(libraries);
-        _scriptListPanel = new ScriptListPanel(logger, startupCheck, _scripts, _draftSaver, OnScriptDeleted);
+        _scriptListPanel = new ScriptListPanel(logger, startupCheck, _scripts, _draftSaver, ForgetScript);
         _libraryListPanel = new LibraryListPanel(libraries.Libraries, OnLibraryDeleted);
         _referencePanel = new ReferencePanel(libraries.Libraries);
         _orphanedGroupsPanel = new OrphanedGroupsPanel(logger);
@@ -271,8 +271,17 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
             return;
 
         var (stored, blockCounts) = LevelScripts.Find(central);
-        _scripts.Update(stored, blockCounts, _drafts.Find);
+        var dropped = _scripts.Update(stored, blockCounts, _drafts.Find);
         _readLevelChanges = LevelChanges.Count;
+        foreach (var entry in dropped)
+        {
+            _scriptListPanel.ClosePromptOn(entry);
+            ForgetScript(entry);
+        }
+
+        // It says the group was imported
+        if (dropped.Count > 0)
+            _orphanedGroupsPanel.ClearMessage();
 
         // A Compile or undo changes the text a Draft is based on
         _draftSaver.Request();
@@ -292,26 +301,48 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         var selected = _scriptListPanel.DrawEntries(gui, CurrentScript);
         gui.PopId();
 
-        // Restored after drawing, which goes through the list that restoring changes
+        // Imported or restored after drawing, which goes through the list that changes
         gui.PushId("orphaned groups");
         var collapsed = _state.OrphanedGroupsCollapsed;
-        var orphan = _orphanedGroupsPanel.Draw(gui, _scripts.OrphanedGroups, ref collapsed);
+        var (imported, restored) = _orphanedGroupsPanel.Draw(gui, _scripts.OrphanedGroups, ref collapsed);
         _state.OrphanedGroupsCollapsed = collapsed;
         gui.PopId();
-        if (orphan != null)
-            selected = RestoreOrphan(orphan);
+        if (imported != null)
+            ImportOrphan(imported);
+
+        if (restored != null)
+            RestoreOrphan(restored);
 
         selected = _scriptListPanel.EndList(gui) ?? selected;
         if (selected != null)
             Select(selected);
     }
 
-    private ScriptEntry RestoreOrphan(OrphanedGroup orphan)
+    /// <summary>
+    /// Selects the Script made from the group's blocks, or makes none. The group list's result line says which, or why
+    /// not.
+    /// </summary>
+    private void ImportOrphan(OrphanedGroup orphan)
+    {
+        var name = _scripts.GetFreeName(orphan.Draft?.Name ?? ScriptImport.DefaultName);
+        var stored = ScriptImport.RunOrphan(orphan.Id, name, _startupCheck, _logger, out var message);
+        if (stored != null)
+        {
+            var entry = _scripts.AddImportedOrphan(stored);
+            _draftSaver.TakeAsSaved(entry);
+            Select(entry);
+        }
+
+        // Selecting clears it
+        _orphanedGroupsPanel.ShowMessage(message);
+    }
+
+    private void RestoreOrphan(OrphanedGroup orphan)
     {
         var restored = _scripts.Restore(orphan);
+        Select(restored);
         _orphanedGroupsPanel.ShowRestored(restored);
         _draftSaver.Request();
-        return restored;
     }
 
     private void DrawLibrariesTab(ImGui gui, ImRect rect)
@@ -330,7 +361,10 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
             Select(_scripts.Entries.Count > 0 ? _scripts.Entries[0] : null);
     }
 
-    private void OnScriptDeleted(ScriptEntry entry)
+    /// <summary>
+    /// For a Script that's gone from the list.
+    /// </summary>
+    private void ForgetScript(ScriptEntry entry)
     {
         _editors.Remove(entry.Id);
         if (entry == CurrentScript)
@@ -348,7 +382,8 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     }
 
     /// <summary>
-    /// The result line belongs to the Script or Library it was made for, like the errors and checks.
+    /// The result line belongs to the Script or Library it was made for, like the errors and checks, and the Orphaned
+    /// Groups' to what the player did last.
     /// </summary>
     private void Show(EditedItem edited)
     {
@@ -356,6 +391,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         _fieldFocused = false;
         _result = string.Empty;
         _placedBlocksPanel.ClearMessage();
+        _orphanedGroupsPanel.ClearMessage();
     }
 
     private ScriptEditor GetEditor(ScriptEntry entry)

@@ -1,0 +1,54 @@
+# Importing an Orphaned Group leaves its newer Draft alone until the Script is edited, and an edited import stays on undo
+open-window
+new-script Lights
+set-text
+power_display(generator(power: 3) & 1)
+end
+compile
+expect-result Placed
+set-text
+# newer
+power_display(generator(power: 4) & 1)
+end
+wait 2
+delete-carrier Lights
+save-level orphaned
+load-level orphaned
+expect-orphans 1
+
+# The Script takes the Draft's name and the blocks' text
+import-orphan Lights
+expect-orphan-result as "Lights". The next Compile replaces
+expect-orphans 0
+expect-step-fails expect-text # newer because doesn't contain it
+wait 2
+undo
+expect-orphans 1
+restore-orphan Lights
+expect-orphans 0
+expect-orphan-result Restored "Lights" from its Draft
+expect-text # newer
+
+# Selecting another Script clears the message
+new-script Other
+expect-orphan-result none
+
+load-level orphaned
+expect-orphans 1
+import-orphan Lights
+set-text
+a = 1
+end
+wait 2
+undo
+expect-orphans 0
+select-script Lights
+expect-text a = 1
+
+load-level orphaned
+turn-off-style power_display
+turn-off-style logic
+expect-step-fails import-orphan Lights because can't be imported
+expect-orphan-result Nothing imported
+expect-orphans 1
+expect-no-exceptions

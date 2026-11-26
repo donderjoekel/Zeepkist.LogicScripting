@@ -12,6 +12,12 @@ public sealed class ScriptList
     private readonly List<ScriptEntry> _entries = [];
     private readonly List<OrphanedGroup> _orphanedGroups = [];
 
+    // The name and text each Script imported from an Orphaned Group came in with
+    private readonly Dictionary<ScriptId, (string Name, string Text)> _orphanImports = [];
+
+    // Those that are Orphaned Groups again
+    private readonly HashSet<ScriptId> _undoneImports = [];
+
     public IReadOnlyList<ScriptEntry> Entries => _entries;
 
     /// <summary>
@@ -51,6 +57,17 @@ public sealed class ScriptList
         return entry;
     }
 
+    /// <summary>
+    /// Adds the Script an Orphaned Group was imported as, like <see cref="Add(StoredScript)"/>.
+    /// </summary>
+    public ScriptEntry AddImportedOrphan(StoredScript stored)
+    {
+        _orphanedGroups.RemoveAll(o => o.Id == stored.Id);
+        _undoneImports.Remove(stored.Id);
+        _orphanImports[stored.Id] = (stored.Name, stored.Text);
+        return Add(stored);
+    }
+
     public ScriptEntry Find(ScriptId id)
     {
         return _entries.FirstOrDefault(e => e.Id == id);
@@ -59,12 +76,14 @@ public sealed class ScriptList
     /// <summary>
     /// Takes in what the level holds now. A stored Script the window doesn't have yet is added with the level's name
     /// and text, or its Draft's when the Draft was typed over that text; a Script the window has keeps its own name and
-    /// text, whatever the level holds.
+    /// text, whatever the level holds. The exception is a Script imported from an Orphaned Group and not edited since,
+    /// which is dropped when the level loses its text, such as by undo: its group is an Orphaned Group again.
     /// </summary>
     /// <param name="stored">Every Script whose text the level holds.</param>
     /// <param name="blockCounts">The number of blocks of every Script that has blocks in the level.</param>
     /// <param name="findDraft">The Script's Draft, or null when there is none.</param>
-    public void Update(
+    /// <returns>The dropped Scripts.</returns>
+    public IReadOnlyList<ScriptEntry> Update(
         IReadOnlyList<StoredScript> stored,
         IReadOnlyDictionary<ScriptId, int> blockCounts,
         Func<ScriptId, Draft> findDraft)
@@ -73,6 +92,15 @@ public sealed class ScriptList
         {
             if (Find(script.Id) != null)
                 continue;
+
+            // Redo brings back the import, whose text no Draft was typed over yet
+            if (_undoneImports.Remove(script.Id))
+            {
+                var name = GetFreeName(script.Name);
+                _orphanImports[script.Id] = (name, script.Text);
+                _entries.Add(new ScriptEntry(script.Id, name, script.Text));
+                continue;
+            }
 
             var draft = findDraft(script.Id);
             _entries.Add(draft != null && draft.IsBasedOn(script)
@@ -86,12 +114,28 @@ public sealed class ScriptList
             entry.HasGroup = blockCounts.ContainsKey(entry.Id);
         }
 
+        var dropped = _entries.Where(IsUndoneImport).ToList();
+        foreach (var entry in dropped)
+        {
+            _entries.Remove(entry);
+            _undoneImports.Add(entry.Id);
+        }
+
         _orphanedGroups.Clear();
         foreach (var group in blockCounts)
         {
             if (Find(group.Key) == null)
                 _orphanedGroups.Add(new OrphanedGroup(group.Key, group.Value, findDraft(group.Key)));
         }
+
+        return dropped;
+    }
+
+    private bool IsUndoneImport(ScriptEntry entry)
+    {
+        return entry.Mark == ScriptMark.CarrierMissing
+            && _orphanImports.TryGetValue(entry.Id, out var imported)
+            && imported == (entry.Name, entry.Text);
     }
 
     /// <summary>
@@ -108,6 +152,9 @@ public sealed class ScriptList
             HasGroup = true
         };
 
+        // Restored, it stays in the window, even when its Draft is what an import undone before wrote
+        _orphanImports.Remove(orphan.Id);
+        _undoneImports.Remove(orphan.Id);
         _entries.Add(entry);
         _orphanedGroups.Remove(orphan);
         return entry;
@@ -145,5 +192,7 @@ public sealed class ScriptList
     {
         _entries.Clear();
         _orphanedGroups.Clear();
+        _orphanImports.Clear();
+        _undoneImports.Clear();
     }
 }

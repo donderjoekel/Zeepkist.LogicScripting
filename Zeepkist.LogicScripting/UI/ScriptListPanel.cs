@@ -16,7 +16,6 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
 {
     public const string Help = "Right-click a Script to rename it, select its blocks or delete it";
 
-    private const string ImportedName = "Imported";
     private const string ImportHelp = "Make a Script from the selected Logic Blocks, which stay as they are until you compile it";
 
     private readonly ManualLogSource _logger;
@@ -72,7 +71,7 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
     public ScriptEntry ImportSelected()
     {
         ClosePrompts();
-        var stored = ScriptImport.Run(_scripts.GetFreeName(ImportedName), _startupCheck, _logger, out var message);
+        var stored = ScriptImport.RunSelected(_scripts.GetFreeName(ScriptImport.DefaultName), _startupCheck, _logger, out var message);
         Message = message;
         if (stored == null)
             return null;

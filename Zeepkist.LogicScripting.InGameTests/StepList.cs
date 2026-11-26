@@ -130,6 +130,7 @@ internal static class StepList
         ["delete-carrier"] = (step, argument) => new DeleteCarrierStep(StepArgument.Text(step, argument, "a Script's name")),
         ["delete-drafts"] = (step, argument) => None(step, argument, new DeleteDraftsStep()),
         ["expect-orphans"] = (step, argument) => new ExpectOrphansStep(StepArgument.Count(step, argument)),
+        ["import-orphan"] = (step, argument) => new ImportOrphanStep(StepArgument.Text(step, argument, "an Orphaned Group's name")),
         ["restore-orphan"] = (step, argument) => new RestoreOrphanStep(StepArgument.Text(step, argument, "an Orphaned Group's name")),
         ["expect-orphan-result"] = (step, argument) => new ExpectOrphanResultStep(StepArgument.Text(step, argument, $"the text to look for, or {ExpectOrphanResultStep.NoResult}")),
         ["grab-blocks"] = (step, argument) => None(step, argument, new GrabBlocksStep()),
