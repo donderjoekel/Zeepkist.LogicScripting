@@ -54,6 +54,7 @@ press f2
 type abc
 insert-selected
 expect-text = placed(
-expect-step-fails press enter because no field is focused
+press enter
+expect-text lamp_1 = placed(
 expect-text xyz = logic(1, 1)
-expect-no-errors
+expect-text power_display(xyz)
