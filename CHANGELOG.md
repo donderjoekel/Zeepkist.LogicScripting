@@ -65,6 +65,13 @@ All notable changes to Logic Scripting are listed here.
   Blocks that feed back through a `delay` import too. A loop of wires without one is refused, naming its blocks.
   The text uses operators and numbers, like `trigger_1 > 0`, writes a block used once inside the line that uses it,
   and has a blank line between separate circuits. Generators of the same power become one at the next Compile, as numbers share one.
+  Import is one undo step, and the level stores the new Script's text right away.
+  The next Compile replaces the imported blocks with a new layout, so their position, rotation, scale and paint,
+  and any wire added after the import, are lost then.
+- **Import** on an Orphaned Group's row turns it back into a Script, written from its blocks, with or without a Draft.
+  Undo makes it an Orphaned Group again, and a newer Draft stays, so **Restore from Draft** still brings back the typed text.
+- The README explains importing: what the next Compile does to the blocks, what stays as a placed block,
+  when an import is refused and how to get an Orphaned Group's Script back.
 
 ### Changed
 
@@ -96,6 +103,7 @@ All notable changes to Logic Scripting are listed here.
 - Compile, and the changes the Scripts list makes to the level, wait for a loading level to finish, instead of running while only some of its blocks are there.
 - A call to a Library's function, like `timing.f(`, no longer lists the inputs and settings by name, or shows the call help,
   of your Script's own `f` or a block function by that name.
+- What an Orphaned Group's Delete, Untag or Restore did stays under the list after the last Orphaned Group is gone, instead of vanishing with it.
 
 ## 0.1.0-alpha.1
 
