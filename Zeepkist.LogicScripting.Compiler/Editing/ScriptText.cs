@@ -29,7 +29,7 @@ public static class ScriptText
 
     public static bool IsNamePart(char c)
     {
-        return Lexer.IsNameStart(c) || Lexer.IsDigit(c);
+        return Lexer.IsNamePart(c);
     }
 
     /// <summary>

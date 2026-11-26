@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
@@ -84,7 +85,7 @@ internal static class Lexer
             else if (IsNameStart(c))
             {
                 var start = index;
-                while (index < text.Length && (IsNameStart(text[index]) || IsDigit(text[index])))
+                while (index < text.Length && IsNamePart(text[index]))
                 {
                     index++;
                 }
@@ -278,5 +279,18 @@ internal static class Lexer
     internal static bool IsNameStart(char c)
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+    }
+
+    internal static bool IsNamePart(char c)
+    {
+        return IsNameStart(c) || IsDigit(c);
+    }
+
+    /// <summary>
+    /// Whether the whole of <paramref name="text"/> lexes as one name. An empty text isn't one.
+    /// </summary>
+    internal static bool IsName(string text)
+    {
+        return text.Length > 0 && IsNameStart(text[0]) && text.All(IsNamePart);
     }
 }

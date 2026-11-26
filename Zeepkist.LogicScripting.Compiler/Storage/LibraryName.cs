@@ -24,7 +24,7 @@ public static class LibraryName
         if (name.Length > MaxLength)
             return $"Use at most {MaxLength} characters";
 
-        if (!Lexer.IsNameStart(name[0]) || !name.All(c => Lexer.IsNameStart(c) || Lexer.IsDigit(c)))
+        if (!Lexer.IsName(name))
             return "Use only letters, digits and _, and start with a letter or _";
 
         if (BlockManifest.TryGetFunction(name, out _))

@@ -106,7 +106,7 @@ public static class NameRename
         if (name.Length == 0)
             return "Type the new name";
 
-        if (!ScriptText.IsNameStart(name[0]) || !name.All(ScriptText.IsNamePart))
+        if (!Lexer.IsName(name))
             return $"'{name}' isn't a name. Use letters, digits and _, and don't start with a digit";
 
         if (GraphBuilder.GetReservedNameError(name) is { } reserved)
