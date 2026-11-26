@@ -146,10 +146,13 @@ internal sealed class RenamePrompt
     }
 
     /// <summary>
-    /// Takes this frame's Enter or Escape from the field before it sees them; null when neither was pressed.
+    /// Takes this frame's Enter or Escape from the field before it sees them; null when neither was pressed. Enter
+    /// also comes as a separate line break character, which is taken too: the editor, focused again this same frame
+    /// once the prompt closes, would otherwise type it.
     /// </summary>
     private static KeyCode? TakeKey(ImGui gui)
     {
+        KeyCode? taken = null;
         for (var i = 0; i < gui.Input.KeyboardEventsCount; i++)
         {
             ref readonly var evt = ref gui.Input.GetKeyboardEvent(i);
@@ -160,6 +163,8 @@ internal sealed class RenamePrompt
             {
                 KeyCode.Return or KeyCode.KeypadEnter => KeyCode.Return,
                 KeyCode.Escape => KeyCode.Escape,
+                KeyCode.None when evt.Char is '\n' or '\r' => KeyCode.Return,
+                KeyCode.None when evt.Char is '\u001b' => KeyCode.Escape,
                 _ => (KeyCode?)null
             };
 
@@ -167,10 +172,10 @@ internal sealed class RenamePrompt
                 continue;
 
             gui.Input.UseKeyboardEvent(i);
-            return key;
+            taken ??= key;
         }
 
-        return null;
+        return taken;
     }
 
     private static float GetButtonWidth(ImGui gui, string label)

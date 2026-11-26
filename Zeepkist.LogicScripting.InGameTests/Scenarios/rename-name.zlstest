@@ -9,8 +9,9 @@ power_display(b)
 end
 expect-no-errors
 
-# The caret is on the first a; the prompt opens with it selected, so typing replaces it
+# The caret is right after the first a; the prompt opens with it selected, so typing replaces it
 caret-at-start
+press right
 press f2
 screenshot prompt
 type count
@@ -18,7 +19,7 @@ press enter
 expect-result Renamed "a" to "count" in 3 places
 expect-text b = logic(count, b: count)
 
-# Enter went to the prompt, so the editor got no line break
+# Enter went to the prompt, so the editor got no line break: one at the caret would split the first line
 expect-text count = logic(1, 1)
 expect-no-errors
 screenshot renamed
@@ -39,4 +40,4 @@ expect-text a = logic(1, 1)
 expect-text b = logic(a, b: a)
 
 compile
-expect-result Placed 3 blocks
+expect-result Placed 4 blocks
