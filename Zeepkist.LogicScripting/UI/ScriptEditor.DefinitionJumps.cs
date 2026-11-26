@@ -36,12 +36,8 @@ internal sealed partial class ScriptEditor
 
     private void DrawJumpUnderline(ImGui gui, DefinitionJump jump, ImRect textRect, SyntaxPalette palette)
     {
-        var span = jump.Name;
-        var line = ImTextEdit.FindLineAtCaretPosition(span.Start, in _layout, out var offset);
-        var from = ImTextEdit.LineOffsetToViewPosition(line, offset, Text, textRect, gui.TextDrawer, in _layout);
-        var to = ImTextEdit.LineOffsetToViewPosition(line, offset + span.Length, Text, textRect, gui.TextDrawer, in _layout);
-        // Above an error underline, which a name that's defined can still have
-        var y = from.y - _layout.LineHeight + (ErrorThickness * 2) + JumpThickness;
+        var (from, to) = GetUnderlineEnds(gui, jump.Name, textRect);
+        var y = GetRaisedUnderlineY(from);
         gui.Canvas.Line(new Vector2(from.x, y), new Vector2(to.x, y), palette.Get(null), JumpThickness);
     }
 
