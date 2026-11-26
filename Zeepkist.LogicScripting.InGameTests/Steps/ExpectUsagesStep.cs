@@ -55,7 +55,10 @@ internal sealed class ExpectUsagesStep : ScenarioStep
         return positions.Count == 0 ? NoUsages : string.Join(" ", positions.OrderBy(p => p).Select(p => p.ToString()));
     }
 
-    private static Position ToPosition(string text, int index)
+    /// <summary>
+    /// The one-based line and column of a character index of the text.
+    /// </summary>
+    public static Position ToPosition(string text, int index)
     {
         var line = 1;
         var lineStart = 0;

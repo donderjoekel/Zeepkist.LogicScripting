@@ -435,6 +435,22 @@ internal sealed partial class ScriptWindow
         }
 
         /// <summary>
+        /// Holds the jump modifier for the selected Script's or Library's editor, or lets go of it, as
+        /// <see cref="ScriptEditor.HoldsSentJumpModifier"/> says.
+        /// </summary>
+        public void HoldSentJumpModifier(bool held)
+        {
+            if (_window._edited != null)
+                _window._edited.Editor.HoldsSentJumpModifier = held;
+        }
+
+        /// <inheritdoc cref="ScriptEditor.JumpedFrame"/>
+        public int JumpedFrame => _window._edited?.Editor.JumpedFrame ?? -1;
+
+        /// <inheritdoc cref="ScriptEditor.Caret"/>
+        public int Caret => _window._edited?.Editor.Caret ?? -1;
+
+        /// <summary>
         /// Like Insert selected. Returns whether it changed the text.
         /// </summary>
         public bool InsertSelected(LEV_LevelEditorCentral central)

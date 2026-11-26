@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -24,32 +23,17 @@ internal sealed class HoverStep : ScenarioStep
         if (!context.RequireText())
             yield break;
 
-        var index = context.Window.Text.IndexOf(Text, StringComparison.Ordinal);
-        if (index < 0)
-        {
-            context.Fail("the editor's text doesn't have it", Text, context.Window.Text);
+        if (TextPoint.Find(context, Text) is not { } index)
             yield break;
-        }
 
         yield return context.WaitForWindowDrawn();
         if (context.Failed)
             yield break;
 
-        if (context.Window.FindDrawnCharacter(index) is not { } drawn || drawn.Frame != Time.frameCount)
-        {
-            context.Fail("the window didn't draw the editor");
+        if (TextPoint.OnCharacter(context, index) is not { } point)
             yield break;
-        }
 
-        // A quarter of the way across, so the character is the one under the mouse and not the one before it
-        var point = new Vector2(drawn.Character.X + (drawn.Character.W / 4), drawn.Character.Y + (drawn.Character.H / 2));
-        var where = $"the mouse at x {RectCheck.Pixels(point.x)}, y {RectCheck.Pixels(point.y)}";
-        if (!drawn.TextBounds.Contains(point))
-        {
-            context.Fail("it isn't in view in the editor", RectCheck.Describe(drawn.TextBounds), where);
-            yield break;
-        }
-
+        var where = TextPoint.Describe(point);
         ImuiMouse.MoveTo(point);
 
         // The rest starts the frame Imui first finds the mouse there, so one from before can't count
