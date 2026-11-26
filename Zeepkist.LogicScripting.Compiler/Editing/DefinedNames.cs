@@ -35,8 +35,7 @@ public static class DefinedNames
 
         for (var i = 0; i + 1 < tokens.Count; i++)
         {
-            var isStatementStart = i == 0 || tokens[i - 1].Kind == TokenKind.NewLine;
-            if (!isStatementStart || tokens[i].Kind != TokenKind.Name || tokens[i + 1].Kind != TokenKind.Equals)
+            if (!Lexer.IsFirstOnLine(tokens, i) || tokens[i].Kind != TokenKind.Name || tokens[i + 1].Kind != TokenKind.Equals)
                 continue;
 
             var name = tokens[i].Text;
@@ -98,11 +97,7 @@ public static class DefinedNames
                 }
             }
 
-            while (tokens[j].Kind is not (TokenKind.NewLine or TokenKind.End))
-            {
-                j++;
-            }
-
+            j = Parser.FindLineEnd(tokens, j);
             var bodyStart = tokens[j].Span.End;
             var end = Parser.FindBodyEnd(tokens, i);
             j = end.Index;
@@ -139,7 +134,7 @@ public static class DefinedNames
 
     internal static bool IsFunctionLineStart(List<Token> tokens, int index)
     {
-        return (index == 0 || tokens[index - 1].Kind == TokenKind.NewLine) && Parser.IsFunctionStart(tokens, index);
+        return Lexer.IsFirstOnLine(tokens, index) && Parser.IsFunctionStart(tokens, index);
     }
 
     /// <summary>

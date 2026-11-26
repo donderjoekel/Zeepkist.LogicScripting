@@ -549,7 +549,10 @@ internal sealed partial class Parser
         _index = FindLineEnd(_tokens, _index);
     }
 
-    private static int FindLineEnd(List<Token> tokens, int index)
+    /// <summary>
+    /// The index of the new line or end token that ends the line <paramref name="index"/> is on.
+    /// </summary>
+    internal static int FindLineEnd(List<Token> tokens, int index)
     {
         while (tokens[index].Kind != TokenKind.NewLine && tokens[index].Kind != TokenKind.End)
         {

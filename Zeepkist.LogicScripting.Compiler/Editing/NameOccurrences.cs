@@ -87,12 +87,7 @@ public static class NameOccurrences
             if (!DefinedNames.IsFunctionLineStart(tokens, i))
                 continue;
 
-            var end = i;
-            while (tokens[end].Kind is not (TokenKind.NewLine or TokenKind.End))
-            {
-                end++;
-            }
-
+            var end = Parser.FindLineEnd(tokens, i);
             var function = functions.FirstOrDefault(f => f.Body.Start == tokens[end].Span.End);
             if (function != null)
                 lines.Add((i, end, function));
@@ -190,7 +185,7 @@ public static class NameOccurrences
     private static bool IsDefaultKeyword(List<Token> tokens, int index)
     {
         return tokens[index].Text == DefaultStatement.Keyword
-            && (index == 0 || tokens[index - 1].Kind == TokenKind.NewLine)
+            && Lexer.IsFirstOnLine(tokens, index)
             && tokens[index + 1].Kind != TokenKind.Equals;
     }
 }

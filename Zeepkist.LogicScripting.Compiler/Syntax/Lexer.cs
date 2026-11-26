@@ -197,6 +197,11 @@ internal static class Lexer
     /// A line that starts a definition or a Function, or is a Function's <c>end</c>, read the way the parser reads
     /// it.
     /// </summary>
+    internal static bool IsFirstOnLine(List<Token> tokens, int index)
+    {
+        return index == 0 || tokens[index - 1].Kind == TokenKind.NewLine;
+    }
+
     internal static bool IsStatementStart(List<Token> tokens, int index)
     {
         return index > 0 && tokens[index - 1].Kind == TokenKind.NewLine && Parser.StartsStatement(tokens, index);
