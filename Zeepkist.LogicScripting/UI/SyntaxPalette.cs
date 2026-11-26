@@ -29,23 +29,30 @@ internal readonly struct SyntaxPalette
     private readonly Dictionary<HighlightKind, Color32> _colors;
     private readonly Color32 _text;
 
-    private SyntaxPalette(Dictionary<HighlightKind, Color32> colors, Color32 text, Color32 lineNumber, Color32 error)
+    private SyntaxPalette(Dictionary<HighlightKind, Color32> colors, Color32 text, Color32 lineNumber, Color32 error, Color32 usage)
     {
         _colors = colors;
         _text = text;
         LineNumber = lineNumber;
         Error = error;
+        Usage = usage;
     }
 
     public Color32 LineNumber { get; }
     public Color32 Error { get; }
 
+    /// <summary>
+    /// The quiet underline under the other places the name at the caret is written, unlike an error's or the
+    /// Ctrl+click one's.
+    /// </summary>
+    public Color32 Usage { get; }
+
     public static SyntaxPalette For(Color32 background, Color32 text)
     {
         var lineNumber = Color32.Lerp(text, background, 0.5f);
         return ((Color)background).grayscale < 0.5f
-            ? new SyntaxPalette(_dark, text, lineNumber, new Color32(240, 80, 80, 255))
-            : new SyntaxPalette(_light, text, lineNumber, new Color32(210, 30, 30, 255));
+            ? new SyntaxPalette(_dark, text, lineNumber, new Color32(240, 80, 80, 255), new Color32(110, 170, 170, 255))
+            : new SyntaxPalette(_light, text, lineNumber, new Color32(210, 30, 30, 255), new Color32(40, 120, 130, 255));
     }
 
     /// <summary>
