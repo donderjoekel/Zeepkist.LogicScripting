@@ -27,9 +27,9 @@ internal sealed class PressPromptStep : ScenarioStep
         {
             var prompt = list.OpenPrompt;
             context.Fail(
-                prompt == ListPrompt.None ? "no prompt is open" : $"the {PromptNames.Of(prompt)} prompt has no such button",
-                PromptNames.Of(Button),
-                buttons.Count == 0 ? "(no buttons)" : string.Join(", ", buttons.Select(PromptNames.Of)));
+                prompt == ListPrompt.None ? "no prompt is open" : $"the {ChoiceNames.Of(ChoiceNames.Prompts, prompt)} prompt has no such button",
+                ChoiceNames.Of(ChoiceNames.Buttons, Button),
+                buttons.Count == 0 ? "(no buttons)" : string.Join(", ", buttons.Select(b => ChoiceNames.Of(ChoiceNames.Buttons, b))));
             yield break;
         }
 

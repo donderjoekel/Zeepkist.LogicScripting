@@ -140,12 +140,9 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
     /// </summary>
     protected override void Delete(ScriptEntry entry, DeleteChoice choice)
     {
-        var central = LevelEdit.GetCentral(out var blocker);
+        var central = GetCentral();
         if (central == null)
-        {
-            Message = blocker;
             return;
-        }
 
         var edited = LevelEdit.TryEditGroup(
             _logger,
@@ -172,16 +169,25 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
     }
 
     /// <summary>
+    /// The level editor, or null with why not as the message.
+    /// </summary>
+    private LEV_LevelEditorCentral GetCentral()
+    {
+        var central = LevelEdit.GetCentral(out var blocker);
+        if (central == null)
+            Message = blocker;
+
+        return central;
+    }
+
+    /// <summary>
     /// What Select group in the Script's context menu does.
     /// </summary>
     public void SelectGroup(ScriptEntry entry)
     {
-        var central = LevelEdit.GetCentral(out var blocker);
+        var central = GetCentral();
         if (central == null)
-        {
-            Message = blocker;
             return;
-        }
 
         var group = BlockGroups.Find(central, entry.Id);
         if (group.Count == 0)

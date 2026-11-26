@@ -21,30 +21,6 @@ internal static class StepList
     /// </summary>
     public const string NoHeadings = "none";
 
-    /// <summary>
-    /// Whether the tab is the Libraries tab.
-    /// </summary>
-    private static readonly Dictionary<string, bool> _tabs = new()
-    {
-        ["scripts"] = false,
-        ["libraries"] = true,
-    };
-
-    /// <summary>
-    /// Whether the Blocks side's tab is the Reference tab.
-    /// </summary>
-    private static readonly Dictionary<string, bool> _blocksTabs = new()
-    {
-        ["placed"] = false,
-        ["reference"] = true,
-    };
-
-    private static readonly Dictionary<string, bool> _onOff = new()
-    {
-        ["on"] = true,
-        ["off"] = false,
-    };
-
     private static readonly Dictionary<string, Func<string, string, ScenarioStep>> _steps = new()
     {
         ["open-window"] = (step, argument) => None(step, argument, new OpenWindowStep()),
@@ -54,19 +30,19 @@ internal static class StepList
         ["new-library"] = (step, argument) => new NewLibraryStep(StepArgument.Text(step, argument, "a name")),
         ["select-library"] = (step, argument) => new SelectLibraryStep(StepArgument.Text(step, argument, "a name")),
         ["open-delete"] = (step, argument) => new OpenDeleteStep(StepArgument.Text(step, argument, "a name")),
-        ["show-tab"] = (step, argument) => new ShowTabStep(StepArgument.Choice(step, argument, _tabs)),
-        ["expect-tab"] = (step, argument) => new ExpectTabStep(StepArgument.Choice(step, argument, _tabs)),
-        ["show-blocks-tab"] = (step, argument) => new ShowBlocksTabStep(StepArgument.Choice(step, argument, _blocksTabs)),
-        ["expect-blocks-tab"] = (step, argument) => new ExpectBlocksTabStep(StepArgument.Choice(step, argument, _blocksTabs)),
+        ["show-tab"] = (step, argument) => new ShowTabStep(StepArgument.Choice(step, argument, ChoiceNames.Tabs)),
+        ["expect-tab"] = (step, argument) => new ExpectTabStep(StepArgument.Choice(step, argument, ChoiceNames.Tabs)),
+        ["show-blocks-tab"] = (step, argument) => new ShowBlocksTabStep(StepArgument.Choice(step, argument, ChoiceNames.BlocksTabs)),
+        ["expect-blocks-tab"] = (step, argument) => new ExpectBlocksTabStep(StepArgument.Choice(step, argument, ChoiceNames.BlocksTabs)),
         ["set-reference-filter"] = (_, argument) => new SetReferenceFilterStep(argument),
         ["expect-reference-headings"] = ExpectReferenceHeadings,
         ["open-new"] = (step, argument) => None(step, argument, new OpenNewStep()),
         ["open-rename"] = (step, argument) => new OpenRenameStep(StepArgument.Text(step, argument, "a name")),
         ["type-name"] = (step, argument) => new TypeNameStep(StepArgument.Text(step, argument, "the name to type")),
-        ["press-prompt"] = (step, argument) => new PressPromptStep(StepArgument.Choice(step, argument, PromptNames.Buttons)),
+        ["press-prompt"] = (step, argument) => new PressPromptStep(StepArgument.Choice(step, argument, ChoiceNames.Buttons)),
         ["select-group"] = (step, argument) => new SelectGroupStep(StepArgument.Text(step, argument, "a name")),
         ["expect-list-result"] = (step, argument) => new ExpectListResultStep(StepArgument.Text(step, argument, "the text to look for")),
-        ["expect-prompt"] = (step, argument) => new ExpectPromptStep(StepArgument.Choice(step, argument, PromptNames.Prompts)),
+        ["expect-prompt"] = (step, argument) => new ExpectPromptStep(StepArgument.Choice(step, argument, ChoiceNames.Prompts)),
         ["expect-footer-in-view"] = (step, argument) => None(step, argument, new ExpectFooterInViewStep()),
         ["set-window-height"] = (step, argument) => new SetWindowHeightStep(StepArgument.Pixels(step, argument)),
         ["expect-window-height"] = (step, argument) => new ExpectWindowHeightStep(StepArgument.Pixels(step, argument)),
@@ -81,10 +57,10 @@ internal static class StepList
         ["remember-window-rect"] = (step, argument) => None(step, argument, new RememberWindowRectStep()),
         ["expect-window-rect"] = (step, argument) => None(step, argument, new ExpectWindowRectStep()),
         ["expect-window-start-rect"] = (step, argument) => None(step, argument, new ExpectWindowStartRectStep()),
-        ["library-read-failed"] = (step, argument) => new LibraryReadFailedStep(StepArgument.Choice(step, argument, _onOff)),
-        ["startup-warning"] = (step, argument) => new StartupWarningStep(StepArgument.Choice(step, argument, _onOff)),
-        ["expect-library-read-failed"] = (step, argument) => new ExpectLibraryReadFailedStep(StepArgument.Choice(step, argument, _onOff)),
-        ["expect-startup-warning"] = (step, argument) => new ExpectStartupWarningStep(StepArgument.Choice(step, argument, _onOff)),
+        ["library-read-failed"] = (step, argument) => new LibraryReadFailedStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
+        ["startup-warning"] = (step, argument) => new StartupWarningStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
+        ["expect-library-read-failed"] = (step, argument) => new ExpectLibraryReadFailedStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
+        ["expect-startup-warning"] = (step, argument) => new ExpectStartupWarningStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
         ["expect-editor-in-view"] = (step, argument) => None(step, argument, new ExpectEditorInViewStep()),
         ["expect-editor-in-view-each-frame"] = (step, argument) => new ExpectEditorInViewEachFrameStep(StepArgument.Count(step, argument)),
         ["compile"] = (step, argument) => None(step, argument, new CompileStep()),
@@ -172,10 +148,9 @@ internal static class StepList
     /// </summary>
     private static ScenarioStep ExpectCompletion(string argument)
     {
-        var space = argument.IndexOf(' ');
-        return space < 0
-            ? new ExpectCompletionStep(argument, null)
-            : new ExpectCompletionStep(argument.Substring(0, space), argument.Substring(space + 1).Trim());
+        return StepArgument.TrySplitFirst(argument, out var label, out var detail)
+            ? new ExpectCompletionStep(label, detail)
+            : new ExpectCompletionStep(argument, null);
     }
 
     /// <summary>
@@ -186,7 +161,7 @@ internal static class StepList
     {
         var what = "a row's label";
         var label = StepArgument.Text(step, argument, what);
-        return label.IndexOf(' ') < 0 ? label : throw new ScenarioFormatException($"{step} takes {what}, with no spaces, not '{argument}'");
+        return label.IndexOf(' ') < 0 ? label : throw StepArgument.Takes(step, $"{what}, with no spaces", argument);
     }
 
     /// <summary>
@@ -196,7 +171,7 @@ internal static class StepList
     private static ScenarioStep ExpectReferenceHeadings(string step, string argument)
     {
         var what = $"the headings, such as Inputs Libraries{ReferenceHeading.ClosedSuffix}, or {NoHeadings}";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length == 1 && words[0] == NoHeadings)
             return new ExpectReferenceHeadingsStep([]);
 
@@ -206,7 +181,7 @@ internal static class StepList
             var open = !word.EndsWith(ReferenceHeading.ClosedSuffix, StringComparison.Ordinal);
             var name = open ? word : word.Substring(0, word.Length - ReferenceHeading.ClosedSuffix.Length);
             if (name.Length == 0 || name == NoHeadings || name.IndexOf(':') >= 0)
-                throw new ScenarioFormatException($"{step} takes {what}, not '{word}'");
+                throw StepArgument.Takes(step, what, word);
 
             headings.Add(new ReferenceHeading(name, open));
         }
@@ -219,35 +194,30 @@ internal static class StepList
     /// </summary>
     private static ScenarioStep ExpectError(string step, string argument)
     {
-        var what = $"{step} takes a line and column, such as 2:5, then the text to look for";
-        var space = argument.IndexOf(' ');
-        var text = space < 0 ? string.Empty : argument.Substring(space + 1).Trim();
+        const string what = "a line and column, such as 2:5, then the text to look for";
+        StepArgument.TrySplitFirst(argument, out var written, out var text);
         if (text.Length == 0)
-            throw new ScenarioFormatException(what);
+            throw StepArgument.Takes(step, what);
 
-        var written = argument.Substring(0, space);
-        var position = written.Split(':');
-        if (position.Length != 2 || !StepArgument.TryPositive(position[0], out var line) || !StepArgument.TryPositive(position[1], out var column))
-            throw new ScenarioFormatException($"{what}, not '{written}'");
-
-        return new ExpectErrorStep(new Position(line, column), text);
+        return StepArgument.TryPosition(written, out var position)
+            ? new ExpectErrorStep(position, text)
+            : throw StepArgument.Takes(step, what, written);
     }
 
     private static ScenarioStep ExpectUsages(string step, string argument)
     {
         var what = $"the one-based line and column of each underline, such as 1:1 3:12, or {ExpectUsagesStep.NoUsages}";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length == 1 && words[0] == ExpectUsagesStep.NoUsages)
             return new ExpectUsagesStep([]);
 
         List<Position> positions = [];
         foreach (var word in words)
         {
-            var position = word.Split(':');
-            if (position.Length != 2 || !StepArgument.TryPositive(position[0], out var line) || !StepArgument.TryPositive(position[1], out var column))
-                throw new ScenarioFormatException($"{step} takes {what}, not '{word}'");
+            if (!StepArgument.TryPosition(word, out var position))
+                throw StepArgument.Takes(step, what, word);
 
-            positions.Add(new Position(line, column));
+            positions.Add(position);
         }
 
         return new ExpectUsagesStep(positions);
@@ -259,12 +229,12 @@ internal static class StepList
     private static ScenarioStep PlaceBlock(string step, string argument)
     {
         var what = "a Block Function's name, and optionally 'as <name>'";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length == 1)
             return new PlaceBlockStep(words[0]);
 
         if (words[1] != "as")
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         var name = StepArgument.FileName($"{step} ... as", string.Join(" ", words.Skip(2)));
         return new PlaceBlockStep(words[0], name);
@@ -277,9 +247,9 @@ internal static class StepList
     private static ScenarioStep SetBlockSetting(string step, string argument)
     {
         var what = "a placed block's name, a Setting's name and its value, such as t mode global_velocity";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length != 3)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         return new SetBlockSettingStep(StepArgument.FileName(step, words[0]), words[1], words[2]);
     }
@@ -291,7 +261,7 @@ internal static class StepList
     private static ScenarioStep SetStoredSetting(string step, string argument)
     {
         var what = "a placed block's name, int, float or text, the key it's stored under and its value, such as m text oi2 5";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         StoredKind? kind = words.Length != 4 ? null : words[1] switch
         {
             "int" => StoredKind.Int,
@@ -300,7 +270,7 @@ internal static class StepList
             _ => null
         };
         if (kind == null)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         var isNumber = kind switch
         {
@@ -321,9 +291,9 @@ internal static class StepList
     private static ScenarioStep NameGroupBlock(string step, string argument)
     {
         var what = "a Script's name, a Block Function's name and 'as <name>', such as Lights logic as l";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length < 4 || words[words.Length - 2] != "as")
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         var name = StepArgument.FileName($"{step} ... as", words[words.Length - 1]);
         return new NameGroupBlockStep(string.Join(" ", words.Take(words.Length - 3)), words[words.Length - 3], name);
@@ -336,9 +306,9 @@ internal static class StepList
     private static WireArgument ReadWire(string step, string argument)
     {
         var what = "a placed block's name and output, 'to', and a placed block's name and input, such as g out to l a";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length != 5 || words[2] != "to")
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         return new WireArgument(StepArgument.FileName(step, words[0]), words[1], StepArgument.FileName(step, words[3]), words[4]);
     }
@@ -346,9 +316,9 @@ internal static class StepList
     private static IReadOnlyList<string> ReadBlockNames(string step, string argument)
     {
         var what = "placed blocks' names, each once, such as g l";
-        var names = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var names = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (names.Distinct().Count() != names.Length)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         return [.. names.Select(name => StepArgument.FileName(step, name))];
     }
@@ -356,9 +326,9 @@ internal static class StepList
     private static ScenarioStep MoveBlock(string step, string argument)
     {
         var what = "a placed block's name and how far to move it along x, y and z, such as l 16 0 -8";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length != 4 || !TryReadOffset(words[1], out var x) || !TryReadOffset(words[2], out var y) || !TryReadOffset(words[3], out var z))
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         return new MoveBlockStep(StepArgument.FileName(step, words[0]), x, y, z);
     }
@@ -375,9 +345,9 @@ internal static class StepList
     private static ScenarioStep ExpectSignal(string step, string argument)
     {
         var what = "a placed block's name, its input and a whole number, such as l a 1";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length != 3 || !long.TryParse(words[2], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var signal))
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         return new ExpectSignalStep(StepArgument.FileName(step, words[0]), words[1], signal);
     }
@@ -388,19 +358,18 @@ internal static class StepList
     private static ScenarioStep ExpectDisplay(string step, string argument)
     {
         var what = "a placed Power Display's name and what it shows, such as p 1";
-        var space = StepArgument.Text(step, argument, what).IndexOf(' ');
-        if (space < 0)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+        if (!StepArgument.TrySplitFirst(StepArgument.Text(step, argument, what), out var name, out var shown))
+            throw StepArgument.Takes(step, what, argument);
 
-        return new ExpectDisplayStep(StepArgument.FileName(step, argument.Substring(0, space)), argument.Substring(space + 1).Trim());
+        return new ExpectDisplayStep(StepArgument.FileName(step, name), shown);
     }
 
     private static ScenarioStep ExpectWires(string step, string argument)
     {
         var what = "a placed block's name and how many Wires it has, such as l 2";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         if (words.Length != 2)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         return new ExpectWiresStep(StepArgument.FileName(step, words[0]), StepArgument.Count(step, words[1]));
     }
@@ -414,7 +383,7 @@ internal static class StepList
         var what = "a step of one line, 'because' and text its failure contains, such as expect-blocks 1 because 0 Logic Blocks";
         var at = StepArgument.Text(step, argument, what).LastIndexOf(separator, StringComparison.Ordinal);
         if (at < 0)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
         var inner = CreateInner(step, argument, argument.Substring(0, at).Trim(), what);
         return new ExpectStepFailsStep(inner, argument.Substring(at + separator.Length).Trim());
@@ -425,12 +394,11 @@ internal static class StepList
     /// </summary>
     private static ScenarioStep CreateInner(string step, string argument, string inner, string what)
     {
-        var space = inner.IndexOf(' ');
-        var name = space < 0 ? inner : inner.Substring(0, space);
+        StepArgument.TrySplitFirst(inner, out var name, out var innerArgument);
         if (name == SetText || name == step)
-            throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+            throw StepArgument.Takes(step, what, argument);
 
-        return Create(name, space < 0 ? string.Empty : inner.Substring(space + 1).Trim())
+        return Create(name, innerArgument)
             ?? throw new ScenarioFormatException($"unknown step '{name}'");
     }
 
@@ -468,12 +436,12 @@ internal static class StepList
     private static ScenarioStep TurnOffStyle(string step, string argument)
     {
         var what = "a Block Function's name, and optionally one of its styles";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         return words.Length switch
         {
             1 => new TurnOffStyleStep(words[0]),
             2 => new TurnOffStyleStep(words[0], words[1]),
-            _ => throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'"),
+            _ => throw StepArgument.Takes(step, what, argument),
         };
     }
 
@@ -485,7 +453,7 @@ internal static class StepList
     {
         var direction = sideways ? "right, below 0 for left" : "down, below 0 for up";
         var what = $"the pixels to drag the window's edge {direction}, and optionally 'over <frames>', with 'then' before each move after the first";
-        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var words = StepArgument.Words(StepArgument.Text(step, argument, what));
         var moves = new List<DragMove>();
         var start = 0;
         // Each move ends at the next 'then', or at the end of the words
@@ -495,7 +463,7 @@ internal static class StepList
                 continue;
 
             if (!TryReadDragMove(words, start, end - start, out var move))
-                throw new ScenarioFormatException($"{step} takes {what}, not '{argument}'");
+                throw StepArgument.Takes(step, what, argument);
 
             moves.Add(move);
             start = end + 1;

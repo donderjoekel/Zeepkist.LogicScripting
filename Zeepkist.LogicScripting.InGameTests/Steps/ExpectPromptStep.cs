@@ -17,11 +17,11 @@ internal sealed class ExpectPromptStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
-        var open = PromptNames.Of(context.Window.ShownList.OpenPrompt);
+        var open = ChoiceNames.Of(ChoiceNames.Prompts, context.Window.ShownList.OpenPrompt);
         if (context.Window.ShownList.OpenPrompt == Prompt)
-            context.Pass(open, PromptNames.Of(Prompt), open);
+            context.Pass(open, ChoiceNames.Of(ChoiceNames.Prompts, Prompt), open);
         else
-            context.Fail("another prompt is open", PromptNames.Of(Prompt), open);
+            context.Fail("another prompt is open", ChoiceNames.Of(ChoiceNames.Prompts, Prompt), open);
 
         yield return null;
     }

@@ -17,7 +17,7 @@ internal sealed class TypeNameStep : ScenarioStep
     public override IEnumerator Run(StepContext context)
     {
         if (context.RequireOpenWindow() && !context.Window.ShownList.SetName(Text))
-            context.Fail("no name prompt is open: add open-new or open-rename first", "new or rename", PromptNames.Of(context.Window.ShownList.OpenPrompt));
+            context.Fail("no name prompt is open: add open-new or open-rename first", "new or rename", ChoiceNames.Of(ChoiceNames.Prompts, context.Window.ShownList.OpenPrompt));
 
         yield return null;
     }

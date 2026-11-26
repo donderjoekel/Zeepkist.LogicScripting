@@ -250,7 +250,7 @@ internal sealed partial class GraphBuilder
     {
         if (_disabledBlockIds.Contains(style.BlockId))
         {
-            Error(origin, $"'{type.Describe(style)}' {MessageFragments.TurnedOff}");
+            Error(origin, MessageFragments.DescribeTurnedOff(type, style));
         }
 
         return _graph.AddBlock(origin.Position, type, style, settings);

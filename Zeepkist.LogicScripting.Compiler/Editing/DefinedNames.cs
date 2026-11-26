@@ -35,8 +35,7 @@ public static class DefinedNames
 
         for (var i = 0; i + 1 < tokens.Count; i++)
         {
-            var isStatementStart = i == 0 || tokens[i - 1].Kind == TokenKind.NewLine;
-            if (!isStatementStart || tokens[i].Kind != TokenKind.Name || tokens[i + 1].Kind != TokenKind.Equals)
+            if (!Lexer.IsFirstOnLine(tokens, i) || tokens[i].Kind != TokenKind.Name || tokens[i + 1].Kind != TokenKind.Equals)
                 continue;
 
             var name = tokens[i].Text;
@@ -56,7 +55,15 @@ public static class DefinedNames
     /// </summary>
     internal static IReadOnlyList<DefinedFunction> ReadFunctions(string text)
     {
-        return ReadFunctions(Lexer.Tokenize(text ?? string.Empty, [])).Select(f => f.Function).Where(f => f.Name != null).ToList();
+        return ReadEveryFunction(Lexer.Tokenize(text ?? string.Empty, [])).Where(f => f.Name != null).ToList();
+    }
+
+    /// <summary>
+    /// Every Function, with a name or without, in text order.
+    /// </summary>
+    internal static List<DefinedFunction> ReadEveryFunction(List<Token> tokens)
+    {
+        return ReadFunctions(tokens).Select(f => f.Function).ToList();
     }
 
     /// <summary>
@@ -98,11 +105,7 @@ public static class DefinedNames
                 }
             }
 
-            while (tokens[j].Kind is not (TokenKind.NewLine or TokenKind.End))
-            {
-                j++;
-            }
-
+            j = Parser.FindLineEnd(tokens, j);
             var bodyStart = tokens[j].Span.End;
             var end = Parser.FindBodyEnd(tokens, i);
             j = end.Index;
@@ -139,7 +142,7 @@ public static class DefinedNames
 
     internal static bool IsFunctionLineStart(List<Token> tokens, int index)
     {
-        return (index == 0 || tokens[index - 1].Kind == TokenKind.NewLine) && Parser.IsFunctionStart(tokens, index);
+        return Lexer.IsFirstOnLine(tokens, index) && Parser.IsFunctionStart(tokens, index);
     }
 
     /// <summary>
@@ -272,9 +275,12 @@ public static class DefinedNames
         return callee == null ? null : DefinedValue.FunctionCall(callee);
     }
 
-    private static DefinedFunction FindFunction(IReadOnlyList<DefinedFunction> functions, string name)
+    /// <summary>
+    /// The first Function called <paramref name="name"/>; a null name finds none, not a Function without a name.
+    /// </summary>
+    internal static DefinedFunction FindFunction(IReadOnlyList<DefinedFunction> functions, string name)
     {
-        return functions.FirstOrDefault(f => f.Name == name);
+        return name == null ? null : functions.FirstOrDefault(f => f.Name == name);
     }
 
     private static bool IsCall(List<Token> tokens, int start)

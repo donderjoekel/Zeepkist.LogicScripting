@@ -182,11 +182,11 @@ public class EditCommandsTests
 
     private static TextSnapshot Parse(string marked)
     {
-        var caret = marked.IndexOf('|');
         var anchor = marked.IndexOf('^');
         if (anchor < 0)
-            return new TextSnapshot(marked.Remove(caret, 1), caret);
+            return MarkedText.Parse(marked);
 
+        var caret = marked.IndexOf('|');
         var text = marked.Replace("|", string.Empty).Replace("^", string.Empty);
         if (anchor < caret)
             caret--;
@@ -200,7 +200,7 @@ public class EditCommandsTests
     {
         var anchor = snapshot.Caret + snapshot.Selection;
         if (snapshot.Selection == 0)
-            return snapshot.Text.Insert(snapshot.Caret, "|");
+            return MarkedText.Format(snapshot);
 
         return anchor < snapshot.Caret
             ? snapshot.Text.Insert(snapshot.Caret, "|").Insert(anchor, "^")

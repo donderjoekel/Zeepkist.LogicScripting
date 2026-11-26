@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Imui.Controls;
 using Imui.Core;
 using Imui.IO.Events;
-using Imui.Rendering;
 using TNRD.Zeepkist.LogicScripting.Blocks;
+using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Storage;
 using UnityEngine;
 
@@ -156,6 +156,11 @@ internal sealed partial class ScriptWindow
 
         var width = Mathf.Min(DefaultWidth, screen.W);
         var height = Mathf.Min(DefaultHeight, screen.H);
+        return Centered(screen, width, height);
+    }
+
+    private static ImRect Centered(ImRect screen, float width, float height)
+    {
         return new ImRect(screen.X + ((screen.W - width) / 2), screen.Y + ((screen.H - height) / 2), width, height);
     }
 
@@ -254,7 +259,7 @@ internal sealed partial class ScriptWindow
         if (request.TopLeft is { } topLeft)
             rect = ImRectUtility.Clamp(screen, new ImRect(topLeft.x, topLeft.y - rect.H, rect.W, rect.H));
         else if (request.Center)
-            rect = new ImRect(screen.X + ((screen.W - rect.W) / 2), screen.Y + ((screen.H - rect.H) / 2), rect.W, rect.H);
+            rect = Centered(screen, rect.W, rect.H);
 
         request.Clear();
         if (rect != window.Rect)
@@ -556,7 +561,7 @@ internal sealed partial class ScriptWindow
         var buttonRect = row.TakeRight(gui.GetRowHeight(), gui.Style.Layout.Spacing, out var labelRect);
 
         var (text, color) = _state.Errors.Collapsed && _result.Length > 0 ? (_result, gui.Style.Text.Color) : GetErrorsSummary();
-        var settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        var settings = SingleLineText.GetSettings(gui);
         gui.Text(text, settings, color, labelRect);
         if (labelRect.Contains(gui.Input.MousePosition) && gui.MeasureTextSize(text, settings).x > labelRect.W)
             gui.Tooltip(text, labelRect);
@@ -571,7 +576,7 @@ internal sealed partial class ScriptWindow
         if (_edited.HasCurrentErrors)
         {
             var count = _edited.Errors.Count;
-            return (count == 1 ? "1 error" : $"{count} errors", WindowColors.Error);
+            return (MessageFragments.Count(count, "error"), WindowColors.Error);
         }
 
         // A pending check hides the old errors, so the panel doesn't claim the text is fine
@@ -611,8 +616,7 @@ internal sealed partial class ScriptWindow
     /// </summary>
     private BlockProperties DrawBlocksTabs(ImGui gui, ImRect rect)
     {
-        var bar = rect.WithPadding(gui.Style.Layout.Spacing).TakeTop(ImTabsPane.GetTabBarHeight(gui), out var content);
-        var placedRect = bar.TakeLeft(bar.W / 2, out var referenceRect);
+        var (placedRect, referenceRect, content) = SplitTwoTabs(gui, rect);
         if (ImTabsPane.TabBarButton(gui, gui.GetNextControlId(), !_showReference, PlacedBlocksTab, placedRect))
             _showReference = false;
 
@@ -657,13 +661,22 @@ internal sealed partial class ScriptWindow
     }
 
     /// <summary>
+    /// A tab bar of two tabs of the same width at the top of <paramref name="rect"/>, and the room under it.
+    /// </summary>
+    private static (ImRect Left, ImRect Right, ImRect Content) SplitTwoTabs(ImGui gui, ImRect rect)
+    {
+        var bar = rect.WithPadding(gui.Style.Layout.Spacing).TakeTop(ImTabsPane.GetTabBarHeight(gui), out var content);
+        var left = bar.TakeLeft(bar.W / 2, out var right);
+        return (left, right, content);
+    }
+
+    /// <summary>
     /// Like the Blocks side's tabs. Switching tabs leaves the editor as it is, so a dot marks the tab that holds what
     /// it shows, and a warning mark the Scripts tab while the level has Orphaned Groups.
     /// </summary>
     private void DrawScriptsTabs(ImGui gui, ImRect rect)
     {
-        var bar = rect.WithPadding(gui.Style.Layout.Spacing).TakeTop(ImTabsPane.GetTabBarHeight(gui), out var content);
-        var scriptsRect = bar.TakeLeft(bar.W / 2, out var librariesRect);
+        var (scriptsRect, librariesRect, content) = SplitTwoTabs(gui, rect);
         var hasOrphans = _scripts.OrphanedGroups.Count > 0;
         if (SideTab.Draw(gui, !_state.ShowLibraries, ScriptsTab, scriptsRect, CurrentScript != null, hasOrphans))
             _state.ShowLibraries = false;

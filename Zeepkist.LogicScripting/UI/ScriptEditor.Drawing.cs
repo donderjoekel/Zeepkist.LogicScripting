@@ -4,6 +4,7 @@ using Imui.Controls;
 using Imui.Core;
 using Imui.Rendering;
 using Imui.Style;
+using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 using UnityEngine;
 
@@ -46,13 +47,31 @@ internal sealed partial class ScriptEditor
             if (span.End > Text.Length)
                 continue;
 
-            var line = ImTextEdit.FindLineAtCaretPosition(span.Start, in _layout, out var offset);
-            var from = ImTextEdit.LineOffsetToViewPosition(line, offset, Text, textRect, gui.TextDrawer, in _layout);
-            var to = ImTextEdit.LineOffsetToViewPosition(line, offset + span.Length, Text, textRect, gui.TextDrawer, in _layout);
+            var (from, to) = GetUnderlineEnds(gui, span, textRect);
             var y = from.y - _layout.LineHeight + ErrorThickness;
             var right = Mathf.Max(to.x, from.x + minWidth);
             gui.Canvas.Line(new Vector2(from.x, y), new Vector2(right, y), palette.Error, ErrorThickness);
         }
+    }
+
+    /// <summary>
+    /// Where the span starts and ends on its line, at the bottom of the line's text.
+    /// </summary>
+    private (Vector2 From, Vector2 To) GetUnderlineEnds(ImGui gui, TextSpan span, ImRect textRect)
+    {
+        var line = ImTextEdit.FindLineAtCaretPosition(span.Start, in _layout, out var offset);
+        var from = ImTextEdit.LineOffsetToViewPosition(line, offset, Text, textRect, gui.TextDrawer, in _layout);
+        var to = ImTextEdit.LineOffsetToViewPosition(line, offset + span.Length, Text, textRect, gui.TextDrawer, in _layout);
+        return (from, to);
+    }
+
+    /// <summary>
+    /// Above an error underline, which a name that's defined can still have. The Ctrl+click and usage underlines both
+    /// go here.
+    /// </summary>
+    private float GetRaisedUnderlineY(Vector2 from)
+    {
+        return from.y - _layout.LineHeight + (ErrorThickness * 2) + JumpThickness;
     }
 
     /// <summary>

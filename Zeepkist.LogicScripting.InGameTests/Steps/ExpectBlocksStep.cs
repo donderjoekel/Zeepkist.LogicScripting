@@ -28,9 +28,6 @@ internal sealed class ExpectBlocksStep : ScenarioStep
                 count++;
         }
 
-        if (count == Count)
-            context.Pass($"{count} Logic Blocks", Count.ToString(), count.ToString());
-        else
-            context.Fail($"{count} Logic Blocks", Count.ToString(), count.ToString());
+        context.Check(count == Count, $"{count} Logic Blocks", Count.ToString(), count.ToString());
     }
 }

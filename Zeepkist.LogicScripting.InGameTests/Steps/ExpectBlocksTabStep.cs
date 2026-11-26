@@ -16,21 +16,7 @@ internal sealed class ExpectBlocksTabStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
-        if (context.RequireOpenWindow())
-        {
-            var expected = Describe(Reference);
-            var actual = Describe(context.Window.ShowsReference);
-            if (context.Window.ShowsReference == Reference)
-                context.Pass($"the {actual} tab shows", expected, actual);
-            else
-                context.Fail($"the {actual} tab shows instead", expected, actual);
-        }
-
+        context.ExpectTab(ChoiceNames.BlocksTabs, Reference, () => context.Window.ShowsReference);
         yield return null;
-    }
-
-    private static string Describe(bool reference)
-    {
-        return reference ? "reference" : "placed";
     }
 }

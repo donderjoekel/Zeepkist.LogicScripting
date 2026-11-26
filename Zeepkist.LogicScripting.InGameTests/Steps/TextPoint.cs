@@ -46,6 +46,6 @@ internal static class TextPoint
 
     public static string Describe(Vector2 point)
     {
-        return $"the mouse at x {RectCheck.Pixels(point.x)}, y {RectCheck.Pixels(point.y)}";
+        return $"the mouse at {RectCheck.Point(point)}";
     }
 }

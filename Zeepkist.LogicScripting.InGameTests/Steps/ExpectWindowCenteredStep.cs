@@ -22,9 +22,6 @@ internal sealed class ExpectWindowCenteredStep : ScenarioStep
         var expected = RectCheck.Point(screen.Center);
         var actual = RectCheck.Point(rect.Center);
         var detail = $"{RectCheck.Describe(rect)}, on a screen {RectCheck.Size(screen.W, screen.H)} px";
-        if (RectCheck.HasSameCenter(rect, screen))
-            context.Pass(detail, expected, actual);
-        else
-            context.Fail(detail, expected, actual);
+        context.Check(RectCheck.HasSameCenter(rect, screen), detail, expected, actual);
     }
 }

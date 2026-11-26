@@ -84,7 +84,7 @@ internal sealed partial class GraphBuilder
             }
             else
             {
-                targets.Add(Setting.Text(setting.Key + uids.Count.ToString(CultureInfo.InvariantCulture), block.Uid));
+                targets.Add(Setting.Text(setting.GetTargetKey(uids.Count), block.Uid));
             }
         }
 

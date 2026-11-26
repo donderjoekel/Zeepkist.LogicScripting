@@ -55,8 +55,8 @@ public static partial class EditCommands
             return new TextSnapshot(text.Insert(end, copy), snapshot.Caret + copy.Length, snapshot.Selection);
         }
 
-        var lineStart = GetLineStart(text, snapshot.Caret);
-        var lineEnd = GetLineEnd(text, snapshot.Caret);
+        var lineStart = ScriptText.GetLineStartAt(text, snapshot.Caret);
+        var lineEnd = ScriptText.GetLineEndAt(text, snapshot.Caret);
         var line = text.Substring(lineStart, lineEnd - lineStart);
         return new TextSnapshot(text.Insert(lineEnd, "\n" + line), snapshot.Caret + line.Length + 1);
     }
@@ -70,7 +70,7 @@ public static partial class EditCommands
         var text = snapshot.Text;
         var lineStarts = ScriptText.GetLineStarts(text);
         GetSelectedLines(snapshot, lineStarts, out var first, out var last);
-        var column = snapshot.Caret - lineStarts[GetLine(lineStarts, snapshot.Caret)];
+        var column = snapshot.Caret - lineStarts[ScriptText.GetLine(lineStarts, snapshot.Caret)];
 
         var start = lineStarts[first];
         var end = ScriptText.GetLineEnd(lineStarts, text.Length, last);
@@ -80,8 +80,8 @@ public static partial class EditCommands
             start--;
 
         var deleted = text.Remove(start, end - start);
-        var lineStart = GetLineStart(deleted, start);
-        var caret = Math.Min(lineStart + column, GetLineEnd(deleted, lineStart));
+        var lineStart = ScriptText.GetLineStartAt(deleted, start);
+        var caret = Math.Min(lineStart + column, ScriptText.GetLineEndAt(deleted, lineStart));
         return new TextSnapshot(deleted, caret);
     }
 }

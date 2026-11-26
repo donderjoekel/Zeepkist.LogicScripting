@@ -30,17 +30,12 @@ internal static class WarningCheck
             yield break;
         }
 
-        var expected = Describe(shown);
-        var actual = Describe(drawn.Shown);
+        var expected = ChoiceNames.Of(ChoiceNames.OnOff, shown);
+        var actual = ChoiceNames.Of(ChoiceNames.OnOff, drawn.Shown);
         if (drawn.Shown == shown)
             context.Pass($"{warning}: {DescribeDrawn(shown)}", expected, actual);
         else
             context.Fail($"{warning}: {DescribeDrawn(drawn.Shown)}", expected, actual);
-    }
-
-    private static string Describe(bool shown)
-    {
-        return shown ? "on" : "off";
     }
 
     private static string DescribeDrawn(bool shown)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
@@ -18,13 +17,7 @@ internal sealed class ExpectTextStep : ScenarioStep
     public override IEnumerator Run(StepContext context)
     {
         if (context.RequireText())
-        {
-            var text = context.Window.Text;
-            if (text.IndexOf(Text, StringComparison.Ordinal) >= 0)
-                context.Pass(text, Text, text);
-            else
-                context.Fail("the text doesn't contain it", Text, text.Length == 0 ? "(no text)" : text);
-        }
+            context.ExpectContains(Text, context.Window.Text, "the text doesn't contain it", "(no text)");
 
         yield return null;
     }

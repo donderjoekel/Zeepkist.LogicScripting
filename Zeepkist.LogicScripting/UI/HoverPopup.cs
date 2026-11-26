@@ -128,9 +128,7 @@ internal sealed partial class HoverPopup
 
         var width = _size.x + padding.Horizontal;
         var height = _size.y + padding.Vertical;
-        var below = linePosition.y - lineHeight - height;
-        var y = PopupPlacement.Choose(below, linePosition.y, height, (editor.Y, editor.Top), (window.Y, window.Top)) ?? linePosition.y;
-        var rect = ImRectUtility.Clamp(window, new ImRect(linePosition.x - padding.Left, y, width, height));
+        var rect = PopupPlacement.PlaceBelow(linePosition, lineHeight, linePosition.x - padding.Left, width, height, editor, window);
 
         DrawnFrame = Time.frameCount;
         gui.BeginPopup();

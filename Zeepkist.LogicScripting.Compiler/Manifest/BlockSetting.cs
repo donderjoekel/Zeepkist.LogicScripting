@@ -192,6 +192,20 @@ public sealed class BlockSetting
         }
     }
 
+    /// <summary>
+    /// The key a <see cref="SettingType.Targets"/> Setting stores its <paramref name="number"/>th target under,
+    /// counting from 1.
+    /// </summary>
+    public string GetTargetKey(int number)
+    {
+        return Key + number.ToString(CultureInfo.InvariantCulture);
+    }
+
+    public IEnumerable<string> GetTargetKeys()
+    {
+        return Enumerable.Range(1, MaxTargets).Select(GetTargetKey);
+    }
+
     public Setting Choose(string option)
     {
         var index = IndexOf(option);

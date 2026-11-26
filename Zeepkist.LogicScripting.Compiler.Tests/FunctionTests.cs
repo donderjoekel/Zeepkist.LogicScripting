@@ -3,6 +3,7 @@ using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Graph;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.TestCompile;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -143,7 +144,7 @@ public class FunctionTests
     {
         var result = Compile(
             "function light(lamp, x)\n    lamp(intensity: x)\nend\nlamp_1 = placed(\"L\")\nlight(lamp_1, 5)",
-            Level());
+            level: Level());
 
         var wire = Assert.Single(result.PlacedWires);
         Assert.Equal("L", wire.To.Uid);
@@ -154,7 +155,7 @@ public class FunctionTests
     {
         var result = Compile(
             "function light(x)\n    lamp = placed(\"L\")\n    lamp(intensity: x)\nend\nlight(1)\nlight(2)",
-            Level());
+            level: Level());
 
         Assert.Equal(["3:10: Input 'intensity' of 'lamp' is already wired on line 5"], result.Errors.Select(e => e.ToString()));
     }
@@ -164,7 +165,7 @@ public class FunctionTests
     {
         var result = Compile(
             "function trigger() -> t\n    t = placed(\"T\")\nend\npower_display(trigger() & trigger())",
-            Level());
+            level: Level());
 
         Assert.Equal(2, result.PlacedWires.Count);
         Assert.Single(result.PlacedBlockReferences);
@@ -175,7 +176,7 @@ public class FunctionTests
     {
         var result = Compile(
             "function feed(p, x)\n    p(x)\nend\np = placed(\"P\")\nfeed(p, p & 1)",
-            new() { ["P"] = new PlacedBlock(BlockManifest.Passthrough.DefaultStyle.BlockId) });
+            level: new() { ["P"] = new PlacedBlock(BlockManifest.Passthrough.DefaultStyle.BlockId) });
 
         var error = Assert.Single(result.Errors);
         Assert.Equal((2, 7), (error.Position.Line, error.Position.Column));
@@ -365,10 +366,5 @@ public class FunctionTests
             ["T"] = new PlacedBlock(BlockManifest.Trigger.DefaultStyle.BlockId),
             ["L"] = new PlacedBlock(BlockManifest.Lamp.DefaultStyle.BlockId)
         };
-    }
-
-    private static CompileResult Compile(string text, Dictionary<string, PlacedBlock> level = null)
-    {
-        return ScriptCompiler.Compile(text, 0, [], uid => level?.GetValueOrDefault(uid));
     }
 }

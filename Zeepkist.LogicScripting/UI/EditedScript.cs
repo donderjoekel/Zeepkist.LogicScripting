@@ -55,7 +55,7 @@ internal sealed class EditedScript : EditedItem
     public override bool DrawHeader(ImGui gui)
     {
         var row = AddNameRow(gui, out var settings);
-        var buttonWidth = gui.MeasureTextSize(CompileLabel).x + (gui.Style.Layout.Indent * 2);
+        var buttonWidth = ButtonWidth.For(gui, CompileLabel);
         var buttonRect = row.TakeRight(buttonWidth, gui.Style.Layout.Spacing, out var nameRect);
 
         var (glyph, label, tooltip) = ScriptMarkText.Get(Entry.Mark);

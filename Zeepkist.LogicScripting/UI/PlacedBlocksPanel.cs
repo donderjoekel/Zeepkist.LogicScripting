@@ -50,7 +50,7 @@ internal sealed class PlacedBlocksPanel
         }
 
         var rows = GetRows(check);
-        gui.Text(rows.Count == 1 ? "1 placed block" : $"{rows.Count} placed blocks", WindowColors.Muted);
+        gui.Text(MessageFragments.Count(rows.Count, "placed block"), WindowColors.Muted);
         BlockProperties hovered = null;
         foreach (var reference in rows)
         {
@@ -92,7 +92,7 @@ internal sealed class PlacedBlocksPanel
     {
         if (central == null || central.selection.list.Count == 0)
         {
-            _insertMessage = "Select blocks in the level first";
+            _insertMessage = LevelEdit.NothingSelectedMessage;
             return false;
         }
 

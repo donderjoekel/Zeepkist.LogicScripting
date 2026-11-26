@@ -11,6 +11,8 @@ internal static class LevelEdit
 {
     public const string GrabbingMessage = "Let go of the grabbed blocks first";
 
+    public const string NothingSelectedMessage = "Select blocks in the level first";
+
     /// <summary>
     /// The level editor, or null with the reason it can't take a change now. The editor doesn't register undo steps,
     /// selection steps included, while blocks are grabbed, and a level still loading, as coming back from test mode,

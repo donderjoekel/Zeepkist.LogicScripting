@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Globalization;
-using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
@@ -38,18 +37,10 @@ internal sealed class SetStoredSettingStep : ScenarioStep
             yield break;
 
         var block = named.Block;
-        var blockEdit = block.GetAllBlockEditV18sFromThisBlock().FirstOrDefault(e => e.IsLogicBlock());
-        if (blockEdit == null)
-        {
-            context.Fail($"\"{Name}\" has no settings panel to change its Settings in");
-            yield break;
-        }
-
-        // As SetBlockSettingStep does: one undo step, and the level keeps it
         var before = central.undoRedo.currentHistoryPosition;
-        blockEdit.RegisterUndoRedo();
-        Write(blockEdit.GetCustomBlockProperties());
-        blockEdit.GetUpdateFromSlot(0, updateSlots: true);
+        if (!context.EditSettings(named, Write))
+            yield break;
+
         yield return null;
 
         var kept = Read(block.customBlockEditProperties);

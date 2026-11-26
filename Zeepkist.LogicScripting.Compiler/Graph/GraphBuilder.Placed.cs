@@ -19,6 +19,15 @@ internal sealed partial class GraphBuilder
     private readonly List<(GraphWire Wire, SyntaxNode Origin, Scope Scope)> _wiresIntoPlaced = [];
 
     /// <summary>
+    /// The line that defines <paramref name="name"/> as a Placed Block Reference to the block with
+    /// <paramref name="uid"/>.
+    /// </summary>
+    internal static string WritePlacedReference(string name, string uid)
+    {
+        return $"{name} = {PlacedFunction}(\"{uid}\")";
+    }
+
+    /// <summary>
     /// A <see cref="FailedValue"/> after reporting why the reference reaches no block. Several references to one UID share one block.
     /// </summary>
     private Resolved VisitPlaced(CallExpression call)
@@ -42,7 +51,7 @@ internal sealed partial class GraphBuilder
 
         AddPlacedBlockReference(new PlacedBlockReference(call.Position, name, uid.Value, type));
         if (style != null && _disabledBlockIds.Contains(style.BlockId))
-            return Fail(call, $"'{type.Describe(style)}' {MessageFragments.TurnedOff}");
+            return Fail(call, MessageFragments.DescribeTurnedOff(type, style));
 
         if (placed.IsInBlockGroup)
             return Fail(uid, $"Block \"{uid.Value}\" is {MessageFragments.InBlockGroup}. Refer to a hand-placed block, such as a Passthrough between two Scripts");

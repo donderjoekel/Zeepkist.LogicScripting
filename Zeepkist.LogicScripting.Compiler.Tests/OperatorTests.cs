@@ -18,7 +18,7 @@ public class OperatorTests
         var logic = result.Blocks[2];
         Assert.Equal(BlockManifest.Logic, logic.Type);
         Assert.Equal(["xmo=" + stored], logic.Settings.Select(Describe));
-        Assert.Equal(["0.0 -> 2.0", "1.0 -> 2.1", "2.3 -> 3.0"], result.Wires.Select(Describe));
+        Assert.Equal(["0.0 -> 2.0", "1.0 -> 2.1", "2.3 -> 3.0"], result.Wires.Select(WireText.Describe));
     }
 
     [Theory]
@@ -41,7 +41,7 @@ public class OperatorTests
         var math = result.Blocks[2];
         Assert.Equal(BlockManifest.Math, math.Type);
         Assert.Equal(["xmo=" + stored], math.Settings.Select(Describe));
-        Assert.Equal(["0.0 -> 2.0", "1.0 -> 2.1", "2.3 -> 3.0"], result.Wires.Select(Describe));
+        Assert.Equal(["0.0 -> 2.0", "1.0 -> 2.1", "2.3 -> 3.0"], result.Wires.Select(WireText.Describe));
     }
 
     [Theory]
@@ -106,7 +106,7 @@ public class OperatorTests
         Assert.Equal(
             [BlockManifest.Generator, BlockManifest.Math, BlockManifest.Generator, BlockManifest.PowerDisplay],
             result.Blocks.Select(b => b.Type));
-        Assert.Equal(["2.0 -> 1.0", "0.0 -> 1.1", "1.3 -> 3.0"], result.Wires.Select(Describe));
+        Assert.Equal(["2.0 -> 1.0", "0.0 -> 1.1", "1.3 -> 3.0"], result.Wires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -121,10 +121,5 @@ public class OperatorTests
     private static string Describe(Setting setting)
     {
         return setting.Kind == SettingKind.Int ? $"{setting.Key}={setting.IntValue}" : $"{setting.Key}=\"{setting.TextValue}\"";
-    }
-
-    private static string Describe(CompiledWire wire)
-    {
-        return $"{wire.From}.{wire.FromConnector} -> {wire.To}.{wire.ToConnector}";
     }
 }

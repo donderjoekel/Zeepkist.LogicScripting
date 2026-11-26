@@ -109,4 +109,12 @@ internal static class PlacedBlocks
             ? hub.GetThisHubsConnectionStructs() ?? []
             : [];
     }
+
+    /// <summary>
+    /// The Wires of all the block's Connectors.
+    /// </summary>
+    public static IEnumerable<ConnectionStruct> GetAllWires(BlockProperties block)
+    {
+        return block.allConnectorHubsOnThisBlock.Values.SelectMany(hub => hub?.GetThisHubsConnectionStructs() ?? []);
+    }
 }

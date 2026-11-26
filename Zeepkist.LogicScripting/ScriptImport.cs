@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using BepInEx.Logging;
 using TNRD.Zeepkist.LogicScripting.Blocks;
@@ -23,7 +22,6 @@ internal static class ScriptImport
     public const string DefaultName = "Imported";
 
     private const string UndoLabel = "Logic Scripting Import";
-    private const string NothingSelectedMessage = "Select blocks in the level first";
 
     /// <summary>
     /// The level editor, or null with the reason no selected blocks can be imported now.
@@ -34,7 +32,7 @@ internal static class ScriptImport
         if (central == null || central.selection.list.Count > 0)
             return central;
 
-        blocker = NothingSelectedMessage;
+        blocker = LevelEdit.NothingSelectedMessage;
         return null;
     }
 
@@ -143,7 +141,7 @@ internal static class ScriptImport
         block.customBlockEditProperties ??= new PropertyDictionariesJSON();
         var properties = block.customBlockEditProperties;
         LevelScripts.Untag(properties);
-        properties.SetStringDictionaryValue(BlockGroupTag.Key, BlockGroupTag.Create(script.Id, block.UID));
+        LevelScripts.Tag(properties, script.Id, block.UID);
         if (isCarrier)
             LevelScripts.Write(properties, script);
     }
@@ -198,16 +196,15 @@ internal static class ScriptImport
     /// </summary>
     private static HashSet<string> FindTogglerTargets(LEV_LevelEditorCentral central)
     {
-        var keyPrefix = BlockManifest.Toggler.Settings.First(s => s.Type == SettingType.Targets).Key;
+        var targetsSetting = BlockManifest.Toggler.Settings.First(s => s.Type == SettingType.Targets);
         HashSet<string> targets = [];
-        foreach (var block in central.undoRedo.allBlocksDictionary.Values)
+        foreach (var block in LevelBlocks.GetAll(central))
         {
-            if (block == null || BlockManifest.GetPlacedType(block.blockID) != BlockManifest.Toggler)
+            if (BlockManifest.GetPlacedType(block.blockID) != BlockManifest.Toggler)
                 continue;
 
-            for (var i = 1; i <= BlockSetting.MaxTargets; i++)
+            foreach (var key in targetsSetting.GetTargetKeys())
             {
-                var key = keyPrefix + i.ToString(CultureInfo.InvariantCulture);
                 if (block.customBlockEditProperties?.t != null && block.customBlockEditProperties.t.TryGetValue(key, out var uid))
                     targets.Add(uid);
             }

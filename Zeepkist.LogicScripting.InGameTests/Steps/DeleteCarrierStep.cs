@@ -25,12 +25,9 @@ internal sealed class DeleteCarrierStep : ScenarioStep
         if (central == null)
             yield break;
 
-        var scriptId = context.Window.FindScriptId(Script);
+        var scriptId = context.RequireScriptId(Script);
         if (scriptId == null)
-        {
-            context.FailNoScript(Script);
             yield break;
-        }
 
         var group = BlockGroups.Find(central, scriptId);
         var carrier = group.FirstOrDefault(LevelScripts.IsCarrier);

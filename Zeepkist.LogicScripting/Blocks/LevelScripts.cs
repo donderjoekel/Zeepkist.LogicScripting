@@ -19,9 +19,9 @@ internal static class LevelScripts
         List<StoredScript> stored = [];
         Dictionary<ScriptId, int> blockCounts = [];
         HashSet<ScriptId> storedIds = [];
-        foreach (var block in central.undoRedo.allBlocksDictionary.Values)
+        foreach (var block in LevelBlocks.GetAll(central))
         {
-            var scriptId = block == null ? null : BlockGroups.GetScriptId(block);
+            var scriptId = BlockGroups.GetScriptId(block);
             if (scriptId == null)
                 continue;
 
@@ -32,6 +32,14 @@ internal static class LevelScripts
         }
 
         return (stored, blockCounts);
+    }
+
+    /// <summary>
+    /// Makes the block with <paramref name="uid"/> a member of the Block Group of the Script with <paramref name="id"/>.
+    /// </summary>
+    public static void Tag(PropertyDictionariesJSON properties, ScriptId id, string uid)
+    {
+        properties.SetStringDictionaryValue(BlockGroupTag.Key, BlockGroupTag.Create(id, uid));
     }
 
     /// <summary>

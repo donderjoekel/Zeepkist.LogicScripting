@@ -27,9 +27,6 @@ internal sealed class ExpectOrphansStep : ScenarioStep
 
         var expected = Count.ToString(CultureInfo.InvariantCulture);
         var actual = context.Window.Orphans.Count.ToString(CultureInfo.InvariantCulture);
-        if (context.Window.Orphans.Count == Count)
-            context.Pass(context.DescribeOrphans(), expected, actual);
-        else
-            context.Fail(context.DescribeOrphans(), expected, actual);
+        context.Check(context.Window.Orphans.Count == Count, context.DescribeOrphans(), expected, actual);
     }
 }

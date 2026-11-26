@@ -244,7 +244,7 @@ public sealed class CaretContext
             givenArguments,
             positionalArguments,
             IsFirstOnLine(tokens, word),
-            DefinedNames.ReadFunctions(tokens).Select(f => f.Function).ToList());
+            DefinedNames.ReadEveryFunction(tokens));
     }
 
     private static TextSpan FindWord(string text, int caret)
@@ -273,7 +273,7 @@ public sealed class CaretContext
     private static bool IsFirstOnLine(List<Token> tokens, TextSpan word)
     {
         var before = tokens.FindLastIndex(t => t.Span.Start < word.Start);
-        return before < 0 || tokens[before].Kind == TokenKind.NewLine;
+        return Lexer.IsFirstOnLine(tokens, before + 1);
     }
 
     /// <summary>
@@ -403,7 +403,7 @@ public sealed class CaretContext
         if (colon >= 2
             && tokens[colon - 2].Kind == TokenKind.Name
             && tokens[colon - 2].Text == DefaultStatement.Keyword
-            && (colon == 2 || tokens[colon - 3].Kind == TokenKind.NewLine))
+            && Lexer.IsFirstOnLine(tokens, colon - 2))
         {
             if (valueOnNextLine)
                 return null;

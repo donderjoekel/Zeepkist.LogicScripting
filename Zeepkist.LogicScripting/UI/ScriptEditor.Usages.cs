@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Imui.Controls;
 using Imui.Core;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
@@ -41,11 +40,8 @@ internal sealed partial class ScriptEditor
             if (span.End > Text.Length)
                 continue;
 
-            var line = ImTextEdit.FindLineAtCaretPosition(span.Start, in _layout, out var offset);
-            var from = ImTextEdit.LineOffsetToViewPosition(line, offset, Text, textRect, gui.TextDrawer, in _layout);
-            var to = ImTextEdit.LineOffsetToViewPosition(line, offset + span.Length, Text, textRect, gui.TextDrawer, in _layout);
-            // Where the Ctrl+click underline goes, above an error underline
-            var y = from.y - _layout.LineHeight + (ErrorThickness * 2) + JumpThickness;
+            var (from, to) = GetUnderlineEnds(gui, span, textRect);
+            var y = GetRaisedUnderlineY(from);
             gui.Canvas.Line(new Vector2(from.x, y), new Vector2(to.x, y), palette.Usage, UsageThickness);
         }
 

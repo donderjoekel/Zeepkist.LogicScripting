@@ -28,9 +28,7 @@ internal static partial class BlockBatch
         IReadOnlyList<BlockWire> wires,
         string label)
     {
-        // BreakLock silently skips the undo step while grabbing
-        if (central.gizmos.isGrabbing)
-            throw new InvalidOperationException("Can't apply a block batch while blocks are grabbed");
+        ThrowIfGrabbing(central);
 
         // Undo finds each block by UID, so a remove and an add of one UID in one step would depend on their order
         HashSet<string> removedUids = [.. removes.Select(b => b.UID)];
@@ -81,15 +79,14 @@ internal static partial class BlockBatch
         Action<BlockProperties> change,
         string label)
     {
-        if (central.gizmos.isGrabbing)
-            throw new InvalidOperationException("Can't apply a block batch while blocks are grabbed");
+        ThrowIfGrabbing(central);
 
         List<ChangedBlock> changed = [];
         try
         {
             foreach (var block in blocks)
             {
-                changed.Add(new ChangedBlock(block, block.ConvertBlockToJSON_v15_string(true)));
+                changed.Add(ChangedBlock.Capture(block));
                 change(block);
             }
 
@@ -100,6 +97,13 @@ internal static partial class BlockBatch
             Restore(central, changed, label);
             throw;
         }
+    }
+
+    private static void ThrowIfGrabbing(LEV_LevelEditorCentral central)
+    {
+        // BreakLock silently skips the undo step while grabbing
+        if (central.gizmos.isGrabbing)
+            throw new InvalidOperationException("Can't apply a block batch while blocks are grabbed");
     }
 
     /// <summary>
@@ -119,10 +123,9 @@ internal static partial class BlockBatch
         HashSet<string> wiredUids = [];
         foreach (var block in blocks)
         {
-            foreach (var blockEdit in block.GetAllBlockEditV18sFromThisBlock())
+            foreach (var connections in GetConnections(block))
             {
-                if (blockEdit.HasConnectors())
-                    wiredUids.UnionWith(blockEdit.GetBlockEditV18ConnectionBase().GetAllConnectedUIDsOnEntireBlockEdit());
+                wiredUids.UnionWith(connections.GetAllConnectedUIDsOnEntireBlockEdit());
             }
         }
 
@@ -136,7 +139,7 @@ internal static partial class BlockBatch
 
         foreach (var survivor in survivors)
         {
-            changed.Add(new ChangedBlock(survivor, survivor.ConvertBlockToJSON_v15_string(true)));
+            changed.Add(ChangedBlock.Capture(survivor));
         }
 
         var wasSelected = blocks.Any(central.selection.list.Contains);
@@ -213,10 +216,9 @@ internal static partial class BlockBatch
     {
         foreach (var block in blocks)
         {
-            foreach (var blockEdit in block.GetAllBlockEditV18sFromThisBlock())
+            foreach (var connections in GetConnections(block))
             {
-                if (blockEdit.HasConnectors())
-                    blockEdit.GetBlockEditV18ConnectionBase().LoadProperties();
+                connections.LoadProperties();
             }
         }
 
@@ -245,7 +247,7 @@ internal static partial class BlockBatch
             foreach (var block in new[] { from.GetBlockProperties(), to.GetBlockProperties() })
             {
                 if (touched.Add(block))
-                    changed.Add(new ChangedBlock(block, block.ConvertBlockToJSON_v15_string(true)));
+                    changed.Add(ChangedBlock.Capture(block));
             }
 
             from.Connect(to, true);
@@ -337,12 +339,8 @@ internal static partial class BlockBatch
         {
             change.Block.customBlockEditProperties = LEV_UndoRedo.GetJSONblock(change.Before).d?.Clone() ?? new PropertyDictionariesJSON();
             reloaded.Add(change.Block.UID);
-            foreach (var blockEdit in change.Block.GetAllBlockEditV18sFromThisBlock())
+            foreach (var connections in GetConnections(change.Block))
             {
-                if (!blockEdit.HasConnectors())
-                    continue;
-
-                var connections = blockEdit.GetBlockEditV18ConnectionBase();
                 connections.LoadProperties();
                 affected.UnionWith(connections.GetAllConnectedUIDsOnEntireBlockEdit_ButAlsoYourOwnBlockUID());
             }
@@ -363,11 +361,15 @@ internal static partial class BlockBatch
 
     private static void RedrawWires(BlockProperties block, string label)
     {
-        foreach (var blockEdit in block.GetAllBlockEditV18sFromThisBlock())
+        foreach (var connections in GetConnections(block))
         {
-            if (blockEdit.HasConnectors())
-                blockEdit.GetBlockEditV18ConnectionBase().ForceRedrawConnectionVisualizers(label);
+            connections.ForceRedrawConnectionVisualizers(label);
         }
+    }
+
+    private static IEnumerable<BlockEdit_v18_Connector_Base> GetConnections(BlockProperties block)
+    {
+        return block.GetAllBlockEditV18sFromThisBlock().Where(e => e.HasConnectors()).Select(e => e.GetBlockEditV18ConnectionBase());
     }
 
     private static void Remove(LEV_LevelEditorCentral central, List<BlockProperties> blocks)

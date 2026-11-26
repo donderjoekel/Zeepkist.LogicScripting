@@ -94,9 +94,7 @@ internal sealed class CompletionPopup
         var rows = _session.VisibleRows;
         var width = Mathf.Min(MaxWidth, _labelWidth + (_detailWidth > 0 ? (spacing * DetailGap) + _detailWidth : 0) + (spacing * 2) + padding.Horizontal);
         var height = (rows * _rowHeight) + padding.Vertical;
-        var below = wordPosition.y - lineHeight - height;
-        var y = PopupPlacement.Choose(below, wordPosition.y, height, (editor.Y, editor.Top), (window.Y, window.Top)) ?? wordPosition.y;
-        _rect = ImRectUtility.Clamp(window, new ImRect(wordPosition.x - padding.Left - spacing, y, width, height));
+        _rect = PopupPlacement.PlaceBelow(wordPosition, lineHeight, wordPosition.x - padding.Left - spacing, width, height, editor, window);
         _rows = _rect.WithPadding(padding);
 
         gui.BeginPopup();
@@ -104,7 +102,7 @@ internal sealed class CompletionPopup
         gui.RegisterControl(gui.GetControlId("completion"), _rect);
 
         var palette = SyntaxPalette.For(gui.Style.Menu.Box.BackColor, gui.Style.Text.Color);
-        var settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        var settings = SingleLineText.GetSettings(gui);
         var detailSettings = new ImTextSettings(gui.Style.Layout.TextSize, 1, 0.5f, overflow: ImTextOverflow.Ellipsis);
         var hovered = GetRowAt(gui.Input.MousePosition);
         var selected = _session.Selected;

@@ -1,7 +1,6 @@
 using Imui.Controls;
 using Imui.Core;
 using Imui.IO.Events;
-using Imui.Rendering;
 using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
@@ -118,10 +117,10 @@ internal sealed class RenamePrompt
         gui.AddSpacingIfLayoutFrameNotEmpty();
         var row = gui.AddSingleRowRect(default);
         var spacing = gui.Style.Layout.Spacing;
-        var cancelRect = row.TakeRight(GetButtonWidth(gui, CancelLabel), spacing, out row);
-        var okRect = row.TakeRight(GetButtonWidth(gui, OkLabel), spacing, out row);
+        var cancelRect = row.TakeRight(ButtonWidth.For(gui, CancelLabel), spacing, out row);
+        var okRect = row.TakeRight(ButtonWidth.For(gui, OkLabel), spacing, out row);
         var label = $"Rename \"{Name}\" to";
-        var settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        var settings = SingleLineText.GetSettings(gui);
         var labelRect = row.TakeLeft(Mathf.Min(gui.MeasureTextSize(label, settings).x, row.W / 2), spacing, out var fieldRect);
         gui.Text(label, settings, labelRect);
 
@@ -191,10 +190,5 @@ internal sealed class RenamePrompt
         }
 
         return taken;
-    }
-
-    private static float GetButtonWidth(ImGui gui, string label)
-    {
-        return gui.MeasureTextSize(label).x + (gui.Style.Layout.Indent * 2);
     }
 }

@@ -284,8 +284,8 @@ public class NameRenameTests
         Assert.True(result.Succeeded, result.Error);
         Assert.True(after.Succeeded);
         Assert.Equal(before.Blocks.Select(DescribeBlock), after.Blocks.Select(DescribeBlock));
-        Assert.Equal(before.Wires.Select(DescribeWire), after.Wires.Select(DescribeWire));
-        Assert.Equal(before.PlacedWires.Select(DescribeWire), after.PlacedWires.Select(DescribeWire));
+        Assert.Equal(before.Wires.Select(WireText.Describe), after.Wires.Select(WireText.Describe));
+        Assert.Equal(before.PlacedWires.Select(WireText.Describe), after.PlacedWires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -326,11 +326,6 @@ public class NameRenameTests
     {
         var settings = string.Join(",", block.Settings.Select(s => $"{s.Key}={s.Kind}:{s.IntValue}:{s.TextValue}"));
         return $"{block.Type}/{block.Style}/{block.Yaw}/{block.Cell.X},{block.Cell.Z}/{settings}";
-    }
-
-    private static string DescribeWire(CompiledWire wire)
-    {
-        return $"{wire.From}:{wire.FromConnector}>{wire.To}:{wire.ToConnector}";
     }
 
     private static RenameResult Rename(string marked, string newName)

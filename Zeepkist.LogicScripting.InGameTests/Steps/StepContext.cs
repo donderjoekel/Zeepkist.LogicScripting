@@ -6,6 +6,7 @@ using System.Linq;
 using BepInEx.Logging;
 using Imui.Core;
 using TNRD.Zeepkist.LogicScripting.Blocks;
+using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 using TNRD.Zeepkist.LogicScripting.UI;
@@ -112,6 +113,29 @@ internal sealed class StepContext
         Actual = actual;
     }
 
+    /// <summary>
+    /// Passes or fails the step by <paramref name="passed"/>, with the same result either way.
+    /// </summary>
+    public void Check(bool passed, string detail, string expected, string actual)
+    {
+        if (passed)
+            Pass(detail, expected, actual);
+        else
+            Fail(detail, expected, actual);
+    }
+
+    /// <summary>
+    /// Passes when <paramref name="found"/> contains <paramref name="text"/>, matching case. Fails with
+    /// <paramref name="failure"/> otherwise, reporting <paramref name="nothing"/> as found when it's empty.
+    /// </summary>
+    public void ExpectContains(string text, string found, string failure, string nothing)
+    {
+        if (found.IndexOf(text, StringComparison.Ordinal) >= 0)
+            Pass(found, text, found);
+        else
+            Fail(failure, text, found.Length == 0 ? nothing : found);
+    }
+
     public void FailNoScript(string name)
     {
         Fail($"no Script named \"{name}\"", name, string.Join(", ", Window.ScriptNames));
@@ -197,11 +221,8 @@ internal sealed class StepContext
     /// </summary>
     public RunningBlock RequireRunningBlock(string name)
     {
-        if (!TestModeControls.IsActive)
-        {
-            Fail("not in test mode: add test-mode first");
+        if (!RequireTestMode())
             return null;
-        }
 
         var uid = RequireUid(name);
         if (uid == null)
@@ -301,6 +322,24 @@ internal sealed class StepContext
     }
 
     /// <summary>
+    /// For a step that checks which of a side's two tabs shows, named by the words in <paramref name="tabs"/>. Fails the
+    /// step when the window isn't open.
+    /// </summary>
+    public void ExpectTab(IReadOnlyDictionary<string, bool> tabs, bool expected, Func<bool> shows)
+    {
+        if (!RequireOpenWindow())
+            return;
+
+        var shown = shows();
+        var expectedName = ChoiceNames.Of(tabs, expected);
+        var actual = ChoiceNames.Of(tabs, shown);
+        if (shown == expected)
+            Pass($"the {actual} tab shows", expectedName, actual);
+        else
+            Fail($"the {actual} tab shows instead", expectedName, actual);
+    }
+
+    /// <summary>
     /// Waits for the window to be drawn, unless it was this frame, so its rect is the one Imui keeps now and not the one
     /// it had before it closed. Fails the step when it isn't drawn in time.
     /// </summary>
@@ -392,6 +431,58 @@ internal sealed class StepContext
             Fail("no blocks are selected: add select-blocks first");
 
         return Failed ? null : central;
+    }
+
+    /// <summary>
+    /// Fails the step when the game isn't in test mode. Returns whether it is.
+    /// </summary>
+    public bool RequireTestMode()
+    {
+        var active = TestModeControls.IsActive;
+        if (!active)
+            Fail("not in test mode: add test-mode first");
+
+        return active;
+    }
+
+    /// <summary>
+    /// The id of the Script with the name, or null after failing the step when there's none.
+    /// </summary>
+    public ScriptId RequireScriptId(string name)
+    {
+        var scriptId = Window.FindScriptId(name);
+        if (scriptId == null)
+            FailNoScript(name);
+
+        return scriptId;
+    }
+
+    /// <summary>
+    /// Changes the block's stored Settings with <paramref name="write"/> through the block's editor, as its settings
+    /// panel does, so the change is one undo step and the level keeps it. Fails the step when the block has no settings
+    /// panel. Returns whether it changed them, which the block takes a frame later.
+    /// </summary>
+    public bool EditSettings(NamedBlock named, Action<PropertyDictionariesJSON> write)
+    {
+        var blockEdit = named.Block.GetAllBlockEditV18sFromThisBlock().FirstOrDefault(e => e.IsLogicBlock());
+        if (blockEdit == null)
+        {
+            Fail($"\"{named.Name}\" has no settings panel to change its Settings in");
+            return false;
+        }
+
+        blockEdit.RegisterUndoRedo();
+        write(blockEdit.GetCustomBlockProperties());
+        blockEdit.GetUpdateFromSlot(0, updateSlots: true);
+        return true;
+    }
+
+    /// <summary>
+    /// Waits for the shown tab's list to take a click on one of its entries, as <see cref="WaitForShownList"/> does.
+    /// </summary>
+    public IEnumerator WaitForListClick()
+    {
+        return WaitForShownList("the list wasn't drawn to take the click: is the Scripts side collapsed?");
     }
 
     /// <summary>

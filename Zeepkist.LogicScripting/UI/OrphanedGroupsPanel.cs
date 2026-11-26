@@ -4,7 +4,6 @@ using System.Globalization;
 using BepInEx.Logging;
 using Imui.Controls;
 using Imui.Core;
-using Imui.Rendering;
 using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
@@ -92,7 +91,7 @@ internal sealed class OrphanedGroupsPanel
         foreach (var orphan in orphanedGroups)
         {
             var name = GetName(orphan);
-            gui.Text(orphan.BlockCount == 1 ? $"{name}, 1 block" : $"{name}, {orphan.BlockCount} blocks", wrap: true);
+            gui.Text($"{name}, {MessageFragments.Count(orphan.BlockCount, "block")}", wrap: true);
 
             // Three short buttons share a row and the others get their own, so all fit the narrow Scripts side
             gui.AddSpacingIfLayoutFrameNotEmpty();
@@ -151,7 +150,7 @@ internal sealed class OrphanedGroupsPanel
         else
             ImFoldout.DrawArrowDown(gui.Canvas, arrowRect, WindowColors.Warning, gui.Style.Foldout.ArrowScale);
 
-        var settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        var settings = SingleLineText.GetSettings(gui);
         var countText = count.ToString(CultureInfo.InvariantCulture);
         var countRect = labelRect.TakeRight(gui.MeasureTextSize(countText, settings).x, spacing, out labelRect);
         gui.Text("Orphaned Groups", settings, WindowColors.Warning, labelRect);
@@ -179,7 +178,7 @@ internal sealed class OrphanedGroupsPanel
         if (count == null)
             _message = "That failed, level unchanged";
         else
-            _message = count == 1 ? $"{verb} 1 block" : $"{verb} {count} blocks";
+            _message = $"{verb} {MessageFragments.Count(count.Value, "block")}";
     }
 
     private void Select(OrphanedGroup orphan)

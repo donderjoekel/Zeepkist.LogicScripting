@@ -305,8 +305,7 @@ internal sealed class TestRun : IDisposable
         }
 
         central.pause.QuitToMenu();
-        if (central.unsavedContentPopup.IsOpen)
-            central.unsavedContentPopup.Yes();
+        TestLevels.ConfirmUnsaved(central);
 
         yield return EnterEditor();
         if (!_walkFailed)

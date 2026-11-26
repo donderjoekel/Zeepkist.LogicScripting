@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Import;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.ImportedBlocks;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -10,21 +11,6 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 /// </summary>
 public class BlockImportKeptTests
 {
-    private const int GeneratorId = 2414;
-    private const int DisplayId = 2415;
-    private const int MathId = 2416;
-    private const int TogglerId = 2417;
-    private const int LogicId = 2420;
-    private const int RandomId = 2425;
-    private const int DelayId = 2428;
-    private const int CounterId = 2434;
-    private const int TelemetryId = 2440;
-    private const int TimerId = 2444;
-    private const int ForceGiverId = 2446;
-    private const int LampId = 2448;
-    private const int MultiplierId = 2449;
-    private const int Math3PinsId = 2453;
-
     public static TheoryData<string, int, int, string, string> KeptOnBothSides => new()
     {
         { "math", MathId, 3, "oi2", "has a Setting a Script can't write, \"oi2\"" },
@@ -36,10 +22,6 @@ public class BlockImportKeptTests
         { "logic", LogicId, 3, "idle", "has a Setting a Script can't write, \"idle\"" }
     };
 
-    private static ImportedBlock Generator(string uid = "g") => new(uid, GeneratorId);
-    private static ImportedBlock Display(string uid = "p") => new(uid, DisplayId);
-    private static ImportedBlock Logic(string uid = "l") => new(uid, LogicId);
-    private static ImportedBlock Delay(string uid = "d") => Block(uid, DelayId, ("ldl", "1"));
     private static ImportedBlock KeptMath(string uid = "m") => Block(uid, MathId, ("oi2", "7"));
 
     [Theory]
@@ -51,7 +33,7 @@ public class BlockImportKeptTests
             new ImportedWire("g", 0, "k", 0),
             new ImportedWire("k", output, "p", 0));
 
-        var import = AssertImports(
+        var import = ImportAssert.Imports(
             level,
             $"""
             # {function} "k" {reason}
@@ -77,7 +59,7 @@ public class BlockImportKeptTests
     {
         var level = new ImportLevel([Generator(), Block("f", ForceGiverId, (key, "3"))], new ImportedWire("g", 0, "f", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             $"""
             # force_giver "f" has a Setting a Script can't write, "{key}"
@@ -96,7 +78,7 @@ public class BlockImportKeptTests
             [Generator(), new ImportedBlock("m", MultiplierId, floats: new Dictionary<string, float> { ["x3"] = 0.5f })],
             new ImportedWire("g", 0, "m", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             """
             # property_multiplier "m" has a Setting a Script can't write, "x3"
@@ -131,7 +113,7 @@ public class BlockImportKeptTests
             new ImportedWire("g", 0, "d", 0),
             new ImportedWire("d", 1, "p", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             $"""
             # delay "d" {reason}
@@ -150,7 +132,7 @@ public class BlockImportKeptTests
     {
         var level = new ImportLevel([Generator(), new ImportedBlock("t", TogglerId)], new ImportedWire("g", 0, "t", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             """
             # toggler "t" has no targets, which a Script has to give
@@ -167,7 +149,7 @@ public class BlockImportKeptTests
     {
         ImportedBlock[] blocks = [Generator(), Logic(), Block("t", TogglerId, ("xuid2", "l"))];
 
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel(blocks),
             """
             # toggler "t" has a value for targets that a Script can't write
@@ -177,7 +159,7 @@ public class BlockImportKeptTests
             """,
             "g",
             "t");
-        AssertRefused(new ImportLevel(blocks), "a Toggler targets logic \"l\", and would lose it at the next Compile", "g", "l", "t");
+        ImportAssert.Refused(new ImportLevel(blocks), "a Toggler targets logic \"l\", and would lose it at the next Compile", "g", "l", "t");
         Assert.Equal(
             "a Toggler targets logic \"l\", and would lose it at the next Compile",
             BlockImport.Import(blocks, []).Refusal);
@@ -186,7 +168,7 @@ public class BlockImportKeptTests
     [Fact]
     public void ATargetOfSelectedTogglers_IsNoReason_WhenItIsKept()
     {
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel([KeptMath(), Block("t", TogglerId, ("xuid1", "m"))]),
             """
             # math "m" has a Setting a Script can't write, "oi2"
@@ -204,7 +186,7 @@ public class BlockImportKeptTests
         var logic = new ImportedBlock("l", LogicId, ints: new Dictionary<string, int> { ["xmo"] = 6 });
         var hidden = new ImportedBlock("p", DisplayId, ints: new Dictionary<string, int> { ["lbhd"] = 2 });
 
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel([Generator(), logic, hidden], new ImportedWire("l", 3, "p", 0)),
             """
             # logic "l" has a value for op that a Script can't write
@@ -272,7 +254,7 @@ public class BlockImportKeptTests
     [Fact]
     public void AKeyWithALineBreak_StaysOnTheCommentsLine()
     {
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel([Generator(), Block("l", LogicId, ("a\r\ngenerator()", "5"))]),
             """
             # logic "l" has a Setting a Script can't write, "agenerator()"
@@ -293,7 +275,7 @@ public class BlockImportKeptTests
             new ImportedWire("m", 3, "n", 0),
             new ImportedWire("n", 3, "p", 0));
 
-        var import = AssertImports(
+        var import = ImportAssert.Imports(
             level,
             """
             # math "m" has a Setting a Script can't write, "oi2"
@@ -343,7 +325,7 @@ public class BlockImportKeptTests
     [Fact]
     public void AnotherOutsideBlock_HasNoComment()
     {
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel(
                 [KeptMath(), Logic(), new ImportedBlock("lamp", LampId)],
                 new ImportedWire("m", 3, "l", 0),
@@ -363,7 +345,7 @@ public class BlockImportKeptTests
     [Fact]
     public void AnUnselectedBlockWithSuchASetting_IsAnOutsideBlockLikeAnother()
     {
-        var import = AssertImports(
+        var import = ImportAssert.Imports(
             new ImportLevel([KeptMath(), Display()], new ImportedWire("m", 3, "p", 0)),
             """
             math_1 = placed("m")
@@ -380,7 +362,7 @@ public class BlockImportKeptTests
     {
         var hidden = new ImportedBlock("g", GeneratorId, ints: new Dictionary<string, int> { ["lbhd"] = 1 });
 
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel([hidden, KeptMath()]),
             """
             default hide: true
@@ -397,9 +379,9 @@ public class BlockImportKeptTests
     [Fact]
     public void ALoopThroughAKeptBlock_WithADelay_IsWritten()
     {
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel(
-                [KeptMath(), Logic(), Delay()],
+                [KeptMath(), Logic(), Delay("d", 1)],
                 new ImportedWire("l", 3, "m", 0),
                 new ImportedWire("m", 3, "d", 0),
                 new ImportedWire("d", 1, "l", 0)),
@@ -417,7 +399,7 @@ public class BlockImportKeptTests
     [Fact]
     public void ALoopThroughAKeptDelay_IsWritten()
     {
-        AssertImports(
+        ImportAssert.Imports(
             new ImportLevel(
                 [Logic(), Block("d", DelayId, ("ldl", "0"))],
                 new ImportedWire("l", 3, "d", 0),
@@ -435,7 +417,7 @@ public class BlockImportKeptTests
     [Fact]
     public void ADependencyLoopThroughAKeptBlock_IsRefused_NamingIt()
     {
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel(
                 [KeptMath(), Logic()],
                 new ImportedWire("l", 3, "m", 0),
@@ -451,7 +433,7 @@ public class BlockImportKeptTests
     {
         var telemetry = new ImportedBlock("s", TelemetryId, ints: new Dictionary<string, int> { ["xbs"] = 3 });
 
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel([telemetry, Generator()]),
             "simple_telemetry \"s\" has a value for mode that a Script can't write",
             "s",
@@ -461,8 +443,8 @@ public class BlockImportKeptTests
     [Fact]
     public void OnlyBlocksAScriptCantWrite_AreRefused_NamingEach()
     {
-        AssertRefused(new ImportLevel([KeptMath()]), "math \"m\" has a Setting a Script can't write, \"oi2\"", "m");
-        AssertRefused(
+        ImportAssert.Refused(new ImportLevel([KeptMath()]), "math \"m\" has a Setting a Script can't write, \"oi2\"", "m");
+        ImportAssert.Refused(
             new ImportLevel([KeptMath(), new ImportedBlock("t", TogglerId), new ImportedBlock("lamp", LampId)]),
             "a Script can't write any of the blocks: math \"m\" has a Setting a Script can't write, \"oi2\", "
             + "toggler \"t\" has no targets, which a Script has to give",
@@ -476,7 +458,7 @@ public class BlockImportKeptTests
     {
         var grouped = new ImportedBlock("m", MathId, isInBlockGroup: true, texts: new Dictionary<string, string> { ["oi2"] = "7" });
 
-        AssertRefused(new ImportLevel([Generator(), grouped]), "math \"m\" is in a Block Group, which a recompile replaces", "g", "m");
+        ImportAssert.Refused(new ImportLevel([Generator(), grouped]), "math \"m\" is in a Block Group, which a recompile replaces", "g", "m");
     }
 
     [Fact]
@@ -492,32 +474,6 @@ public class BlockImportKeptTests
         Assert.Equal(
             $"logic \"l\" has a Setting a Script can't write, \"{key}\"",
             Assert.Single(new ImportLevel([Generator(), logic]).Import("g", "l").Kept).Reason);
-    }
-
-    /// <summary>
-    /// Also that compiling the text over the imported blocks gives as many blocks.
-    /// </summary>
-    private static ImportResult AssertImports(ImportLevel level, string text, params string[] selected)
-    {
-        var import = level.Import(selected);
-
-        Assert.Null(import.Refusal);
-        Assert.Equal(text.Replace("\r\n", "\n"), import.Text);
-        Assert.DoesNotContain(import.Kept, k => import.ImportedUids.Contains(k.Uid));
-        var compiled = level.Compile(import);
-        Assert.Empty(compiled.Errors);
-        Assert.Equal(import.ImportedUids.Count, compiled.Blocks.Count);
-        return import;
-    }
-
-    private static void AssertRefused(ImportLevel level, string refusal, params string[] selected)
-    {
-        var import = level.Import(selected);
-
-        Assert.Equal(refusal, import.Refusal);
-        Assert.Null(import.Text);
-        Assert.Empty(import.ImportedUids);
-        Assert.Empty(import.Kept);
     }
 
     private static ImportedBlock Block(string uid, int blockId, params (string Key, string Value)[] texts)

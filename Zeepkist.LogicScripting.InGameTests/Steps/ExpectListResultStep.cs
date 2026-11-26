@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
@@ -17,11 +16,7 @@ internal sealed class ExpectListResultStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
-        var result = context.Window.ShownList.Message;
-        if (result.IndexOf(Text, StringComparison.Ordinal) >= 0)
-            context.Pass(result, Text, result);
-        else
-            context.Fail("the tab's result line doesn't contain it", Text, result.Length == 0 ? "(no result line)" : result);
+        context.ExpectContains(Text, context.Window.ShownList.Message, "the tab's result line doesn't contain it", "(no result line)");
 
         yield return null;
     }

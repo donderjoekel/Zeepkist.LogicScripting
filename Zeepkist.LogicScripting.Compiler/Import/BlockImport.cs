@@ -133,7 +133,7 @@ public static class BlockImport
 
         BlockManifest.TryGetBlock(block.BlockId, out var type, out var style);
         if (disabledBlockIds.Contains(style.BlockId))
-            return $"{Describe(block)} can't be imported: '{type.Describe(style)}' {MessageFragments.TurnedOff}";
+            return $"{Describe(block)} can't be imported: {MessageFragments.DescribeTurnedOff(type, style)}";
 
         // The block has no outputs in a mode that isn't one of the options
         return type.Modes != null && !IsWritable(block, type.Modes.Setting) ? DescribeUnwritable(block, type.Modes.Setting) : null;

@@ -18,24 +18,12 @@ internal static class CompiledBlockJson
         List<BlockPropertyJSON> jsons = [];
         foreach (var block in result.Blocks)
         {
-            var json = new BlockPropertyJSON
-            {
-                i = block.Style.BlockId,
-                u = PlayerManager.Instance.GenerateUniqueIDforBlocks(block.Style.BlockId.ToString()),
-                p = new CV3(origin + new Vector3(block.Cell.X, 0, block.Cell.Z) * GridCell.Size),
-                r = new CV3(new Vector3(0, block.Yaw, 0)),
-                s = new CV3(Vector3.one),
-                d = new PropertyDictionariesJSON()
-            };
-
-            json.d.SetStringDictionaryValue(BlockGroupTag.Key, BlockGroupTag.Create(script.Id, json.u));
-
+            var position = origin + new Vector3(block.Cell.X, 0, block.Cell.Z) * GridCell.Size;
+            var json = BlockJson.CreateNew(block.Style.BlockId, position, block.Yaw);
+            LevelScripts.Tag(json.d, script.Id, json.u);
             foreach (var setting in block.Settings)
             {
-                if (setting.Kind == SettingKind.Int)
-                    json.d.SetIntDictionaryValue(setting.Key, setting.IntValue);
-                else
-                    json.d.SetStringDictionaryValue(setting.Key, setting.TextValue);
+                BlockJson.Write(json.d, setting);
             }
 
             jsons.Add(json);

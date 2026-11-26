@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace TNRD.Zeepkist.LogicScripting.Blocks;
 
 internal static class LevelBlocks
@@ -11,5 +14,13 @@ internal static class LevelBlocks
         return uid != null && central.undoRedo.allBlocksDictionary.TryGetValue(uid, out var block) && block != null
             ? block
             : null;
+    }
+
+    /// <summary>
+    /// Every block in the editor's own block dictionary, leaving out the destroyed ones it can still hold.
+    /// </summary>
+    public static IEnumerable<BlockProperties> GetAll(LEV_LevelEditorCentral central)
+    {
+        return central.undoRedo.allBlocksDictionary.Values.Where(block => block != null);
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using TNRD.Zeepkist.LogicScripting.Compiler.Graph;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
@@ -106,7 +107,7 @@ public static class ScriptHighlighter
         {
             TokenKind.Name when token.Text is "default" or "true" or "false" or FunctionDefinition.Keyword or FunctionDefinition.EndKeyword
                 => HighlightKind.Keyword,
-            TokenKind.Name when token.Text == "placed" || BlockManifest.TryGetFunction(token.Text, out _) || functions.Contains(token.Text)
+            TokenKind.Name when token.Text == GraphBuilder.PlacedFunction || BlockManifest.TryGetFunction(token.Text, out _) || functions.Contains(token.Text)
                 => HighlightKind.Function,
             TokenKind.Name => HighlightKind.Name,
             TokenKind.Integer => HighlightKind.Number,

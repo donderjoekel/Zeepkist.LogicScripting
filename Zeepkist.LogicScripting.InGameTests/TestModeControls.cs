@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using TNRD.Zeepkist.LogicScripting.Blocks;
 using ZeepSDK.LevelEditor;
 using ZeepSDK.Utilities;
 using Object = UnityEngine.Object;
@@ -17,7 +18,7 @@ internal static class TestModeControls
 
     public static bool HasStart(LEV_LevelEditorCentral central)
     {
-        return central.undoRedo.allBlocksDictionary.Values.Any(block => block != null && block.isStart);
+        return LevelBlocks.GetAll(central).Any(block => block.isStart);
     }
 
     /// <summary>

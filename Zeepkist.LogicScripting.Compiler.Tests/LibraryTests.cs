@@ -3,6 +3,7 @@ using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.TestCompile;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -31,7 +32,7 @@ public class LibraryTests
 
         Assert.True(qualified.Succeeded, string.Join("\n", qualified.Errors));
         Assert.Equal(local.Blocks.Select(b => b.Type), qualified.Blocks.Select(b => b.Type));
-        Assert.Equal(local.Wires.Select(Describe), qualified.Wires.Select(Describe));
+        Assert.Equal(local.Wires.Select(WireText.Describe), qualified.Wires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -307,18 +308,5 @@ public class LibraryTests
     {
         Assert.NotNull(LibraryName.GetError(new string('a', LibraryName.MaxLength + 1), []));
         Assert.Null(LibraryName.GetError(new string('a', LibraryName.MaxLength), []));
-    }
-
-    private static string Describe(CompiledWire wire)
-    {
-        return $"{wire.From}:{wire.FromConnector} -> {wire.To}:{wire.ToConnector}";
-    }
-
-    private static CompileResult Compile(
-        string text,
-        Dictionary<string, string> libraries = null,
-        Dictionary<string, PlacedBlock> level = null)
-    {
-        return ScriptCompiler.Compile(text, 0, [], uid => level?.GetValueOrDefault(uid), name => libraries?.GetValueOrDefault(name));
     }
 }

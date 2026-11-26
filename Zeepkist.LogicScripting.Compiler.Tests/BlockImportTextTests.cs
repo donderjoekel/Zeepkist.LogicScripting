@@ -3,6 +3,7 @@ using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Import;
 using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.ImportedBlocks;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -11,13 +12,6 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 /// </summary>
 public class BlockImportTextTests
 {
-    private const int TriggerId = 2413;
-    private const int GeneratorId = 2414;
-    private const int DisplayId = 2415;
-    private const int LogicId = 2420;
-    private const int LampId = 2448;
-    private const int SensorId = 2442;
-
     [Fact]
     public void TheReadmesLatch()
     {
@@ -440,11 +434,6 @@ public class BlockImportTextTests
             "lamp" => LampId,
             _ => SensorId
         });
-    }
-
-    private static ImportedBlock Generator(string uid, string power = null)
-    {
-        return new ImportedBlock(uid, GeneratorId, texts: power == null ? null : new Dictionary<string, string> { ["lbp"] = power });
     }
 
     private static (List<ImportedBlock> Blocks, List<ImportedWire> Wires) Read(CompileResult compiled)

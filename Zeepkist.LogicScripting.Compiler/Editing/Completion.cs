@@ -163,7 +163,7 @@ public static class Completion
                 .Concat(type.Arguments.Where(a => !a.IsInput && !context.GivenArguments.Contains(a.Name)).Select(ArgumentItem));
         }
 
-        var function = context.Functions.FirstOrDefault(f => f.Name != null && f.Name == context.Callee);
+        var function = DefinedNames.FindFunction(context.Functions, context.Callee);
         if (function != null)
             return GetInputItems(context, function.UsableInputs);
 
@@ -244,7 +244,7 @@ public static class Completion
         if (BlockManifest.TryGetFunction(context.DottedCallee, out var type))
             return GetOutputNames(type, context.DottedMode);
 
-        return context.Functions.FirstOrDefault(f => f.Name == context.DottedCallee)?.UsableOutputs ?? [];
+        return DefinedNames.FindFunction(context.Functions, context.DottedCallee)?.UsableOutputs ?? [];
     }
 
     private static IReadOnlyList<string> GetLibraryOutputs(CaretContext context, EditorLookups lookups)
@@ -273,11 +273,7 @@ public static class Completion
 
     private static bool IsColonNext(string text, int index)
     {
-        while (index < text.Length && text[index] is ' ' or '\t')
-        {
-            index++;
-        }
-
+        index = ScriptText.SkipIndentation(text, index);
         return index < text.Length && text[index] == ':';
     }
 
@@ -294,7 +290,7 @@ public static class Completion
             items.Add(new CompletionItem(alias.Key, CompletionKind.Function, $"{alias.Value.Function}{DescribeArguments(alias.Value)}"));
         }
 
-        items.Add(new CompletionItem("placed", CompletionKind.Function, "(\"UID\")"));
+        items.Add(new CompletionItem(GraphBuilder.PlacedFunction, CompletionKind.Function, "(\"UID\")"));
         items.Add(new CompletionItem("true", CompletionKind.Keyword, string.Empty));
         items.Add(new CompletionItem("false", CompletionKind.Keyword, string.Empty));
         return items;

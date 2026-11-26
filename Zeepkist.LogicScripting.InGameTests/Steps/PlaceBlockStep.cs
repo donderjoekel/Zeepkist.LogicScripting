@@ -1,5 +1,6 @@
 using System.Collections;
 using TNRD.Zeepkist.LogicScripting.Blocks;
+using TNRD.Zeepkist.LogicScripting.Compiler.Layout;
 using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
@@ -13,7 +14,6 @@ namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 internal sealed class PlaceBlockStep : ScenarioStep
 {
     private const string UndoLabel = "In-game test: place block";
-    private const float GridSize = 16;
 
     public PlaceBlockStep(string function, string name = null)
     {
@@ -40,17 +40,9 @@ internal sealed class PlaceBlockStep : ScenarioStep
 
         // A cell to the side, so it's not where place-start puts the start block
         var camera = central.cam.cameraTransform;
-        var position = new Vector3((Mathf.Round(camera.position.x / GridSize) + 1) * GridSize, 0, Mathf.Round(camera.position.z / GridSize) * GridSize);
+        var position = new Vector3((Mathf.Round(camera.position.x / GridCell.Size) + 1) * GridCell.Size, 0, Mathf.Round(camera.position.z / GridCell.Size) * GridCell.Size);
         var blockId = type.DefaultStyle.BlockId;
-        var json = new BlockPropertyJSON
-        {
-            i = blockId,
-            u = PlayerManager.Instance.GenerateUniqueIDforBlocks(blockId.ToString()),
-            p = new CV3(position),
-            r = new CV3(Vector3.zero),
-            s = new CV3(Vector3.one),
-            d = new PropertyDictionariesJSON(),
-        };
+        var json = BlockJson.CreateNew(blockId, position, 0);
 
         if (Name != null && !context.PlacedBlocks.Remember(Name, json.u))
         {
