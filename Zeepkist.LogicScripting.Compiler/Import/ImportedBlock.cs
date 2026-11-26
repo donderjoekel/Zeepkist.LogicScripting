@@ -101,18 +101,13 @@ public sealed class ImportedBlock
     private static bool IsKnown(Setting stored, BlockType type)
     {
         return type.Settings.Append(BlockSetting.Hide).Any(s => s.Type == SettingType.Targets
-            ? stored.Kind == SettingKind.Text && GetTargetKeys(s).Contains(stored.Key)
+            ? stored.Kind == SettingKind.Text && s.GetTargetKeys().Contains(stored.Key)
             : s.Key == stored.Key);
     }
 
     private IEnumerable<string> GetStoredTargets(BlockSetting setting)
     {
-        return GetTargetKeys(setting).Select(k => Settings.FirstOrDefault(s => s.Kind == SettingKind.Text && s.Key == k)?.TextValue);
-    }
-
-    private static IEnumerable<string> GetTargetKeys(BlockSetting setting)
-    {
-        return Enumerable.Range(1, BlockSetting.MaxTargets).Select(i => setting.Key + i.ToString(CultureInfo.InvariantCulture));
+        return setting.GetTargetKeys().Select(k => Settings.FirstOrDefault(s => s.Kind == SettingKind.Text && s.Key == k)?.TextValue);
     }
 
     private static IEnumerable<KeyValuePair<string, TValue>> Without<TValue>(
