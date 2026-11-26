@@ -5,24 +5,12 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Import;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.ImportedBlocks;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
 public class BlockImportTests
 {
-    private const int GeneratorId = 2414;
-    private const int DisplayId = 2415;
-    private const int CompactDisplayId = 2513;
-    private const int LogicId = 2420;
-    private const int DigitizerId = 2418;
-    private const int DelayId = 2428;
-    private const int RandomId = 2425;
-    private const int CounterId = 2434;
-    private const int TelemetryId = 2440;
-    private const int DeathId = 2427;
-    private const int LampId = 2448;
-    private const int MultiplierId = 2449;
-
     public static IEnumerable<object[]> CreatableTypes()
     {
         return BlockManifest.All
@@ -230,7 +218,7 @@ public class BlockImportTests
     {
         AssertText(
             "delay_1 = delay(delay_1, ticks: 5)",
-            [Delay("d")],
+            [Delay("d", 5)],
             new ImportedWire("d", 1, "d", 0));
     }
 
@@ -260,7 +248,7 @@ public class BlockImportTests
                 new ImportedBlock("p", DisplayId),
                 new ImportedBlock("m", LogicId),
                 new ImportedBlock("l", LogicId, ints: Ints(("xmo", 1))),
-                Delay("d"),
+                Delay("d", 5),
                 new ImportedBlock("g", GeneratorId)
             ],
             new ImportedWire("g", 0, "l", 0),
@@ -282,7 +270,7 @@ public class BlockImportTests
                 new ImportedBlock("a", LogicId),
                 new ImportedBlock("b", LogicId, ints: Ints(("xmo", 1))),
                 new ImportedBlock("c", LogicId),
-                Delay("d")
+                Delay("d", 5)
             ],
             new ImportedWire("d", 1, "a", 0),
             new ImportedWire("d", 1, "b", 0),
@@ -300,7 +288,7 @@ public class BlockImportTests
             logic_1 = logic(delay_1)
             delay(delay(logic_1, ticks: 6), ticks: 7)
             """,
-            [Delay("f", 7), Delay("e", 6), Delay("d"), new ImportedBlock("l", LogicId)],
+            [Delay("f", 7), Delay("e", 6), Delay("d", 5), new ImportedBlock("l", LogicId)],
             new ImportedWire("l", 3, "d", 0),
             new ImportedWire("d", 1, "l", 0),
             new ImportedWire("l", 3, "e", 0),
@@ -314,7 +302,7 @@ public class BlockImportTests
             """
             delay_1 = delay(delay(logic(delay_1), ticks: 6), ticks: 5)
             """,
-            [Delay("d"), Delay("e", 6), new ImportedBlock("l", LogicId)],
+            [Delay("d", 5), Delay("e", 6), new ImportedBlock("l", LogicId)],
             new ImportedWire("d", 1, "l", 0),
             new ImportedWire("l", 3, "e", 0),
             new ImportedWire("e", 1, "d", 0));
@@ -330,7 +318,7 @@ public class BlockImportTests
             delay_1 = delay({output.Name}_1, ticks: 5)
             {output.Name}_1 = demultiplexer(delay_1).{output.Name}
             """,
-            [new ImportedBlock("m", type.DefaultStyle.BlockId), Delay("d")],
+            [new ImportedBlock("m", type.DefaultStyle.BlockId), Delay("d", 5)],
             new ImportedWire("d", 1, "m", type.Inputs[0].Index),
             new ImportedWire("m", output.Index, "d", 0));
     }
@@ -338,7 +326,7 @@ public class BlockImportTests
     [Fact]
     public void LoopsWithWiresInAnyOrder_GiveTheSameText()
     {
-        ImportedBlock[] blocks = [Delay("d"), Delay("e", 6), new ImportedBlock("l", LogicId), new ImportedBlock("m", LogicId)];
+        ImportedBlock[] blocks = [Delay("d", 5), Delay("e", 6), new ImportedBlock("l", LogicId), new ImportedBlock("m", LogicId)];
         ImportedWire[] wires =
         [
             new("d", 1, "l", 0), new("e", 1, "l", 1), new("l", 3, "m", 0), new("m", 3, "d", 0), new("l", 3, "e", 0)
@@ -378,7 +366,7 @@ public class BlockImportTests
     {
         AssertRefused(
             "a loop of Wires has no Delay in it: power_display \"p\", logic \"l\"",
-            [Delay("d"), new ImportedBlock("q", DisplayId), new ImportedBlock("l", LogicId), new ImportedBlock("p", DisplayId)],
+            [Delay("d", 5), new ImportedBlock("q", DisplayId), new ImportedBlock("l", LogicId), new ImportedBlock("p", DisplayId)],
             new ImportedWire("l", 3, "p", 0),
             new ImportedWire("p", 1, "l", 0),
             new ImportedWire("l", 3, "d", 0),
@@ -390,7 +378,7 @@ public class BlockImportTests
     {
         AssertRefused(
             "a loop of Wires has no Delay in it: logic \"m\", logic \"l\"",
-            [Delay("d"), new ImportedBlock("l", LogicId), new ImportedBlock("m", LogicId)],
+            [Delay("d", 5), new ImportedBlock("l", LogicId), new ImportedBlock("m", LogicId)],
             new ImportedWire("l", 3, "d", 0),
             new ImportedWire("d", 1, "l", 0),
             new ImportedWire("l", 3, "m", 0),
@@ -570,7 +558,7 @@ public class BlockImportTests
     public void TheCompare_CatchesTwinsWithEachOthersWires()
     {
         // Each twin alone looks the same, so only the Wires tell them apart
-        ImportedBlock[] blocks = [Delay("d"), Delay("e"), new ImportedBlock("p", DisplayId)];
+        ImportedBlock[] blocks = [Delay("d", 5), Delay("e", 5), new ImportedBlock("p", DisplayId)];
         var graph = new ImportGraph(blocks);
         Assert.Null(graph.AddWire(new ImportedWire("d", 1, "e", 0)));
         Assert.Null(graph.AddWire(new ImportedWire("e", 1, "d", 0)));
@@ -708,11 +696,6 @@ public class BlockImportTests
                 .Distinct()
                 .Select(n => Setting.Text(setting.Key, n.ToString(CultureInfo.InvariantCulture)))
         ];
-    }
-
-    private static ImportedBlock Delay(string uid, int ticks = 5)
-    {
-        return new ImportedBlock(uid, DelayId, texts: Texts(("ldl", $"{ticks}")));
     }
 
     /// <summary>

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Import;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.ImportedBlocks;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -11,32 +11,6 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 /// </summary>
 public class BlockImportOutsideTests
 {
-    private const int DoorId = 1;
-    private const int TriggerId = 2413;
-    private const int GeneratorId = 2414;
-    private const int TogglerId = 2417;
-    private const int LogicId = 2420;
-    private const int RandomId = 2425;
-    private const int DelayId = 2428;
-    private const int TelemetryId = 2440;
-    private const int SensorId = 2442;
-    private const int LampId = 2448;
-    private const int PassthroughId = 2426;
-
-    private static ImportedBlock Trigger(string uid = "t") => new(uid, TriggerId);
-    private static ImportedBlock Lamp(string uid = "lamp") => new(uid, LampId);
-    private static ImportedBlock Logic(string uid = "l") => new(uid, LogicId);
-    private static ImportedBlock Generator(string uid = "g") => new(uid, GeneratorId);
-    private static ImportedBlock Delay(string uid = "d") => new(uid, DelayId, texts: new Dictionary<string, string> { ["ldl"] = "1" });
-
-    private static ImportedBlock Toggler(string uid, params string[] targets)
-    {
-        return new ImportedBlock(
-            uid,
-            TogglerId,
-            texts: Enumerable.Range(0, targets.Length).ToDictionary(i => $"xuid{i + 1}", i => targets[i]));
-    }
-
     [Fact]
     public void AWireFromOutside_ReadsAPlacedBlock()
     {
@@ -234,7 +208,7 @@ public class BlockImportOutsideTests
     public void ALoopThroughAnOutsideBlock_WithADelay_IsWritten()
     {
         var level = new ImportLevel(
-            [Logic(), new ImportedBlock("p", PassthroughId), Delay()],
+            [Logic(), new ImportedBlock("p", PassthroughId), Delay("d", 1)],
             new ImportedWire("l", 3, "p", 0),
             new ImportedWire("p", 1, "d", 0),
             new ImportedWire("d", 1, "l", 0));
@@ -249,7 +223,7 @@ public class BlockImportOutsideTests
     [Fact]
     public void ALoopThroughAnOutsideDelay_IsWritten()
     {
-        var level = new ImportLevel([Logic(), Delay()], new ImportedWire("l", 3, "d", 0), new ImportedWire("d", 1, "l", 0));
+        var level = new ImportLevel([Logic(), Delay("d", 1)], new ImportedWire("l", 3, "d", 0), new ImportedWire("d", 1, "l", 0));
 
         ImportAssert.Imports(level, "delay_1 = placed(\"d\")\n\ndelay_1(logic(delay_1))", "l");
     }
@@ -295,7 +269,7 @@ public class BlockImportOutsideTests
     public void ALatchBetweenOutsideBlocks_RefersAheadOnlyInItsDelay()
     {
         var level = new ImportLevel(
-            [Trigger(), Logic(), Delay(), Lamp()],
+            [Trigger(), Logic(), Delay("d", 1), Lamp()],
             new ImportedWire("t", 0, "l", 0),
             new ImportedWire("d", 1, "l", 1),
             new ImportedWire("l", 3, "d", 0),
@@ -320,7 +294,7 @@ public class BlockImportOutsideTests
     public void ALoopThroughAnOutsideBlock_AndOneInsideTheImport_AreWritten()
     {
         var level = new ImportLevel(
-            [Logic(), Delay(), new ImportedBlock("p", PassthroughId)],
+            [Logic(), Delay("d", 1), new ImportedBlock("p", PassthroughId)],
             new ImportedWire("l", 3, "d", 0),
             new ImportedWire("d", 1, "l", 0),
             new ImportedWire("d", 1, "p", 0),
@@ -342,7 +316,7 @@ public class BlockImportOutsideTests
     public void ADependencyLoopThroughAnOutsideBlock_NextToALoopThroughADelay_IsRefused()
     {
         var level = new ImportLevel(
-            [Logic(), Delay(), new ImportedBlock("p", PassthroughId)],
+            [Logic(), Delay("d", 1), new ImportedBlock("p", PassthroughId)],
             new ImportedWire("l", 3, "d", 0),
             new ImportedWire("d", 1, "l", 0),
             new ImportedWire("l", 3, "p", 0),

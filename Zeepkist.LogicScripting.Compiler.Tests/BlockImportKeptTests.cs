@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Import;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.ImportedBlocks;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -10,21 +11,6 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 /// </summary>
 public class BlockImportKeptTests
 {
-    private const int GeneratorId = 2414;
-    private const int DisplayId = 2415;
-    private const int MathId = 2416;
-    private const int TogglerId = 2417;
-    private const int LogicId = 2420;
-    private const int RandomId = 2425;
-    private const int DelayId = 2428;
-    private const int CounterId = 2434;
-    private const int TelemetryId = 2440;
-    private const int TimerId = 2444;
-    private const int ForceGiverId = 2446;
-    private const int LampId = 2448;
-    private const int MultiplierId = 2449;
-    private const int Math3PinsId = 2453;
-
     public static TheoryData<string, int, int, string, string> KeptOnBothSides => new()
     {
         { "math", MathId, 3, "oi2", "has a Setting a Script can't write, \"oi2\"" },
@@ -36,10 +22,6 @@ public class BlockImportKeptTests
         { "logic", LogicId, 3, "idle", "has a Setting a Script can't write, \"idle\"" }
     };
 
-    private static ImportedBlock Generator(string uid = "g") => new(uid, GeneratorId);
-    private static ImportedBlock Display(string uid = "p") => new(uid, DisplayId);
-    private static ImportedBlock Logic(string uid = "l") => new(uid, LogicId);
-    private static ImportedBlock Delay(string uid = "d") => Block(uid, DelayId, ("ldl", "1"));
     private static ImportedBlock KeptMath(string uid = "m") => Block(uid, MathId, ("oi2", "7"));
 
     [Theory]
@@ -399,7 +381,7 @@ public class BlockImportKeptTests
     {
         ImportAssert.Imports(
             new ImportLevel(
-                [KeptMath(), Logic(), Delay()],
+                [KeptMath(), Logic(), Delay("d", 1)],
                 new ImportedWire("l", 3, "m", 0),
                 new ImportedWire("m", 3, "d", 0),
                 new ImportedWire("d", 1, "l", 0)),
