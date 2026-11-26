@@ -21,19 +21,13 @@ internal static class StepList
     /// </summary>
     public const string NoHeadings = "none";
 
-    /// <summary>
-    /// Whether the tab is the Libraries tab.
-    /// </summary>
-    private static readonly Dictionary<string, bool> _tabs = new()
+    private static readonly Dictionary<string, bool> _isLibrariesTabByName = new()
     {
         ["scripts"] = false,
         ["libraries"] = true,
     };
 
-    /// <summary>
-    /// Whether the Blocks side's tab is the Reference tab.
-    /// </summary>
-    private static readonly Dictionary<string, bool> _blocksTabs = new()
+    private static readonly Dictionary<string, bool> _isReferenceTabByName = new()
     {
         ["placed"] = false,
         ["reference"] = true,
@@ -54,10 +48,10 @@ internal static class StepList
         ["new-library"] = (step, argument) => new NewLibraryStep(StepArgument.Text(step, argument, "a name")),
         ["select-library"] = (step, argument) => new SelectLibraryStep(StepArgument.Text(step, argument, "a name")),
         ["open-delete"] = (step, argument) => new OpenDeleteStep(StepArgument.Text(step, argument, "a name")),
-        ["show-tab"] = (step, argument) => new ShowTabStep(StepArgument.Choice(step, argument, _tabs)),
-        ["expect-tab"] = (step, argument) => new ExpectTabStep(StepArgument.Choice(step, argument, _tabs)),
-        ["show-blocks-tab"] = (step, argument) => new ShowBlocksTabStep(StepArgument.Choice(step, argument, _blocksTabs)),
-        ["expect-blocks-tab"] = (step, argument) => new ExpectBlocksTabStep(StepArgument.Choice(step, argument, _blocksTabs)),
+        ["show-tab"] = (step, argument) => new ShowTabStep(StepArgument.Choice(step, argument, _isLibrariesTabByName)),
+        ["expect-tab"] = (step, argument) => new ExpectTabStep(StepArgument.Choice(step, argument, _isLibrariesTabByName)),
+        ["show-blocks-tab"] = (step, argument) => new ShowBlocksTabStep(StepArgument.Choice(step, argument, _isReferenceTabByName)),
+        ["expect-blocks-tab"] = (step, argument) => new ExpectBlocksTabStep(StepArgument.Choice(step, argument, _isReferenceTabByName)),
         ["set-reference-filter"] = (_, argument) => new SetReferenceFilterStep(argument),
         ["expect-reference-headings"] = ExpectReferenceHeadings,
         ["open-new"] = (step, argument) => None(step, argument, new OpenNewStep()),

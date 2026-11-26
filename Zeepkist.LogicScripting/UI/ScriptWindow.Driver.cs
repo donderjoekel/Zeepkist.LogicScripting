@@ -434,10 +434,6 @@ internal sealed partial class ScriptWindow
             _window._edited?.Editor.HoldSentEscape();
         }
 
-        /// <summary>
-        /// Holds the jump modifier for the selected Script's or Library's editor, or lets go of it, as
-        /// <see cref="ScriptEditor.HoldsSentJumpModifier"/> says.
-        /// </summary>
         public void HoldSentJumpModifier(bool held)
         {
             if (_window._edited != null)

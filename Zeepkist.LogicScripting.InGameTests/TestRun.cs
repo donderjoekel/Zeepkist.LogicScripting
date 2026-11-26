@@ -253,7 +253,7 @@ internal sealed class TestRun : IDisposable
     }
 
     /// <summary>
-    /// From the main menu, or on the way to it, to a new level in the editor.
+    /// Also when the game is still on the way to the main menu.
     /// </summary>
     private IEnumerator EnterEditor()
     {

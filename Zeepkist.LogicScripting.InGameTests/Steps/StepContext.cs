@@ -239,7 +239,7 @@ internal sealed class StepContext
     }
 
     /// <summary>
-    /// When the list isn't drawn in time, such as with the Scripts side collapsed, drops the input too, so it can't land
+    /// When the list isn't drawn in time, such as with the Scripts side collapsed, also drops the input, so it can't land
     /// in a later step.
     /// </summary>
     public IEnumerator WaitForShownList(string failure)
