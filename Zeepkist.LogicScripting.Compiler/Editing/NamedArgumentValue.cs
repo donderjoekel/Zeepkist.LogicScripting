@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
@@ -21,6 +22,20 @@ internal static class NamedArgumentValue
     /// </summary>
     public static bool IsWord(List<Token> tokens, int index)
     {
+        return IsWord(tokens, index, () => FindScope(tokens, tokens[index].Span.Start));
+    }
+
+    /// <summary>
+    /// <see cref="IsWord(List{Token}, int)"/> for a caller that already knows the Function the name is in:
+    /// <paramref name="scope"/>, null outside one.
+    /// </summary>
+    public static bool IsWord(List<Token> tokens, int index, DefinedFunction scope)
+    {
+        return IsWord(tokens, index, () => scope);
+    }
+
+    private static bool IsWord(List<Token> tokens, int index, Func<DefinedFunction> findScope)
+    {
         var colon = FindColon(tokens, index);
         if (colon < 0)
             return false;
@@ -39,9 +54,13 @@ internal static class NamedArgumentValue
         if (type.IndexOfInput(argument.Text) >= 0 || type.FindSetting(argument.Text)?.Type == SettingType.Targets)
             return false;
 
-        var token = tokens[index];
-        var scope = DefinedNames.ReadFunctions(tokens).Select(f => f.Function).FirstOrDefault(f => f.Contains(token.Span.Start));
-        return scope == null || !scope.Inputs.Contains(token.Text);
+        var scope = findScope();
+        return scope == null || !scope.Inputs.Contains(tokens[index].Text);
+    }
+
+    private static DefinedFunction FindScope(List<Token> tokens, int position)
+    {
+        return DefinedNames.ReadFunctions(tokens).Select(f => f.Function).FirstOrDefault(f => f.Contains(position));
     }
 
     /// <summary>

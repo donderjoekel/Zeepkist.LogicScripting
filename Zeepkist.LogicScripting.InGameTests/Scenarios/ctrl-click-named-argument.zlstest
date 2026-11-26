@@ -1,0 +1,59 @@
+# Ctrl+click on a name given to a named argument jumps to its definition: a Block Function's input, a Script
+# Function's argument, a Placed Block Reference's input and a Toggler's targets. A Setting's word doesn't jump.
+# Each case has its own short text, so a jump doesn't scroll the next case's name out from under the mouse
+place-block lamp as lamp
+open-window
+new-script Jump
+
+# A Block Function's input
+set-text
+    x = 1
+    y = logic(a: x, b: 1)
+end
+expect-no-errors
+ctrl-click x, b: 1
+type zz
+expect-text zzx = 1
+expect-text y = logic(a: x, b: 1)
+
+# A Script Function's argument
+set-text
+    w = 2
+    function f(a) -> b
+        b = a
+    end
+    z = f(a: w)
+end
+expect-no-errors
+ctrl-click w)
+type zz
+expect-text zzw = 2
+
+# A Placed Block Reference's input
+set-text
+    v = 3
+    lamp_1 = placed("{uid:lamp}")
+    lamp_1(intensity: v)
+end
+expect-no-errors
+ctrl-click v)
+type zz
+expect-text zzv = 3
+
+# A Toggler's targets
+set-text
+    lamp_1 = placed("{uid:lamp}")
+    toggler(1, targets: lamp_1)
+end
+expect-no-errors
+ctrl-click lamp_1)
+type zz
+expect-text zzlamp_1 = placed(
+
+# A Setting's word, even one the Script defines, doesn't jump
+set-text
+    modulo = 4
+    m = math(1, 1, op: modulo)
+end
+expect-step-fails ctrl-click modulo) because didn't jump
+expect-no-exceptions
