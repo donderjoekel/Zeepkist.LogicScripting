@@ -108,6 +108,7 @@ internal static class StepList
         ["hover"] = (step, argument) => new HoverStep(StepArgument.Text(step, argument, "the text to move the mouse onto")),
         ["expect-hover"] = (step, argument) => new ExpectHoverStep(StepArgument.Text(step, argument, "the text to look for")),
         ["expect-no-hover"] = (step, argument) => None(step, argument, new ExpectNoHoverStep()),
+        ["expect-usages"] = ExpectUsages,
         ["press"] = (step, argument) => new PressStep(StepArgument.Keys(step, argument, KeysStep.MaxKeysPerFrame)),
         ["type"] = (step, argument) => new TypeStep(StepArgument.Text(step, argument, "the text to type")),
         ["place-block"] = PlaceBlock,
@@ -229,6 +230,26 @@ internal static class StepList
             throw new ScenarioFormatException($"{what}, not '{written}'");
 
         return new ExpectErrorStep(new Position(line, column), text);
+    }
+
+    private static ScenarioStep ExpectUsages(string step, string argument)
+    {
+        var what = $"the one-based line and column of each underline, such as 1:1 3:12, or {ExpectUsagesStep.NoUsages}";
+        var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 1 && words[0] == ExpectUsagesStep.NoUsages)
+            return new ExpectUsagesStep([]);
+
+        List<Position> positions = [];
+        foreach (var word in words)
+        {
+            var position = word.Split(':');
+            if (position.Length != 2 || !StepArgument.TryPositive(position[0], out var line) || !StepArgument.TryPositive(position[1], out var column))
+                throw new ScenarioFormatException($"{step} takes {what}, not '{word}'");
+
+            positions.Add(new Position(line, column));
+        }
+
+        return new ExpectUsagesStep(positions);
     }
 
     /// <summary>

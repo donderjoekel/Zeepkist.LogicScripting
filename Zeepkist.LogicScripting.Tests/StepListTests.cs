@@ -78,6 +78,8 @@ public class StepListTests
     [InlineData("hover b:", typeof(HoverStep))]
     [InlineData("expect-hover b input", typeof(ExpectHoverStep))]
     [InlineData("expect-no-hover", typeof(ExpectNoHoverStep))]
+    [InlineData("expect-usages 1:1 3:12", typeof(ExpectUsagesStep))]
+    [InlineData("expect-usages none", typeof(ExpectUsagesStep))]
     [InlineData("press ctrl+space", typeof(PressStep))]
     [InlineData("type b = a", typeof(TypeStep))]
     [InlineData("place-block lamp", typeof(PlaceBlockStep))]
@@ -381,6 +383,29 @@ public class StepListTests
     [InlineData("expect-reference-headings :closed", "expect-reference-headings takes the headings, such as Inputs Libraries:closed, or none, not ':closed'")]
     [InlineData("expect-reference-headings none:closed", "expect-reference-headings takes the headings, such as Inputs Libraries:closed, or none, not 'none:closed'")]
     public void ExpectReferenceHeadings_WithAWrongArgument_Fails(string line, string error)
+    {
+        ScenarioParser.Parse("steps", line, out var actual);
+
+        Assert.Equal($"line 1: {error}", actual);
+    }
+
+    [Theory]
+    [InlineData("expect-usages 3:12  1:1", "3:12 1:1")]
+    [InlineData("expect-usages none", "")]
+    public void ExpectUsages_ReadsEachLineAndColumn(string line, string positions)
+    {
+        var step = Assert.IsType<ExpectUsagesStep>(Assert.Single(ScenarioParser.Parse("steps", line, out _).Steps));
+
+        Assert.Equal(positions, string.Join(" ", step.Positions));
+    }
+
+    [Theory]
+    [InlineData("expect-usages", "expect-usages takes the one-based line and column of each underline, such as 1:1 3:12, or none")]
+    [InlineData("expect-usages none 1:1", "expect-usages takes the one-based line and column of each underline, such as 1:1 3:12, or none, not 'none'")]
+    [InlineData("expect-usages 0:1", "expect-usages takes the one-based line and column of each underline, such as 1:1 3:12, or none, not '0:1'")]
+    [InlineData("expect-usages 1", "expect-usages takes the one-based line and column of each underline, such as 1:1 3:12, or none, not '1'")]
+    [InlineData("expect-usages 1:x", "expect-usages takes the one-based line and column of each underline, such as 1:1 3:12, or none, not '1:x'")]
+    public void ExpectUsages_WithAWrongArgument_Fails(string line, string error)
     {
         ScenarioParser.Parse("steps", line, out var actual);
 
@@ -1059,6 +1084,7 @@ public class StepListTests
 
     [Theory]
     [InlineData("smoke.zlstest")]
+    [InlineData("usages.zlstest")]
     [InlineData("test-mode.zlstest")]
     [InlineData("keys.zlstest")]
     [InlineData("libraries.zlstest")]
