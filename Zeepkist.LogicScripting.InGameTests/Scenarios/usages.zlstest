@@ -12,6 +12,5 @@ expect-no-errors
 expect-usages none
 
 caret-at-start
-expect-usages none
-expect-step-fails expect-usages 2:11 2:14 because the editor underlines none instead
+expect-usages 2:11 2:14
 expect-no-exceptions
