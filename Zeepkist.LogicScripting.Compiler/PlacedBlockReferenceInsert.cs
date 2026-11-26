@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
+using TNRD.Zeepkist.LogicScripting.Compiler.Graph;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
@@ -58,7 +59,7 @@ public static class PlacedBlockReferenceInsert
 
             var name = $"{prefix}_{number}";
             names.Add(name);
-            lines.Add($"{name} = placed(\"{block.Uid}\")");
+            lines.Add(GraphBuilder.WritePlacedReference(name, block.Uid));
         }
 
         if (lines.Count == 0)

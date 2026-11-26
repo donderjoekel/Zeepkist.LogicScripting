@@ -290,7 +290,7 @@ public static class Completion
             items.Add(new CompletionItem(alias.Key, CompletionKind.Function, $"{alias.Value.Function}{DescribeArguments(alias.Value)}"));
         }
 
-        items.Add(new CompletionItem("placed", CompletionKind.Function, "(\"UID\")"));
+        items.Add(new CompletionItem(GraphBuilder.PlacedFunction, CompletionKind.Function, "(\"UID\")"));
         items.Add(new CompletionItem("true", CompletionKind.Keyword, string.Empty));
         items.Add(new CompletionItem("false", CompletionKind.Keyword, string.Empty));
         return items;

@@ -70,7 +70,7 @@ internal sealed class ImportText
             if (_graph.Kept.FirstOrDefault(k => k.Uid == uid) is { } kept)
                 _lines.Add(new ImportLine(uid, $"# {kept.Reason}"));
 
-            _lines.Add(new ImportLine(uid, $"{_names[uid]} = {GraphBuilder.PlacedFunction}(\"{uid}\")"));
+            _lines.Add(new ImportLine(uid, GraphBuilder.WritePlacedReference(_names[uid], uid)));
         }
 
         foreach (var circuit in circuits)
