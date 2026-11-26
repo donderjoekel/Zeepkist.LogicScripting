@@ -202,6 +202,7 @@ public class StepListTests
     [InlineData("press ctrl+shift+k", "K", 'K', (int)(KeyModifiers.Control | KeyModifiers.Shift))]
     [InlineData("press escape", "Escape", '\0', (int)KeyModifiers.None)]
     [InlineData("press 7", "Alpha7", '7', (int)KeyModifiers.None)]
+    [InlineData("press f2", "F2", '\0', (int)KeyModifiers.None)]
     public void Press_ReadsTheKeyAndItsModifiers(string line, string key, char character, int modifiers)
     {
         var step = Assert.IsType<PressStep>(Assert.Single(ScenarioParser.Parse("steps", line, out _).Steps));
