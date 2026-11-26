@@ -20,6 +20,11 @@ internal sealed class StartScreenState
     /// </summary>
     public bool ScreenFound { get; set; } = true;
 
+    /// <summary>
+    /// True once the game has destroyed the start screen it showed, as it does when it moves on to the main menu.
+    /// </summary>
+    public bool ScreenLeft { get; set; }
+
     public bool IntroPanelActive { get; set; }
     public bool PlayerManagerExists { get; set; }
 
@@ -33,21 +38,32 @@ internal sealed class StartScreenState
     /// </summary>
     public string Describe()
     {
-        var texts = Texts
-            .Select(Clean)
-            .Where(text => text.Length > 0)
-            .Distinct()
-            .ToList();
-        var shown = texts.Count == 0
-            ? "no text"
-            : string.Join(", ", texts.Take(MaxTexts).Select(text => $"\"{text}\""))
-              + (texts.Count > MaxTexts ? $" and {texts.Count - MaxTexts} more" : string.Empty);
+        var shown = Shown(Texts);
         if (!ScreenFound)
             return $"the game showed no start screen; on screen: {shown}";
+
+        if (ScreenLeft)
+            return $"the game left its start screen, player manager {(PlayerManagerExists ? "there" : "missing")}; on screen: {shown}";
 
         return $"the game stayed on its start screen, showing {shown}; "
                + $"intro panel {(IntroPanelActive ? "active" : "not active")}, "
                + $"player manager {(PlayerManagerExists ? "there" : "missing")}";
+    }
+
+    /// <summary>
+    /// The texts as the detail lists them: one line each, without empty or repeated ones, the first few only.
+    /// </summary>
+    public static string Shown(IEnumerable<string> texts)
+    {
+        var cleaned = texts
+            .Select(Clean)
+            .Where(text => text.Length > 0)
+            .Distinct()
+            .ToList();
+        return cleaned.Count == 0
+            ? "no text"
+            : string.Join(", ", cleaned.Take(MaxTexts).Select(text => $"\"{text}\""))
+              + (cleaned.Count > MaxTexts ? $" and {cleaned.Count - MaxTexts} more" : string.Empty);
     }
 
     private static string Clean(string text)

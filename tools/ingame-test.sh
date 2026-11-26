@@ -3,10 +3,12 @@
 # plugin walk it into the level editor and run the scenarios there, collects the results and puts the install, the
 # mod's data and the levels the game saved meanwhile back as they were. The game starts without the mod's data.
 #
-# Usage: tools/ingame-test.sh [--no-build] [--keep] [--stuck-start] [--timeout <seconds>] [<scenario.zlstest>...]
+# Usage: tools/ingame-test.sh [--no-build] [--keep] [--stuck-start] [--leave-start-screen] [--timeout <seconds>]
+#                             [<scenario.zlstest>...]
 #   --no-build     use the existing Release build
 #   --keep         leave the build installed for manual play (other copies of the mod stay set aside)
 #   --stuck-start  keep the walk on the game's start screen until it gives up, to show what such a run reports
+#   --leave-start-screen  take the game off its start screen before the walk checks it, as the game can do by itself
 #   --timeout      give up and kill the game after this many seconds (default 300)
 #   scenarios      run in the order given (default: the test plugin's Scenarios/smoke.zlstest)
 #
@@ -25,6 +27,7 @@ test_guid=Zeepkist.LogicScripting.InGameTests
 build=1
 keep=0
 stuck_start=false
+leave_start_screen=false
 timeout=300
 scenarios=()
 
@@ -33,12 +36,13 @@ while (($#)); do
         --no-build) build=0 ;;
         --keep) keep=1 ;;
         --stuck-start) stuck_start=true ;;
+        --leave-start-screen) leave_start_screen=true ;;
         --timeout)
             timeout="${2:?--timeout needs a number of seconds}"
             shift
             ;;
         -h | --help)
-            sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+            sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
         -*)
@@ -539,8 +543,8 @@ for scenario in "${scenarios[@]}"; do
     cp "$scenario" "$test_deploy/scenarios/"
     scenario_files+=("$(basename "$scenario")")
 done
-jq -n --arg runId "$run_id" --argjson stuckStart "$stuck_start" \
-    '{runId: $runId, stuckStart: $stuckStart, scenarios: $ARGS.positional}' --args "${scenario_files[@]}" >"$test_deploy/run.json"
+jq -n --arg runId "$run_id" --argjson stuckStart "$stuck_start" --argjson leaveStartScreen "$leave_start_screen" \
+    '{runId: $runId, stuckStart: $stuckStart, leaveStartScreen: $leaveStartScreen, scenarios: $ARGS.positional}' --args "${scenario_files[@]}" >"$test_deploy/run.json"
 
 # BepInEx writes a new log as the game starts, so whatever log is there afterwards is this run's
 rm -f "$game_log"

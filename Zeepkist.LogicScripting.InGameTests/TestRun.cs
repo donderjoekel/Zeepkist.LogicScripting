@@ -194,8 +194,19 @@ internal sealed class TestRun : IDisposable
         if (stuck)
             _logger.LogWarning($"{Marker} staying on the start screen, as the run asked");
 
+        if (_request.LeaveStartScreen)
+        {
+            yield return LeaveStartScreen(startScreen);
+            if (_walkFailed)
+                yield break;
+        }
+
+        // The game can leave its start screen by itself, which destroys it, and then the main menu wait checks where it
+        // went. Unity's == null is what sees a destroyed object.
         yield return WaitUntil(
-            () => !stuck && startScreen.disableThisIntroPanel.activeInHierarchy && PlayerManager.Instance != null,
+            () => !stuck
+                  && PlayerManager.Instance != null
+                  && (startScreen == null || (startScreen.disableThisIntroPanel != null && startScreen.disableThisIntroPanel.activeInHierarchy)),
             "press any key",
             () => DescribeStartScreen(startScreen),
             stuck ? StuckStartSeconds : WaitSeconds);
@@ -205,7 +216,10 @@ internal sealed class TestRun : IDisposable
         // Skips the main menu's one-time warning panels for this session, without changing settings
         PlayerManager.Instance.modPanelHasAlreadyBeenDisplayed = true;
         PlayerManager.Instance.epilepsyPanelHasAlreadyBeenDisplayed = true;
-        startScreen.LoadNextLevel();
+        if (startScreen != null)
+            startScreen.LoadNextLevel();
+        else
+            _logger.LogWarning($"{Marker} the game left its start screen by itself");
 
         // The game has put its saved resolution in place by now, which it starts without
         _results.Display = Display();
@@ -221,12 +235,33 @@ internal sealed class TestRun : IDisposable
     }
 
     /// <summary>
+    /// Takes the game off its start screen the way the game does when it moves on by itself: once the start screen is
+    /// ready, without the walk's skipping of the main menu's warning panels, and waits until the start screen is gone.
+    /// </summary>
+    private IEnumerator LeaveStartScreen(PressAnyKeyToStartGame startScreen)
+    {
+        _logger.LogWarning($"{Marker} leaving the start screen before the walk checks it, as the run asked");
+        yield return WaitUntil(
+            () => startScreen.disableThisIntroPanel.activeInHierarchy && PlayerManager.Instance != null,
+            "start screen ready to leave",
+            () => DescribeStartScreen(startScreen));
+        if (_walkFailed)
+            yield break;
+
+        startScreen.LoadNextLevel();
+        yield return WaitUntil(() => startScreen == null, "start screen left", () => DescribeStartScreen(startScreen));
+    }
+
+    /// <summary>
     /// From the main menu, or on the way to it, to a new level in the editor.
     /// </summary>
     private IEnumerator EnterEditor()
     {
         LevelEditorUI menu = null;
-        yield return WaitFor(() => menu = Find<LevelEditorUI>(), "the main menu");
+        yield return WaitFor(
+            () => menu = Find<LevelEditorUI>(),
+            "the main menu",
+            () => $"the game showed no main menu; on screen: {StartScreenState.Shown(VisibleTexts(null))}");
         if (_walkFailed)
             yield break;
 
@@ -359,7 +394,9 @@ internal sealed class TestRun : IDisposable
     {
         var state = new StartScreenState
         {
-            ScreenFound = screen != null,
+            // A destroyed screen still has its C# object, which Unity's == null takes for none
+            ScreenFound = !ReferenceEquals(screen, null),
+            ScreenLeft = !ReferenceEquals(screen, null) && screen == null,
             IntroPanelActive = screen != null && screen.disableThisIntroPanel != null && screen.disableThisIntroPanel.activeInHierarchy,
             PlayerManagerExists = PlayerManager.Instance != null,
             Texts = VisibleTexts(screen),
