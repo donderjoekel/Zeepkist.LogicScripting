@@ -72,6 +72,9 @@ All notable changes to Logic Scripting are listed here.
   Undo makes it an Orphaned Group again, and a newer Draft stays, so **Restore from Draft** still brings back the typed text.
 - The README explains importing: what the next Compile does to the blocks, what stays as a placed block,
   when an import is refused and how to get an Orphaned Group's Script back.
+- F2 in the Script editor renames the name at the cursor where it's defined and everywhere the Script uses it:
+  a name, a `placed(...)` name, a function, or a function's input or output.
+  It's refused, with the text left as it was, when the Script has errors or the new name isn't free.
 
 ### Changed
 

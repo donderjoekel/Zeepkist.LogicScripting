@@ -72,7 +72,8 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     private WarningLayout _startupWarningLayout;
     private WarningLayout _libraryReadFailedLayout;
 
-    private bool AnyFieldFocused => _fieldFocused || _scriptListPanel.NameFocused || _libraryListPanel.NameFocused || _referencePanel.FilterFocused;
+    private bool AnyFieldFocused => _fieldFocused || _scriptListPanel.NameFocused || _libraryListPanel.NameFocused || _referencePanel.FilterFocused
+        || _renamePrompt.Focused;
     private LibraryList Libraries => _libraryStore.Libraries;
     private bool ShowsLibraryReadFailed => _libraryStore.ReadFailed || _showLibraryReadFailed;
     private bool ShowsUpdateNeeded => !_startupCheck.CanPlace || _showStartupWarning;
@@ -252,6 +253,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         _draftSaver.SaveAndForget();
         _scripts.Clear();
         _editors.Clear();
+        _renamePrompt.Close();
         _scriptListPanel.Clear();
         _orphanedGroupsPanel.ClearMessage();
         _readLevelChanges = null;
@@ -394,6 +396,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     {
         _edited = edited;
         _fieldFocused = false;
+        _renamePrompt.Close();
         _result = string.Empty;
         _placedBlocksPanel.ClearMessage();
         _orphanedGroupsPanel.ClearMessage();
@@ -435,8 +438,12 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         return compileRequested;
     }
 
+    /// <summary>
+    /// The rename prompt picked its name in the text as it was.
+    /// </summary>
     private void OnTyped()
     {
+        _renamePrompt.Close();
         _placedBlocksPanel.ClearMessage();
         OnEdited();
     }
