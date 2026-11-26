@@ -18,12 +18,20 @@ public sealed class ScriptList
     // Those that are Orphaned Groups again
     private readonly HashSet<ScriptId> _undoneImports = [];
 
+    private readonly List<ScriptEntry> _redoneImports = [];
+
     public IReadOnlyList<ScriptEntry> Entries => _entries;
 
     /// <summary>
     /// The level's Block Groups whose Script isn't in <see cref="Entries"/>, as of the last <see cref="Update"/>.
     /// </summary>
     public IReadOnlyList<OrphanedGroup> OrphanedGroups => _orphanedGroups;
+
+    /// <summary>
+    /// The Scripts imported from an Orphaned Group that the last <see cref="Update"/> brought back, such as by redo.
+    /// Take each as saved: their Draft, newer than the blocks' text, stays until the Script is edited.
+    /// </summary>
+    public IReadOnlyList<ScriptEntry> RedoneImports => _redoneImports;
 
     /// <summary>
     /// Returns why <paramref name="name"/> can't name a new Script, or the Script with <paramref name="renamedId"/>,
@@ -88,6 +96,7 @@ public sealed class ScriptList
         IReadOnlyDictionary<ScriptId, int> blockCounts,
         Func<ScriptId, Draft> findDraft)
     {
+        _redoneImports.Clear();
         foreach (var script in stored)
         {
             if (Find(script.Id) != null)
@@ -98,7 +107,9 @@ public sealed class ScriptList
             {
                 var name = GetFreeName(script.Name);
                 _orphanImports[script.Id] = (name, script.Text);
-                _entries.Add(new ScriptEntry(script.Id, name, script.Text));
+                var redone = new ScriptEntry(script.Id, name, script.Text);
+                _entries.Add(redone);
+                _redoneImports.Add(redone);
                 continue;
             }
 
@@ -194,5 +205,6 @@ public sealed class ScriptList
         _orphanedGroups.Clear();
         _orphanImports.Clear();
         _undoneImports.Clear();
+        _redoneImports.Clear();
     }
 }
