@@ -3,6 +3,7 @@ using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.TestCompile;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -312,13 +313,5 @@ public class LibraryTests
     private static string Describe(CompiledWire wire)
     {
         return $"{wire.From}:{wire.FromConnector} -> {wire.To}:{wire.ToConnector}";
-    }
-
-    private static CompileResult Compile(
-        string text,
-        Dictionary<string, string> libraries = null,
-        Dictionary<string, PlacedBlock> level = null)
-    {
-        return ScriptCompiler.Compile(text, 0, [], uid => level?.GetValueOrDefault(uid), name => libraries?.GetValueOrDefault(name));
     }
 }

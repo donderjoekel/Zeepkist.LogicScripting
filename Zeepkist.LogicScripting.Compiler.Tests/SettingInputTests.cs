@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
+using static TNRD.Zeepkist.LogicScripting.Compiler.Tests.TestCompile;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
@@ -251,13 +252,5 @@ public class SettingInputTests
     private static string Describe(CompileResult result)
     {
         return BlockTree.RenderLast(result) + " " + string.Join(",", result.Blocks.Select(b => b.Style.Name));
-    }
-
-    private static CompileResult Compile(
-        string text,
-        Dictionary<string, string> libraries = null,
-        Dictionary<string, PlacedBlock> level = null)
-    {
-        return ScriptCompiler.Compile(text, 0, [], uid => level?.GetValueOrDefault(uid), name => libraries?.GetValueOrDefault(name));
     }
 }
