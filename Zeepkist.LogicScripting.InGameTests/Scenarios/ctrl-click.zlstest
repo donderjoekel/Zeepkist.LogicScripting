@@ -1,0 +1,13 @@
+# Ctrl+click on a name jumps the caret to its definition, and on a number doesn't jump
+open-window
+new-script Jump
+set-text
+x = 1
+y = logic(x, 1)
+end
+expect-step-fails ctrl-click 1 because didn't jump
+ctrl-click x, 1
+type zz
+expect-text zzx = 1
+expect-text y = logic(x, 1)
+expect-no-exceptions
