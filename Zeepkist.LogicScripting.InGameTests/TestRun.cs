@@ -362,9 +362,11 @@ internal sealed class TestRun : IDisposable
             ScreenFound = screen != null,
             IntroPanelActive = screen != null && screen.disableThisIntroPanel != null && screen.disableThisIntroPanel.activeInHierarchy,
             PlayerManagerExists = PlayerManager.Instance != null,
-            Texts = VisibleTexts(),
+            Texts = VisibleTexts(screen),
         };
 
+        // The detail keeps only the first few, so all of them go to the log
+        _logger.LogInfo($"{Marker} texts on screen: {string.Join(" | ", state.Texts.ConvertAll(text => text.Replace('\n', ' ')))}");
         if (screen != null)
             _logger.LogInfo($"{Marker} start screen fields: {FieldValues(screen)}");
 
@@ -372,23 +374,38 @@ internal sealed class TestRun : IDisposable
     }
 
     /// <summary>
-    /// The texts on screen: those of active text components, which is what a person sees on a menu.
+    /// The texts on screen: those of active text components, which is what a person sees on a menu. Those under
+    /// <paramref name="screen"/> come first, then those under its root, so the start screen's own status isn't crowded out
+    /// of the step's detail by the rest of the scene.
     /// </summary>
-    private static List<string> VisibleTexts()
+    private static List<string> VisibleTexts(Component screen)
     {
+        HashSet<Component> seen = [];
         List<string> texts = [];
-        foreach (var text in Object.FindObjectsOfType<TMP_Text>())
+
+        void Add(IEnumerable<TMP_Text> tmpTexts, IEnumerable<UnityEngine.UI.Text> uiTexts)
         {
-            if (text.enabled)
-                texts.Add(text.text);
+            foreach (var text in tmpTexts)
+            {
+                if (text.isActiveAndEnabled && seen.Add(text))
+                    texts.Add(text.text);
+            }
+
+            foreach (var text in uiTexts)
+            {
+                if (text.isActiveAndEnabled && seen.Add(text))
+                    texts.Add(text.text);
+            }
         }
 
-        foreach (var text in Object.FindObjectsOfType<UnityEngine.UI.Text>())
+        if (screen != null)
         {
-            if (text.enabled)
-                texts.Add(text.text);
+            Add(screen.GetComponentsInChildren<TMP_Text>(), screen.GetComponentsInChildren<UnityEngine.UI.Text>());
+            var root = screen.transform.root;
+            Add(root.GetComponentsInChildren<TMP_Text>(), root.GetComponentsInChildren<UnityEngine.UI.Text>());
         }
 
+        Add(Object.FindObjectsOfType<TMP_Text>(), Object.FindObjectsOfType<UnityEngine.UI.Text>());
         return texts;
     }
 

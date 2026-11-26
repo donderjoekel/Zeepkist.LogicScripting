@@ -3,14 +3,14 @@
 # plugin walk it into the level editor and run the scenarios there, collects the results and puts the install, the
 # mod's data and the levels the game saved meanwhile back as they were. The game starts without the mod's data.
 #
-# Usage: tools/ingame-test.sh [--no-build] [--keep] [--timeout <seconds>] [<scenario.zlstest>...]
-#   --no-build   use the existing Release build
-#   --keep       leave the build installed for manual play (other copies of the mod stay set aside)
-#   --timeout    give up and kill the game after this many seconds (default 300)
-#   scenarios    run in the order given (default: the test plugin's Scenarios/smoke.zlstest)
+# Usage: tools/ingame-test.sh [--no-build] [--keep] [--stuck-start] [--timeout <seconds>] [<scenario.zlstest>...]
+#   --no-build     use the existing Release build
+#   --keep         leave the build installed for manual play (other copies of the mod stay set aside)
+#   --stuck-start  keep the walk on the game's start screen until it gives up, to show what such a run reports
+#   --timeout      give up and kill the game after this many seconds (default 300)
+#   scenarios      run in the order given (default: the test plugin's Scenarios/smoke.zlstest)
 #
 # ZEEPKIST_DIR overrides where the game is installed, and STEAM the command that starts it (default steam).
-# ZLS_INGAME_STUCK_START=1 keeps the walk on the game's start screen until it gives up, to show what such a run reports.
 # Results go to .ingame-test/<run id>/.
 set -euo pipefail
 
@@ -24,6 +24,7 @@ mod_guid=Zeepkist.LogicScripting
 test_guid=Zeepkist.LogicScripting.InGameTests
 build=1
 keep=0
+stuck_start=false
 timeout=300
 scenarios=()
 
@@ -31,6 +32,7 @@ while (($#)); do
     case "$1" in
         --no-build) build=0 ;;
         --keep) keep=1 ;;
+        --stuck-start) stuck_start=true ;;
         --timeout)
             timeout="${2:?--timeout needs a number of seconds}"
             shift
@@ -308,8 +310,8 @@ quit_exceptions() {
 # game's, so it's left out.
 collect_unity_log() {
     local player_log
-    [[ -d "$unity_logs" && -f "$run_dir/steam.log" ]] || return 0
-    player_log="$(find "$unity_logs" -mindepth 3 -maxdepth 3 -path '*/Zeepkist/Player.log' -newer "$run_dir/steam.log" -print -quit 2>/dev/null)"
+    [[ -d "$unity_logs" && -f "$run_dir/launched" ]] || return 0
+    player_log="$(find "$unity_logs" -mindepth 3 -maxdepth 3 -path '*/Zeepkist/Player.log' -newer "$run_dir/launched" -print -quit 2>/dev/null)"
     [[ -n "$player_log" ]] && cp "$player_log" "$run_dir/Player.log"
     return 0
 }
@@ -343,7 +345,7 @@ collect() {
             echo "**Failed.**"
         fi
         # The walk gave up on the game's start screen, before any scenario could start
-        if [[ -f "$run_dir/results.json" ]] && jq -e '.Steps | any(.Scenario == "" and (.Passed | not) and (.Name == "press any key" or .Name == "the start screen"))' "$run_dir/results.json" >/dev/null 2>&1; then
+        if [[ -f "$run_dir/results.json" ]] && jq -e '.Steps | any(.Scenario == "" and (.Passed | not) and .Name == "press any key")' "$run_dir/results.json" >/dev/null 2>&1; then
             echo
             echo "**Stuck on the game's start screen**, see the walk's failed step. Player.log is Unity's own log of this launch."
         fi
@@ -537,12 +539,14 @@ for scenario in "${scenarios[@]}"; do
     cp "$scenario" "$test_deploy/scenarios/"
     scenario_files+=("$(basename "$scenario")")
 done
-jq -n --arg runId "$run_id" --argjson stuckStart "$([[ "${ZLS_INGAME_STUCK_START:-}" == 1 ]] && echo true || echo false)" \
+jq -n --arg runId "$run_id" --argjson stuckStart "$stuck_start" \
     '{runId: $runId, stuckStart: $stuckStart, scenarios: $ARGS.positional}' --args "${scenario_files[@]}" >"$test_deploy/run.json"
 
 # BepInEx writes a new log as the game starts, so whatever log is there afterwards is this run's
 rm -f "$game_log"
 log "Starting the game"
+# Marks the launch's time: a Player.log older than this is an earlier game's
+touch "$run_dir/launched"
 launched=1
 # From the home folder, as a Steam that runs in a container has its own /tmp and can't start from a folder in this one
 # Closing the lock for it too, as a Steam process can outlive this script

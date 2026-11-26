@@ -22,7 +22,7 @@ internal sealed class RunRequest
 
     /// <summary>
     /// Keeps the walk waiting on the start screen, and gives up on it sooner, so a run shows what a run stuck there
-    /// reports. Set by ZLS_INGAME_STUCK_START=1.
+    /// reports. Set by the script's --stuck-start.
     /// </summary>
     public bool StuckStart { get; set; }
 

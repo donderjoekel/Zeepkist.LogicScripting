@@ -31,12 +31,13 @@ Only one run can use the game at a time. A second run, say from another worktree
 | --- | --- |
 | `--no-build` | Uses the Release build that's already there instead of building. |
 | `--keep` | Leaves this build installed afterwards, for playing it by hand. The other copies of the mod stay set aside until the next run puts them back. The test plugin is always removed. |
+| `--stuck-start` | Keeps the walk on the game's start screen and gives up after ten seconds, to show what a run stuck there reports. |
 | `--timeout <seconds>` | Stops the game and fails the run after this long. The default is 300. |
 | `-h`, `--help` | Prints the usage. |
 
 `ZEEPKIST_DIR` sets the game's install folder, when it isn't found in Steam's libraries. `STEAM` sets the command that starts the game, `steam` by default: `STEAM=true` makes a run whose game never starts.
 
-When the game stays on its start screen, the walk gives up after two minutes and `results.md` says **Stuck on the game's start screen**. The failed `press any key` step names the texts the screen showed, such as `"Cleaning Up Old Backups... (0 KB)"`, whether the intro panel opened and whether the game's player manager was there, and `LogOutput.log` has the start screen's own state on a `[ZLS-TEST] start screen fields` line. The run stops the game and puts everything back as usual. `ZLS_INGAME_STUCK_START=1` makes a run that stays there on purpose and gives up after ten seconds, to see that report.
+When the game stays on its start screen, the walk gives up after two minutes and `results.md` says **Stuck on the game's start screen**. The failed `press any key` step names the texts the screen showed, such as `"Cleaning Up Old Backups... (0 KB)"`, whether the intro panel opened and whether the game's player manager was there, and `LogOutput.log` has every text on screen on a `[ZLS-TEST] texts on screen` line and the start screen's own state on a `[ZLS-TEST] start screen fields` line. If the game never shows its start screen, the `the start screen` step fails instead, naming the texts on screen. The run stops the game and puts everything back as usual. `tools/ingame-test.sh --stuck-start` makes a run that stays there on purpose and gives up after ten seconds, to see that report.
 
 When the game hasn't started a minute after the launch, the run stops there and fails, with the reason Steam's log gives, such as `failed with AppError_19` when Steam has an update for the game to install first. Start the game from Steam once to let it update, and run again. What the Steam command itself printed is in `steam.log`, and `results.md` ends with the last of it. The run doesn't call off Steam's launch, so if Steam starts the game later anyway, close it.
 
