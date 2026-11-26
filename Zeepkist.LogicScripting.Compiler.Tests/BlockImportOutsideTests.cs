@@ -42,7 +42,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Trigger(), Logic()], new ImportedWire("t", 0, "l", 1));
 
-        AssertImports(level, "trigger_1 = placed(\"t\")\n\nlogic(b: trigger_1)", "l");
+        ImportAssert.Imports(level, "trigger_1 = placed(\"t\")\n\nlogic(b: trigger_1)", "l");
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([new ImportedBlock("s", SensorId), Logic()], new ImportedWire("s", 2, "l", 0));
 
-        AssertImports(level, "distance_sensor_1 = placed(\"s\")\n\nlogic(distance_sensor_1.y)", "l");
+        ImportAssert.Imports(level, "distance_sensor_1 = placed(\"s\")\n\nlogic(distance_sensor_1.y)", "l");
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class BlockImportOutsideTests
         var telemetry = new ImportedBlock("s", TelemetryId, ints: new Dictionary<string, int> { ["xbs"] = 2 });
         var level = new ImportLevel([telemetry, Logic()], new ImportedWire("s", 3, "l", 0));
 
-        AssertImports(level, "simple_telemetry_1 = placed(\"s\")\n\nlogic(simple_telemetry_1.heading)", "l");
+        ImportAssert.Imports(level, "simple_telemetry_1 = placed(\"s\")\n\nlogic(simple_telemetry_1.heading)", "l");
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Logic(), Lamp()], new ImportedWire("l", 3, "lamp", 1));
 
-        AssertImports(level, "lamp_1 = placed(\"lamp\")\n\nlamp_1(red: logic())", "l");
+        ImportAssert.Imports(level, "lamp_1 = placed(\"lamp\")\n\nlamp_1(red: logic())", "l");
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class BlockImportOutsideTests
             new ImportedWire("t", 0, "l", 0),
             new ImportedWire("l", 3, "lamp", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             "trigger_1 = placed(\"t\")\nlamp_1 = placed(\"lamp\")\n\nlamp_1(logic(trigger_1))",
             "l");
@@ -97,7 +97,7 @@ public class BlockImportOutsideTests
             new ImportedWire("a", 3, "lamp", 1));
 
         // The call comes after the last block that feeds the lamp
-        AssertImports(
+        ImportAssert.Imports(
             level,
             """
             trigger_1 = placed("t")
@@ -121,7 +121,7 @@ public class BlockImportOutsideTests
             new ImportedWire("g", 0, "y", 0),
             new ImportedWire("g", 0, "x", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             "lamp_1 = placed(\"x\")\nlamp_2 = placed(\"y\")\n\nlamp_1(0)\n\nlamp_2(0)",
             "g");
@@ -132,7 +132,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Logic("out"), Logic("l")], new ImportedWire("out", 3, "l", 0));
 
-        AssertImports(level, "logic_1 = placed(\"out\")\n\nlogic(logic_1)", "l");
+        ImportAssert.Imports(level, "logic_1 = placed(\"out\")\n\nlogic(logic_1)", "l");
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class BlockImportOutsideTests
             [Trigger(), new ImportedBlock("l", LogicId, ints: new Dictionary<string, int> { ["lbhd"] = 1 })],
             new ImportedWire("t", 0, "l", 0));
 
-        AssertImports(level, "default hide: true\n\ntrigger_1 = placed(\"t\")\n\nlogic(trigger_1)", "l");
+        ImportAssert.Imports(level, "default hide: true\n\ntrigger_1 = placed(\"t\")\n\nlogic(trigger_1)", "l");
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class BlockImportOutsideTests
             new ImportedWire("l", 3, "lamp", 0),
             new ImportedWire("t", 0, "lamp", 1));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             "trigger_1 = placed(\"t\")\nlamp_1 = placed(\"lamp\")\n\nlamp_1(logic(trigger_1))",
             "t",
@@ -171,7 +171,7 @@ public class BlockImportOutsideTests
         var grouped = new ImportedBlock("lamp", LampId, isInBlockGroup: true);
 
         Assert.True(new ImportLevel([Generator(), grouped]).Import("g", "lamp").Succeeded);
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel([Generator(), grouped], new ImportedWire("g", 0, "lamp", 0)),
             "generator \"g\" has a Wire to lamp \"lamp\", but that one is in a Block Group, which a recompile replaces",
             "g",
@@ -184,7 +184,7 @@ public class BlockImportOutsideTests
         var random = new ImportedBlock("r", RandomId, texts: new Dictionary<string, string> { ["xv1"] = "5" });
         var level = new ImportLevel([Trigger(), random], new ImportedWire("t", 0, "r", 1));
 
-        AssertImports(level, "trigger_1 = placed(\"t\")\n\nrandom(max_in: trigger_1, min: 5)", "r");
+        ImportAssert.Imports(level, "trigger_1 = placed(\"t\")\n\nrandom(max_in: trigger_1, min: 5)", "r");
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class BlockImportOutsideTests
             [Trigger(), Toggler("tog", "door", "lamp", "out"), new ImportedBlock("door", DoorId), Lamp(), Logic("out")],
             new ImportedWire("t", 0, "tog", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             """
             trigger_1 = placed("t")
@@ -213,7 +213,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Generator(), Toggler("tog", "lamp"), Lamp()], new ImportedWire("g", 0, "lamp", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             "lamp_1 = placed(\"lamp\")\n\nlamp_1(0)\n\ntoggler(targets: [lamp_1])",
             "g",
@@ -227,7 +227,7 @@ public class BlockImportOutsideTests
             [Generator(), Toggler("tog", "door"), new ImportedBlock("door", DoorId)],
             new ImportedWire("g", 0, "tog", 0));
 
-        AssertImports(level, "toggler_1 = placed(\"tog\")\n\ntoggler_1(0)", "g");
+        ImportAssert.Imports(level, "toggler_1 = placed(\"tog\")\n\ntoggler_1(0)", "g");
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public class BlockImportOutsideTests
             new ImportedWire("p", 1, "d", 0),
             new ImportedWire("d", 1, "l", 0));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             "passthrough_1 = placed(\"p\")\n\npassthrough_1(logic(delay(passthrough_1, ticks: 1)))",
             "l",
@@ -251,7 +251,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Logic(), Delay()], new ImportedWire("l", 3, "d", 0), new ImportedWire("d", 1, "l", 0));
 
-        AssertImports(level, "delay_1 = placed(\"d\")\n\ndelay_1(logic(delay_1))", "l");
+        ImportAssert.Imports(level, "delay_1 = placed(\"d\")\n\ndelay_1(logic(delay_1))", "l");
     }
 
     [Fact]
@@ -262,7 +262,7 @@ public class BlockImportOutsideTests
             new ImportedWire("l", 3, "p", 0),
             new ImportedWire("p", 1, "l", 0));
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "its text doesn't compile at passthrough \"p\": This Wire makes a Dependency Loop, which stops all logic in play. Put a delay(...) in the loop",
             "l");
@@ -284,7 +284,7 @@ public class BlockImportOutsideTests
             new ImportedWire("q", 1, "b", 0),
             new ImportedWire("b", 3, "a", 0));
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "its text doesn't compile at passthrough \"p\": This Wire makes a Dependency Loop, which stops all logic in play. Put a delay(...) in the loop",
             "a",
@@ -302,7 +302,7 @@ public class BlockImportOutsideTests
             new ImportedWire("l", 3, "lamp", 0),
             new ImportedWire("d", 1, "lamp", 1));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             """
             trigger_1 = placed("t")
@@ -326,7 +326,7 @@ public class BlockImportOutsideTests
             new ImportedWire("d", 1, "p", 0),
             new ImportedWire("p", 1, "l", 1));
 
-        AssertImports(
+        ImportAssert.Imports(
             level,
             """
             passthrough_1 = placed("p")
@@ -348,7 +348,7 @@ public class BlockImportOutsideTests
             new ImportedWire("l", 3, "p", 0),
             new ImportedWire("p", 1, "l", 1));
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "its text doesn't compile at passthrough \"p\": This Wire makes a Dependency Loop, which stops all logic in play. Put a delay(...) in the loop",
             "l",
@@ -365,7 +365,7 @@ public class BlockImportOutsideTests
             new ImportedWire("b", 3, "a", 1),
             new ImportedWire("b", 3, "lamp", 0));
 
-        AssertRefused(level, "a loop of Wires has no Delay in it: logic \"b\", logic \"a\"", "a", "b", "lamp");
+        ImportAssert.Refused(level, "a loop of Wires has no Delay in it: logic \"b\", logic \"a\"", "a", "b", "lamp");
     }
 
     [Fact]
@@ -375,7 +375,7 @@ public class BlockImportOutsideTests
             [Generator(), new ImportedBlock("p", PassthroughId, isInBlockGroup: true)],
             new ImportedWire("g", 0, "p", 0));
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "generator \"g\" has a Wire to passthrough \"p\", but that one is in a Block Group, which a recompile replaces",
             "g");
@@ -388,7 +388,7 @@ public class BlockImportOutsideTests
             [Logic(), new ImportedBlock("g", GeneratorId, isInBlockGroup: true)],
             new ImportedWire("g", 0, "l", 0));
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "logic \"l\" has a Wire from generator \"g\", but that one is in a Block Group, which a recompile replaces",
             "l");
@@ -399,7 +399,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Toggler("tog", "g"), new ImportedBlock("g", GeneratorId, isInBlockGroup: true)]);
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "toggler \"tog\" targets generator \"g\", but that one is in a Block Group, which a recompile replaces",
             "tog");
@@ -412,7 +412,7 @@ public class BlockImportOutsideTests
     {
         var level = new ImportLevel([Generator(), Toggler("tog", "g")]);
 
-        AssertRefused(level, "a Toggler targets generator \"g\", and would lose it at the next Compile", selected);
+        ImportAssert.Refused(level, "a Toggler targets generator \"g\", and would lose it at the next Compile", selected);
     }
 
     [Fact]
@@ -429,19 +429,19 @@ public class BlockImportOutsideTests
     [InlineData("has a value for targets that a Script can't write", "lamp", "lamp")]
     public void ATogglerWithTargetsAScriptCantWrite_IsRefusedOnItsOwn(string reason, params string[] targets)
     {
-        AssertRefused(new ImportLevel([Toggler("tog", targets), Lamp()]), $"toggler \"tog\" {reason}", "tog");
+        ImportAssert.Refused(new ImportLevel([Toggler("tog", targets), Lamp()]), $"toggler \"tog\" {reason}", "tog");
     }
 
     [Fact]
     public void ATargetThatIsGone_IsRefused()
     {
-        AssertRefused(new ImportLevel([Toggler("tog", "gone")]), "toggler \"tog\" targets block \"gone\", which isn't in the level", "tog");
+        ImportAssert.Refused(new ImportLevel([Toggler("tog", "gone")]), "toggler \"tog\" targets block \"gone\", which isn't in the level", "tog");
     }
 
     [Fact]
     public void AWireToABlockThatIsGone_IsRefused()
     {
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel([Generator()], new ImportedWire("g", 0, "gone", 0)),
             "generator \"g\" has a Wire to block \"gone\", which isn't in the level",
             "g");
@@ -450,7 +450,7 @@ public class BlockImportOutsideTests
     [Fact]
     public void AWireToABlockTheManifestDoesNotKnow_IsRefused()
     {
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel([Generator(), new ImportedBlock("door", DoorId)], new ImportedWire("g", 0, "door", 0)),
             "generator \"g\" has a Wire to block \"door\", which a Script can't wire",
             "g");
@@ -459,7 +459,7 @@ public class BlockImportOutsideTests
     [Fact]
     public void AWireToAnOutsideBlocksOutput_IsRefused()
     {
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel([Generator(), Trigger()], new ImportedWire("g", 0, "t", 0)),
             "the Wire from generator \"g\" to trigger \"t\" doesn't go from an output to an input",
             "g");
@@ -470,7 +470,7 @@ public class BlockImportOutsideTests
     {
         var telemetry = new ImportedBlock("s", TelemetryId, ints: new Dictionary<string, int> { ["xbs"] = 3 });
 
-        AssertRefused(
+        ImportAssert.Refused(
             new ImportLevel([telemetry, Logic()], new ImportedWire("s", 0, "l", 0)),
             "logic \"l\" has a Wire from simple_telemetry \"s\", which has a value for mode that a Script can't read",
             "l");
@@ -494,7 +494,7 @@ public class BlockImportOutsideTests
             new ImportedWire("g", 0, "lamp", 0),
             new ImportedWire("t", 0, "lamp", 0));
 
-        AssertRefused(
+        ImportAssert.Refused(
             level,
             "its text doesn't compile at lamp \"lamp\": Input 'intensity' of 'lamp_1' already has a Wire in the level, and an input takes one Wire",
             "g");
@@ -518,28 +518,5 @@ public class BlockImportOutsideTests
                     new Dictionary<(Position, BlockType), string> { [(new Position(1, 1), BlockManifest.Generator)] = "g" },
                     new Dictionary<string, string>()),
                 ScriptCompiler.Compile("generator()", 0, null, Find)));
-    }
-
-    /// <summary>
-    /// Also that compiling the text over the imported blocks gives as many blocks.
-    /// </summary>
-    private static void AssertImports(ImportLevel level, string text, params string[] selected)
-    {
-        var import = level.Import(selected);
-
-        Assert.Null(import.Refusal);
-        Assert.Equal(text, import.Text);
-        var compiled = level.Compile(import);
-        Assert.Empty(compiled.Errors);
-        Assert.Equal(import.ImportedUids.Count, compiled.Blocks.Count);
-    }
-
-    private static void AssertRefused(ImportLevel level, string refusal, params string[] selected)
-    {
-        var import = level.Import(selected);
-
-        Assert.Equal(refusal, import.Refusal);
-        Assert.Null(import.Text);
-        Assert.Empty(import.ImportedUids);
     }
 }
