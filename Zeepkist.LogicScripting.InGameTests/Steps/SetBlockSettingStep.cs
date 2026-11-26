@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Linq;
+using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
@@ -83,7 +84,7 @@ internal sealed class SetBlockSettingStep : ScenarioStep
         // Through the block's editor, as its settings panel goes, so the change is one undo step and the level keeps it
         var before = central.undoRedo.currentHistoryPosition;
         blockEdit.RegisterUndoRedo();
-        Write(blockEdit.GetCustomBlockProperties(), stored);
+        BlockJson.Write(blockEdit.GetCustomBlockProperties(), stored);
         blockEdit.GetUpdateFromSlot(0, updateSlots: true);
         yield return null;
 
@@ -97,14 +98,6 @@ internal sealed class SetBlockSettingStep : ScenarioStep
 
         context.Detail = $"{type.Function} \"{Name}\": {Setting} {Value}, stored as \"{stored.Key}\" = {expected}, "
             + $"history position {before} → {central.undoRedo.currentHistoryPosition}";
-    }
-
-    private static void Write(PropertyDictionariesJSON properties, Setting setting)
-    {
-        if (setting.Kind == SettingKind.Int)
-            properties.SetIntDictionaryValue(setting.Key, setting.IntValue);
-        else
-            properties.SetStringDictionaryValue(setting.Key, setting.TextValue);
     }
 
     /// <summary>

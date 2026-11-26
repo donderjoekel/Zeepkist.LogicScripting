@@ -142,7 +142,7 @@ internal static class ScriptImport
         block.customBlockEditProperties ??= new PropertyDictionariesJSON();
         var properties = block.customBlockEditProperties;
         LevelScripts.Untag(properties);
-        properties.SetStringDictionaryValue(BlockGroupTag.Key, BlockGroupTag.Create(script.Id, block.UID));
+        LevelScripts.Tag(properties, script.Id, block.UID);
         if (isCarrier)
             LevelScripts.Write(properties, script);
     }

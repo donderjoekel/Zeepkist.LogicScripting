@@ -35,6 +35,14 @@ internal static class LevelScripts
     }
 
     /// <summary>
+    /// Makes the block with <paramref name="uid"/> a member of the Block Group of the Script with <paramref name="id"/>.
+    /// </summary>
+    public static void Tag(PropertyDictionariesJSON properties, ScriptId id, string uid)
+    {
+        properties.SetStringDictionaryValue(BlockGroupTag.Key, BlockGroupTag.Create(id, uid));
+    }
+
+    /// <summary>
     /// Writes the Script onto a block of its Block Group, which must already carry its tag.
     /// </summary>
     public static void Write(PropertyDictionariesJSON properties, StoredScript script)
