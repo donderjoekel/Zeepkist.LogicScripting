@@ -36,6 +36,7 @@ public class HoverInfoTests
         Assert.Same(BlockReference.GetEntry(BlockManifest.Multiplexer), At("x = m|ux(1, 2)").Function);
     }
 
+    // Which definition a name has is for DefinitionJumpTests: HoverInfo finds it through DefinitionJump
     [Fact]
     public void DefinedName_IsTheLineThatDefinesIt()
     {
@@ -53,24 +54,6 @@ public class HoverInfoTests
         var info = At("|x = 1");
 
         Assert.Equal((1, "x = 1"), (info.DefinitionLine, info.Definition));
-    }
-
-    [Fact]
-    public void DefinedName_DefinedTwice_IsTheLatestDefinitionAbove()
-    {
-        Assert.Equal(2, At("x = 1\nx = 2\npower_display(|x)\nx = 3").DefinitionLine);
-    }
-
-    [Fact]
-    public void DefinedName_DefinedOnlyBelow_IsTheFirstDefinitionBelow()
-    {
-        Assert.Equal(2, At("x = delay(|later, ticks: 1)\nlater = 1\nlater = 2").DefinitionLine);
-    }
-
-    [Fact]
-    public void DefinedName_OnAHalfTypedLine_StillFound()
-    {
-        Assert.Equal(1, At("a = generator(power: 1)\nx = logic(|a, ").DefinitionLine);
     }
 
     [Fact]
@@ -95,12 +78,6 @@ public class HoverInfoTests
     public void DefinedName_OnlyItsOwnScopesDefinitions(string marked)
     {
         Assert.Equal("a = 1", At(marked).Definition);
-    }
-
-    [Fact]
-    public void DefinedName_OnlyInAFunctionsBody_NothingToTellOutsideIt()
-    {
-        Assert.Null(At("function f()\n    q = 1\nend\nb = |q"));
     }
 
     [Theory]

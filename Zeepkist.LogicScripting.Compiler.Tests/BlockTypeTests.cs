@@ -14,40 +14,19 @@ public class BlockTypeTests
         [new BlockConnector("out", 2)],
         [BlockSetting.Option("mode", "m", "one", "two")]);
 
+    // Completion and Call Help show each argument's label and detail as they're listed here
     [Fact]
-    public void Arguments_AreInputs_ThenSettings_ThenStyle_ThenHide()
+    public void Arguments_AreInputs_ThenSettings_ThenStyle_ThenHide_EachLabelledAndDescribed()
     {
         Assert.Equal(
             [
-                ("a", BlockArgumentKind.Input),
-                ("b", BlockArgumentKind.Input),
-                ("mode", BlockArgumentKind.Setting),
-                ("style", BlockArgumentKind.Style),
-                ("hide", BlockArgumentKind.Setting)
+                ("a", BlockArgumentKind.Input, "a", "input", null),
+                ("b", BlockArgumentKind.Input, "b", "input", null),
+                ("mode", BlockArgumentKind.Setting, "mode:", "one, two", _styled.Settings[0]),
+                ("style", BlockArgumentKind.Style, "style:", "normal, compact", null),
+                ("hide", BlockArgumentKind.Setting, "hide:", BlockReference.DescribeValues(BlockSetting.Hide), BlockSetting.Hide)
             ],
-            _styled.Arguments.Select(a => (a.Name, a.Kind)));
-    }
-
-    [Fact]
-    public void Arguments_DescribeWhatTheyAccept()
-    {
-        Assert.Equal(
-            ["input", "input", "one, two", "normal, compact", BlockReference.DescribeValues(BlockSetting.Hide)],
-            _styled.Arguments.Select(a => a.Detail));
-    }
-
-    [Fact]
-    public void Arguments_OfASettingAreThatSetting()
-    {
-        Assert.Equal(
-            [null, null, _styled.Settings[0], null, BlockSetting.Hide],
-            _styled.Arguments.Select(a => a.Setting));
-    }
-
-    [Fact]
-    public void Arguments_LabelSettingsAndStyleWithAColon()
-    {
-        Assert.Equal(["a", "b", "mode:", "style:", "hide:"], _styled.Arguments.Select(a => a.Label));
+            _styled.Arguments.Select(a => (a.Name, a.Kind, a.Label, a.Detail, a.Setting)));
     }
 
     [Fact]

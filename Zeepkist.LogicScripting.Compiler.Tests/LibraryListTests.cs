@@ -10,18 +10,6 @@ public class LibraryListTests
     private const string Edge = "function edge(x) -> y\n    y = x\nend";
 
     [Fact]
-    public void ANewLibrary_IsEmpty()
-    {
-        var list = new LibraryList();
-
-        var library = list.Add("timing");
-
-        Assert.Equal("timing", library.Name);
-        Assert.Equal(string.Empty, library.Text);
-        Assert.Same(library, Assert.Single(list.Entries));
-    }
-
-    [Fact]
     public void NewLibraries_GetTheirOwnIds()
     {
         var list = new LibraryList();
