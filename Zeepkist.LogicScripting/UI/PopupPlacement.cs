@@ -1,3 +1,7 @@
+using Imui.Controls;
+using Imui.Core;
+using UnityEngine;
+
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
 /// <summary>
@@ -22,6 +26,17 @@ internal static class PopupPlacement
             return preferred;
 
         return Fits(fallback, height, window) ? fallback : null;
+    }
+
+    /// <summary>
+    /// A popup's rect under the line whose top left is <paramref name="linePosition"/>, or above it when there's no room
+    /// below; always inside <paramref name="window"/>.
+    /// </summary>
+    public static ImRect PlaceBelow(Vector2 linePosition, float lineHeight, float x, float width, float height, ImRect editor, ImRect window)
+    {
+        var below = linePosition.y - lineHeight - height;
+        var y = Choose(below, linePosition.y, height, (editor.Y, editor.Top), (window.Y, window.Top)) ?? linePosition.y;
+        return ImRectUtility.Clamp(window, new ImRect(x, y, width, height));
     }
 
     private static bool Fits(float bottom, float height, (float Bottom, float Top) bounds)

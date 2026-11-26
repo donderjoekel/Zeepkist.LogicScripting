@@ -94,9 +94,7 @@ internal sealed class CompletionPopup
         var rows = _session.VisibleRows;
         var width = Mathf.Min(MaxWidth, _labelWidth + (_detailWidth > 0 ? (spacing * DetailGap) + _detailWidth : 0) + (spacing * 2) + padding.Horizontal);
         var height = (rows * _rowHeight) + padding.Vertical;
-        var below = wordPosition.y - lineHeight - height;
-        var y = PopupPlacement.Choose(below, wordPosition.y, height, (editor.Y, editor.Top), (window.Y, window.Top)) ?? wordPosition.y;
-        _rect = ImRectUtility.Clamp(window, new ImRect(wordPosition.x - padding.Left - spacing, y, width, height));
+        _rect = PopupPlacement.PlaceBelow(wordPosition, lineHeight, wordPosition.x - padding.Left - spacing, width, height, editor, window);
         _rows = _rect.WithPadding(padding);
 
         gui.BeginPopup();
