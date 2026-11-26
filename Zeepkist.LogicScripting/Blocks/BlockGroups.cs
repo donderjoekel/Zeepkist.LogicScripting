@@ -44,9 +44,9 @@ internal static class BlockGroups
     public static List<BlockProperties> Find(LEV_LevelEditorCentral central, ScriptId scriptId)
     {
         List<BlockProperties> blocks = [];
-        foreach (var block in central.undoRedo.allBlocksDictionary.Values)
+        foreach (var block in LevelBlocks.GetAll(central))
         {
-            if (block != null && GetScriptId(block) == scriptId)
+            if (GetScriptId(block) == scriptId)
                 blocks.Add(block);
         }
 
@@ -88,19 +88,16 @@ internal static class BlockGroups
         var lost = 0;
         foreach (var block in group)
         {
-            foreach (var hub in block.allConnectorHubsOnThisBlock.Values)
+            foreach (var wire in PlacedBlocks.GetAllWires(block))
             {
-                foreach (var wire in hub?.GetThisHubsConnectionStructs() ?? [])
-                {
-                    if (groupUids.Contains(wire.targetUID))
-                        continue;
+                if (groupUids.Contains(wire.targetUID))
+                    continue;
 
-                    var end = (wire.targetUID, wire.connectorID);
-                    if (remade.TryGetValue(end, out var count) && count > 0)
-                        remade[end] = count - 1;
-                    else
-                        lost++;
-                }
+                var end = (wire.targetUID, wire.connectorID);
+                if (remade.TryGetValue(end, out var count) && count > 0)
+                    remade[end] = count - 1;
+                else
+                    lost++;
             }
         }
 

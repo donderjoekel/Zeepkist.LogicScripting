@@ -199,9 +199,9 @@ internal static class ScriptImport
     {
         var targetsSetting = BlockManifest.Toggler.Settings.First(s => s.Type == SettingType.Targets);
         HashSet<string> targets = [];
-        foreach (var block in central.undoRedo.allBlocksDictionary.Values)
+        foreach (var block in LevelBlocks.GetAll(central))
         {
-            if (block == null || BlockManifest.GetPlacedType(block.blockID) != BlockManifest.Toggler)
+            if (BlockManifest.GetPlacedType(block.blockID) != BlockManifest.Toggler)
                 continue;
 
             foreach (var key in targetsSetting.GetTargetKeys())

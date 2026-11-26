@@ -19,9 +19,9 @@ internal static class LevelScripts
         List<StoredScript> stored = [];
         Dictionary<ScriptId, int> blockCounts = [];
         HashSet<ScriptId> storedIds = [];
-        foreach (var block in central.undoRedo.allBlocksDictionary.Values)
+        foreach (var block in LevelBlocks.GetAll(central))
         {
-            var scriptId = block == null ? null : BlockGroups.GetScriptId(block);
+            var scriptId = BlockGroups.GetScriptId(block);
             if (scriptId == null)
                 continue;
 
