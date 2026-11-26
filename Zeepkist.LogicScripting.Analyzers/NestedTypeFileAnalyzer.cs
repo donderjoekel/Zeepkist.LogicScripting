@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,8 @@ namespace TNRD.Zeepkist.LogicScripting.Analyzers;
 
 /// <summary>
 /// Reports a nested type that isn't in its own partial file of the containing type, named
-/// <c>&lt;Outer&gt;.&lt;Nested&gt;.cs</c> (<c>GraphBuilder.Resolved.cs</c>), so every type has a file of its own.
+/// <c>&lt;Outer&gt;.&lt;Nested&gt;.cs</c> (<c>GraphBuilder.Resolved.cs</c>), so every type has a file of its own. A partial
+/// nested type may also be split across <c>&lt;Outer&gt;.&lt;Nested&gt;.&lt;Part&gt;.cs</c> (<c>ScriptWindow.Driver.Orphans.cs</c>).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NestedTypeFileAnalyzer : DiagnosticAnalyzer
@@ -49,11 +51,28 @@ public sealed class NestedTypeFileAnalyzer : DiagnosticAnalyzer
 
         var expected = GetFileName(context.Node);
         var actual = Path.GetFileName(context.Node.SyntaxTree.FilePath);
-        if (actual == expected || IsPartialContainerOfFileType(context.Node, actual))
+        if (actual == expected || IsPartOfPartialType(context.Node, actual) || IsPartialContainerOfFileType(context.Node, actual))
             return;
 
         var identifier = GetIdentifier(context.Node);
         context.ReportDiagnostic(Diagnostic.Create(_rule, identifier.GetLocation(), identifier.ValueText, expected));
+    }
+
+    /// <summary>
+    /// Whether the type is a partial declaration in one of its own part files, named
+    /// <c>&lt;Outer&gt;.&lt;Nested&gt;.&lt;Part&gt;.cs</c>: <c>partial class Driver</c> in <c>ScriptWindow.Driver.Orphans.cs</c>.
+    /// </summary>
+    private static bool IsPartOfPartialType(SyntaxNode type, string fileName)
+    {
+        if (type is not TypeDeclarationSyntax declaration || !declaration.Modifiers.Any(SyntaxKind.PartialKeyword))
+            return false;
+
+        var prefix = GetQualifiedName(type) + ".";
+        if (!fileName.StartsWith(prefix, StringComparison.Ordinal) || !fileName.EndsWith(".cs", StringComparison.Ordinal))
+            return false;
+
+        var part = fileName.Substring(prefix.Length, fileName.Length - prefix.Length - ".cs".Length);
+        return part.Length > 0 && part.IndexOf('.') < 0;
     }
 
     /// <summary>

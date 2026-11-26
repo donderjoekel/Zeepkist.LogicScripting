@@ -81,6 +81,38 @@ public class NestedTypeFileAnalyzerTests
     }
 
     [Fact]
+    public async Task PartialNestedType_InAPartFileOfItsOwn_IsAllowed()
+    {
+        var messages = await AnalyzeAsync("Outer.Inner.Part.cs", "partial class Outer { partial class Inner { } }");
+
+        Assert.Empty(messages);
+    }
+
+    [Fact]
+    public async Task NonPartialNestedType_InAPartFileOfItsOwn_IsReported()
+    {
+        var messages = await AnalyzeAsync("Outer.Inner.Part.cs", "partial class Outer { class Inner { } }");
+
+        Assert.Equal(["Move nested type 'Inner' to a partial file named 'Outer.Inner.cs'"], messages);
+    }
+
+    [Fact]
+    public async Task PartialNestedType_InAFileWithMoreThanOnePartAfterItsName_IsReported()
+    {
+        var messages = await AnalyzeAsync("Outer.Inner.A.B.cs", "partial class Outer { partial class Inner { } }");
+
+        Assert.Equal(["Move nested type 'Inner' to a partial file named 'Outer.Inner.cs'"], messages);
+    }
+
+    [Fact]
+    public async Task OtherNestedType_InAPartFileOfAPartialNestedType_IsReported()
+    {
+        var messages = await AnalyzeAsync("Outer.Inner.Part.cs", "partial class Outer { partial class Inner { } class Other { } }");
+
+        Assert.Equal(["Move nested type 'Other' to a partial file named 'Outer.Other.cs'"], messages);
+    }
+
+    [Fact]
     public async Task SiblingOfTheContainingType_InTheFileOfATypeNestedTwoLevels_IsReported()
     {
         var source = "partial class Outer { partial class Middle { class Inner { } } class Other { } }";
