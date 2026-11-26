@@ -137,7 +137,7 @@ public sealed class HoverInfo
             return 0;
 
         var lineStarts = ScriptText.GetLineStarts(text);
-        var line = lineStarts.FindLastIndex(s => s <= jump.Target.Start);
+        var line = ScriptText.GetLine(lineStarts, jump.Target.Start);
         var lineEnd = ScriptText.GetLineEnd(lineStarts, text.Length, line);
         definition = text.Substring(lineStarts[line], lineEnd - lineStarts[line]).Trim();
         return line + 1;

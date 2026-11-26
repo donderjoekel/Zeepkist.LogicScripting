@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
@@ -65,7 +66,7 @@ public static class PlacedBlockReferenceInsert
 
         var inserted = string.Join("\n", lines);
         int at;
-        if (caret == 0 || text[caret - 1] == '\n')
+        if (ScriptText.IsLineStart(text, caret))
         {
             at = caret;
             if (at < text.Length)
@@ -73,8 +74,7 @@ public static class PlacedBlockReferenceInsert
         }
         else
         {
-            var lineEnd = text.IndexOf('\n', caret);
-            at = lineEnd < 0 ? text.Length : lineEnd;
+            at = ScriptText.GetLineEndAt(text, caret);
             inserted = "\n" + inserted;
         }
 

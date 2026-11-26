@@ -273,11 +273,7 @@ public static class Completion
 
     private static bool IsColonNext(string text, int index)
     {
-        while (index < text.Length && text[index] is ' ' or '\t')
-        {
-            index++;
-        }
-
+        index = ScriptText.SkipIndentation(text, index);
         return index < text.Length && text[index] == ':';
     }
 

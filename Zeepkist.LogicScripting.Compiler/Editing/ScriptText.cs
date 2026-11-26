@@ -108,4 +108,39 @@ public static class ScriptText
     {
         return line + 1 < lineStarts.Count ? lineStarts[line + 1] - 1 : textLength;
     }
+
+    /// <summary>
+    /// The zero-based line the character index is on.
+    /// </summary>
+    internal static int GetLine(List<int> lineStarts, int index)
+    {
+        var found = lineStarts.BinarySearch(index);
+        return found >= 0 ? found : ~found - 1;
+    }
+
+    internal static int GetLineStartAt(string text, int index)
+    {
+        return index == 0 ? 0 : text.LastIndexOf('\n', index - 1) + 1;
+    }
+
+    internal static int GetLineEndAt(string text, int index)
+    {
+        var lineBreak = text.IndexOf('\n', index);
+        return lineBreak < 0 ? text.Length : lineBreak;
+    }
+
+    internal static bool IsLineStart(string text, int index)
+    {
+        return index == 0 || text[index - 1] == '\n';
+    }
+
+    internal static int SkipIndentation(string text, int index)
+    {
+        while (index < text.Length && text[index] is ' ' or '\t')
+        {
+            index++;
+        }
+
+        return index;
+    }
 }

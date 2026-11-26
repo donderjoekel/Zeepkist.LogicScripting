@@ -20,7 +20,7 @@ public static partial class EditCommands
         var column = int.MaxValue;
         for (var line = first; line <= last; line++)
         {
-            var indentEnd = SkipIndentation(text, lineStarts[line]);
+            var indentEnd = ScriptText.SkipIndentation(text, lineStarts[line]);
             if (indentEnd == ScriptText.GetLineEnd(lineStarts, text.Length, line))
                 continue;
 
@@ -34,7 +34,7 @@ public static partial class EditCommands
         {
             if (commented)
             {
-                var hash = SkipIndentation(text, lineStarts[line]);
+                var hash = ScriptText.SkipIndentation(text, lineStarts[line]);
                 var length = hash + 1 < text.Length && text[hash + 1] == ' ' ? 2 : 1;
                 changes.Add(new Change(hash, length, string.Empty));
             }

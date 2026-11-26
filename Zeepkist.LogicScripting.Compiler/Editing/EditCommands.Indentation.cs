@@ -16,7 +16,7 @@ public static partial class EditCommands
         var start = GetSelectionStart(snapshot);
         if (text.IndexOf('\n', start, GetSelectionEnd(snapshot) - start) < 0)
         {
-            var column = start - GetLineStart(text, start);
+            var column = start - ScriptText.GetLineStartAt(text, start);
             return ReplaceSelection(snapshot, new string(' ', IndentSize - (column % IndentSize)));
         }
 
@@ -73,12 +73,12 @@ public static partial class EditCommands
     {
         var text = snapshot.Text;
         var start = GetSelectionStart(snapshot);
-        var lineStart = GetLineStart(text, start);
-        var indentEnd = Math.Min(SkipIndentation(text, lineStart), start);
+        var lineStart = ScriptText.GetLineStartAt(text, start);
+        var indentEnd = Math.Min(ScriptText.SkipIndentation(text, lineStart), start);
         var indentation = text.Substring(lineStart, indentEnd - lineStart);
         var end = GetSelectionEnd(snapshot);
-        var lineEnd = GetLineEnd(text, end);
-        if (SkipIndentation(text, end) >= lineEnd && IsFunctionHeader(text, indentEnd, lineEnd))
+        var lineEnd = ScriptText.GetLineEndAt(text, end);
+        if (ScriptText.SkipIndentation(text, end) >= lineEnd && IsFunctionHeader(text, indentEnd, lineEnd))
             indentation += new string(' ', IndentSize);
 
         return ReplaceSelection(snapshot, "\n" + indentation);
@@ -92,12 +92,12 @@ public static partial class EditCommands
     {
         var text = snapshot.Text;
         var caret = snapshot.Caret;
-        var lineStart = GetLineStart(text, caret);
-        var indentEnd = SkipIndentation(text, lineStart);
+        var lineStart = ScriptText.GetLineStartAt(text, caret);
+        var indentEnd = ScriptText.SkipIndentation(text, lineStart);
         var keyword = FunctionDefinition.EndKeyword;
         if (snapshot.Selection != 0
             || caret != indentEnd + keyword.Length
-            || GetLineEnd(text, caret) != caret
+            || ScriptText.GetLineEndAt(text, caret) != caret
             || !StartsWithKeyword(text, indentEnd, caret, keyword))
         {
             return snapshot;
@@ -106,9 +106,9 @@ public static partial class EditCommands
         var above = lineStart;
         while (above > 0)
         {
-            above = GetLineStart(text, above - 1);
-            var aboveIndentEnd = SkipIndentation(text, above);
-            var aboveEnd = GetLineEnd(text, above);
+            above = ScriptText.GetLineStartAt(text, above - 1);
+            var aboveIndentEnd = ScriptText.SkipIndentation(text, above);
+            var aboveEnd = ScriptText.GetLineEndAt(text, above);
             if (StartsWithKeyword(text, aboveIndentEnd, aboveEnd, keyword))
                 return snapshot;
 
@@ -131,7 +131,7 @@ public static partial class EditCommands
         if (!StartsWithKeyword(text, index, end, keyword))
             return false;
 
-        var next = SkipIndentation(text, index + keyword.Length);
+        var next = ScriptText.SkipIndentation(text, index + keyword.Length);
         return next >= end || text[next] != '=';
     }
 

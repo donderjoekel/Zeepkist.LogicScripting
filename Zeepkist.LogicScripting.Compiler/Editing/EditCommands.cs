@@ -28,14 +28,14 @@ public static partial class EditCommands
     /// </summary>
     public static TextSnapshot Home(TextSnapshot snapshot, bool select)
     {
-        var lineStart = GetLineStart(snapshot.Text, snapshot.Caret);
-        var indentEnd = SkipIndentation(snapshot.Text, lineStart);
+        var lineStart = ScriptText.GetLineStartAt(snapshot.Text, snapshot.Caret);
+        var indentEnd = ScriptText.SkipIndentation(snapshot.Text, lineStart);
         return MoveTo(snapshot, snapshot.Caret == indentEnd ? lineStart : indentEnd, select);
     }
 
     public static TextSnapshot End(TextSnapshot snapshot, bool select)
     {
-        return MoveTo(snapshot, GetLineEnd(snapshot.Text, snapshot.Caret), select);
+        return MoveTo(snapshot, ScriptText.GetLineEndAt(snapshot.Text, snapshot.Caret), select);
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public static partial class EditCommands
         var shift = 0;
         foreach (var change in changes)
         {
-            var staysBefore = selectionStart && change.Length == 0 && IsLineStart(text, index);
+            var staysBefore = selectionStart && change.Length == 0 && ScriptText.IsLineStart(text, index);
             if (index < change.Index || (index == change.Index && staysBefore))
                 break;
 
@@ -111,42 +111,10 @@ public static partial class EditCommands
     {
         var start = GetSelectionStart(snapshot);
         var end = GetSelectionEnd(snapshot);
-        first = GetLine(lineStarts, start);
-        last = GetLine(lineStarts, end);
+        first = ScriptText.GetLine(lineStarts, start);
+        last = ScriptText.GetLine(lineStarts, end);
         if (last > first && lineStarts[last] == end)
             last--;
-    }
-
-    private static int GetLine(List<int> lineStarts, int index)
-    {
-        var found = lineStarts.BinarySearch(index);
-        return found >= 0 ? found : ~found - 1;
-    }
-
-    private static int GetLineStart(string text, int index)
-    {
-        return index == 0 ? 0 : text.LastIndexOf('\n', index - 1) + 1;
-    }
-
-    private static int GetLineEnd(string text, int index)
-    {
-        var lineBreak = text.IndexOf('\n', index);
-        return lineBreak < 0 ? text.Length : lineBreak;
-    }
-
-    private static bool IsLineStart(string text, int index)
-    {
-        return index == 0 || text[index - 1] == '\n';
-    }
-
-    private static int SkipIndentation(string text, int index)
-    {
-        while (index < text.Length && text[index] is ' ' or '\t')
-        {
-            index++;
-        }
-
-        return index;
     }
 
     /// <summary>
