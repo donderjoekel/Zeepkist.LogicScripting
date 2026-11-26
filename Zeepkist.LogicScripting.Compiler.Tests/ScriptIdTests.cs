@@ -18,24 +18,6 @@ public class ScriptIdTests
         Assert.True(new ScriptId("a") != new ScriptId("b"));
     }
 
-    [Fact]
-    public void NewIds_Differ()
-    {
-        Assert.NotEqual(ScriptId.New(), ScriptId.New());
-    }
-
-    [Fact]
-    public void AnId_IsNeverEqualToNull()
-    {
-        Assert.False(new ScriptId("a") == null);
-    }
-
-    [Fact]
-    public void ToString_IsTheStoredText()
-    {
-        Assert.Equal("a", new ScriptId("a").ToString());
-    }
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]

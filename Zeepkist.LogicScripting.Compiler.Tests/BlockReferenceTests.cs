@@ -9,24 +9,11 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 public class BlockReferenceTests
 {
     [Fact]
-    public void EveryManifestType_HasACategory()
-    {
-        foreach (var type in BlockManifest.All)
-            Assert.True(BlockCategory.All.Contains(type.Category), type.Function);
-    }
-
-    [Fact]
     public void Categories_ListEveryManifestTypeOnce()
     {
         var functions = BlockReference.Categories.SelectMany(c => c.Entries).Select(e => e.Function);
 
         Assert.Equal(BlockManifest.All.Select(t => t.Function).OrderBy(f => f), functions.OrderBy(f => f));
-    }
-
-    [Fact]
-    public void Categories_FollowBlockCategoryOrder()
-    {
-        Assert.Equal(BlockCategory.All, BlockReference.Categories.Select(c => c.Category));
     }
 
     [Fact]

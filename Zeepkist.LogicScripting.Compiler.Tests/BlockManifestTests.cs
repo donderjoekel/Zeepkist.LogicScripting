@@ -105,6 +105,7 @@ public class BlockManifestTests
         Assert.Equal(function, type.Function);
     }
 
+    // Completion and Call Help pass a qualified call's callee, which is null
     [Fact]
     public void NullName_IsNoBlockFunction()
     {

@@ -5,6 +5,7 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
 public class TextSnapshotTests
 {
+    // Regression: default(TextSnapshot) skips the constructor, and once threw when hashed
     [Fact]
     public void ADefaultSnapshot_IsAnEmptyText()
     {

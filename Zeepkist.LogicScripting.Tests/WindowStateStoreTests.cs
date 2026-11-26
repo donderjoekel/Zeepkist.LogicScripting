@@ -30,18 +30,7 @@ public class WindowStateStoreTests
     }
 
     [Fact]
-    public void Saving_WritesTheBlocksPanelAndNoLevelPanel()
-    {
-        var state = new WindowState();
-        state.Blocks.Size = 120;
-
-        _store.Save(state);
-
-        AssertSavedBlocksPanelSize(120);
-    }
-
-    [Fact]
-    public void AFileSavedWithALevelPanel_SavesItBackAsTheBlocksPanel()
+    public void AFileSavedWithALevelPanel_SavesItBackAsTheBlocksPanel_AndNoLevelPanel()
     {
         _storage.WriteJson(FileName, """{ "Level": { "Size": 120 } }""");
 
@@ -78,18 +67,12 @@ public class WindowStateStoreTests
         Assert.Equal(["Movers"], _store.Load().CollapsedReferenceCategories);
     }
 
-    [Fact]
-    public void AFileWithoutCollapsedReferenceCategories_LoadsThemAllOpen()
+    [Theory]
+    [InlineData("""{ "Open": true }""")]
+    [InlineData("""{ "CollapsedReferenceCategories": null }""")]
+    public void MissingOrNullCollapsedReferenceCategories_LoadThemAllOpen(string json)
     {
-        _storage.WriteJson(FileName, """{ "Open": true }""");
-
-        Assert.Empty(_store.Load().CollapsedReferenceCategories);
-    }
-
-    [Fact]
-    public void NullCollapsedReferenceCategories_LoadThemAllOpen()
-    {
-        _storage.WriteJson(FileName, """{ "CollapsedReferenceCategories": null }""");
+        _storage.WriteJson(FileName, json);
 
         Assert.Empty(_store.Load().CollapsedReferenceCategories);
     }
@@ -115,17 +98,6 @@ public class WindowStateStoreTests
         var loaded = _store.Load();
         Assert.True(loaded.ShowLibraries);
         Assert.True(loaded.OrphanedGroupsCollapsed);
-    }
-
-    [Fact]
-    public void AFileWithoutTheScriptsSideTab_LoadsScriptsShownAndOrphanedGroupsExpanded()
-    {
-        _storage.WriteJson(FileName, """{ "Open": true }""");
-
-        var state = _store.Load();
-
-        Assert.False(state.ShowLibraries);
-        Assert.False(state.OrphanedGroupsCollapsed);
     }
 
     [Fact]

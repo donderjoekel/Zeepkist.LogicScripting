@@ -123,9 +123,9 @@ public class CompletionTests
     }
 
     [Fact]
-    public void Items_NoneWhereNothingCompletes()
+    public void Items_NoneWhereNothingCompletes_NotEvenDefinedNames()
     {
-        Assert.Empty(Completion.GetItems(At("# lo|")));
+        Assert.Empty(Names("a = 1\n# lo|"));
     }
 
     [Fact]
@@ -180,12 +180,6 @@ public class CompletionTests
     public void Items_ANameDefinedTwice_Once()
     {
         Assert.Single(NameLabels("a = 1\na = 2\nx = |"), l => l == "a");
-    }
-
-    [Fact]
-    public void Items_NoNamesWhereNothingCompletes()
-    {
-        Assert.Empty(Names("a = 1\n# |"));
     }
 
     [Theory]
