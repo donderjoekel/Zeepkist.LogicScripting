@@ -32,7 +32,7 @@ public class LibraryTests
 
         Assert.True(qualified.Succeeded, string.Join("\n", qualified.Errors));
         Assert.Equal(local.Blocks.Select(b => b.Type), qualified.Blocks.Select(b => b.Type));
-        Assert.Equal(local.Wires.Select(Describe), qualified.Wires.Select(Describe));
+        Assert.Equal(local.Wires.Select(WireText.Describe), qualified.Wires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -308,10 +308,5 @@ public class LibraryTests
     {
         Assert.NotNull(LibraryName.GetError(new string('a', LibraryName.MaxLength + 1), []));
         Assert.Null(LibraryName.GetError(new string('a', LibraryName.MaxLength), []));
-    }
-
-    private static string Describe(CompiledWire wire)
-    {
-        return $"{wire.From}:{wire.FromConnector} -> {wire.To}:{wire.ToConnector}";
     }
 }

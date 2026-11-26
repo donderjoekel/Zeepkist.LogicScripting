@@ -27,7 +27,7 @@ public class ScriptCompilerTests
 
         Assert.Equal(
             ["0.0 -> 1.0", "0.0 -> 1.1", "1.3 -> 2.0"],
-            result.Wires.Select(w => $"{w.From}.{w.FromConnector} -> {w.To}.{w.ToConnector}"));
+            result.Wires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class ScriptCompilerTests
         Assert.True(result.Succeeded);
         Assert.Equal(
             ["0.0 -> 2.0", "1.0 -> 2.1", "2.3 -> 3.0"],
-            result.Wires.Select(w => $"{w.From}.{w.FromConnector} -> {w.To}.{w.ToConnector}"));
+            result.Wires.Select(WireText.Describe));
     }
 
     [Fact]

@@ -13,7 +13,7 @@ public class OutputTests
 
         Assert.True(result.Succeeded, string.Join("\n", result.Errors));
         Assert.Equal(BlockManifest.PlayerInput, result.Blocks[0].Type);
-        Assert.Equal(["0.1 -> 1.0", "0.6 -> 2.0"], result.Wires.Select(w => $"{w.From}.{w.FromConnector} -> {w.To}.{w.ToConnector}"));
+        Assert.Equal(["0.1 -> 1.0", "0.6 -> 2.0"], result.Wires.Select(WireText.Describe));
     }
 
     [Fact]

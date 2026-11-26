@@ -34,7 +34,7 @@ public class PlacedTests
 
         Assert.True(result.Succeeded, string.Join("\n", result.Errors));
         Assert.Equal(["1", "2"], result.Blocks.Select(b => b.Settings[0].TextValue));
-        Assert.Equal(["T.0 -> L.0", "0.0 -> L.1", "1.0 -> L.2"], result.PlacedWires.Select(Describe));
+        Assert.Equal(["T.0 -> L.0", "0.0 -> L.1", "1.0 -> L.2"], result.PlacedWires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -44,8 +44,8 @@ public class PlacedTests
 
         Assert.True(result.Succeeded, string.Join("\n", result.Errors));
         Assert.Equal([BlockManifest.Logic, BlockManifest.PowerDisplay], result.Blocks.Select(b => b.Type));
-        Assert.Equal(["T.0 -> 0.0", "D.1 -> 0.1"], result.PlacedWires.Select(Describe));
-        Assert.Equal(["0.3 -> 1.0"], result.Wires.Select(w => $"{w.From}.{w.FromConnector} -> {w.To}.{w.ToConnector}"));
+        Assert.Equal(["T.0 -> 0.0", "D.1 -> 0.1"], result.PlacedWires.Select(WireText.Describe));
+        Assert.Equal(["0.3 -> 1.0"], result.Wires.Select(WireText.Describe));
     }
 
     [Fact]
@@ -253,10 +253,5 @@ public class PlacedTests
     private static IEnumerable<string> Errors(CompileResult result)
     {
         return result.Errors.Select(e => $"{e.Position} {e.Message}");
-    }
-
-    private static string Describe(CompiledWire wire)
-    {
-        return $"{wire.From}.{wire.FromConnector} -> {wire.To}.{wire.ToConnector}";
     }
 }
