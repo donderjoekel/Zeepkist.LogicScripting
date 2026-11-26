@@ -9,8 +9,9 @@
 #   --timeout    give up and kill the game after this many seconds (default 300)
 #   scenarios    run in the order given (default: the test plugin's Scenarios/smoke.zlstest)
 #
-# ZEEPKIST_DIR overrides where the game is installed, and STEAM the command that starts it (default steam). Results go
-# to .ingame-test/<run id>/.
+# ZEEPKIST_DIR overrides where the game is installed, and STEAM the command that starts it (default steam).
+# ZLS_INGAME_STUCK_START=1 keeps the walk on the game's start screen until it gives up, to show what such a run reports.
+# Results go to .ingame-test/<run id>/.
 set -euo pipefail
 
 app_id=1440670
@@ -35,7 +36,7 @@ while (($#)); do
             shift
             ;;
         -h | --help)
-            sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+            sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
         -*)
@@ -121,6 +122,8 @@ prefix="$(cd "$game/../.." && pwd)/compatdata/$app_id/pfx"
 [[ -d "$prefix" ]] || fail "No Proton prefix at $prefix, so the mod's data can't be backed up. Is $game in a Steam library?"
 game_data="$prefix/drive_c/users/steamuser/AppData/Roaming/Zeepkist"
 game_log="$bepinex/LogOutput.log"
+# Unity's own log, which also has what the game logs off its main thread, where BepInEx's may not
+unity_logs="$prefix/drive_c/users/steamuser/AppData/LocalLow"
 mod_data="$game_data/Mods/$mod_guid"
 # Where the player's own mod data waits while the game runs without it, so a run killed outright leaves it findable
 set_aside_data="$game_data/zls-ingame-test-mod-data"
@@ -301,10 +304,21 @@ quit_exceptions() {
     ' "$run_dir/LogOutput.log"
 }
 
+# Copies Unity's log of this launch into the run folder, leaving the game's own. One older than the launch is an earlier
+# game's, so it's left out.
+collect_unity_log() {
+    local player_log
+    [[ -d "$unity_logs" && -f "$run_dir/steam.log" ]] || return 0
+    player_log="$(find "$unity_logs" -mindepth 3 -maxdepth 3 -path '*/Zeepkist/Player.log' -newer "$run_dir/steam.log" -print -quit 2>/dev/null)"
+    [[ -n "$player_log" ]] && cp "$player_log" "$run_dir/Player.log"
+    return 0
+}
+
 # Copies what the run left in the game folder into the run folder, so an interrupted or failed run has results too
 collect() {
     [[ -d "$test_deploy/out" ]] && cp -a "$test_deploy/out/." "$run_dir/"
     ((launched)) && [[ -f "$game_log" ]] && cp "$game_log" "$run_dir/LogOutput.log"
+    ((launched)) && collect_unity_log
 
     passed=false
     if [[ -f "$run_dir/results.json" ]]; then
@@ -327,6 +341,11 @@ collect() {
             echo "**Passed.**"
         else
             echo "**Failed.**"
+        fi
+        # The walk gave up on the game's start screen, before any scenario could start
+        if [[ -f "$run_dir/results.json" ]] && jq -e '.Steps | any(.Scenario == "" and (.Passed | not) and (.Name == "press any key" or .Name == "the start screen"))' "$run_dir/results.json" >/dev/null 2>&1; then
+            echo
+            echo "**Stuck on the game's start screen**, see the walk's failed step. Player.log is Unity's own log of this launch."
         fi
         echo
         if [[ -f "$run_dir/results.json" ]]; then
@@ -518,7 +537,8 @@ for scenario in "${scenarios[@]}"; do
     cp "$scenario" "$test_deploy/scenarios/"
     scenario_files+=("$(basename "$scenario")")
 done
-jq -n --arg runId "$run_id" '{runId: $runId, scenarios: $ARGS.positional}' --args "${scenario_files[@]}" >"$test_deploy/run.json"
+jq -n --arg runId "$run_id" --argjson stuckStart "$([[ "${ZLS_INGAME_STUCK_START:-}" == 1 ]] && echo true || echo false)" \
+    '{runId: $runId, stuckStart: $stuckStart, scenarios: $ARGS.positional}' --args "${scenario_files[@]}" >"$test_deploy/run.json"
 
 # BepInEx writes a new log as the game starts, so whatever log is there afterwards is this run's
 rm -f "$game_log"

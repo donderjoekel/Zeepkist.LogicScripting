@@ -21,6 +21,7 @@ The script prints a summary and exits 0 only when every step of every Scenario p
 - `results.json`: the same, for tools, without the exceptions at quit
 - the screenshots: `editor.png` once the walk reaches the editor, and `<scenario>-<name>.png` for a Scenario's own, including `<scenario>-failure.png` where one failed. `results.md` marks a blank one, where every pixel is the same color, and says what resolution and window mode the game ran at, so a run at an unexpected size, or one whose screenshots show nothing, stands out. A `screenshot` step fails on a blank one.
 - `LogOutput.log`: the game's BepInEx log, where the test plugin's lines start with `[ZLS-TEST]`. The script removes the game's log before it starts the game, so a run whose game wrote none has none, and its `results.md` says so.
+- `Player.log`: Unity's own log of this launch, which can also have what the game logged off its main thread. The game's own copy stays where it is. It can have account details, so don't paste it anywhere public.
 
 Only one run can use the game at a time. A second run, say from another worktree, waits until the first is done.
 
@@ -34,6 +35,8 @@ Only one run can use the game at a time. A second run, say from another worktree
 | `-h`, `--help` | Prints the usage. |
 
 `ZEEPKIST_DIR` sets the game's install folder, when it isn't found in Steam's libraries. `STEAM` sets the command that starts the game, `steam` by default: `STEAM=true` makes a run whose game never starts.
+
+When the game stays on its start screen, the walk gives up after two minutes and `results.md` says **Stuck on the game's start screen**. The failed `press any key` step names the texts the screen showed, such as `"Cleaning Up Old Backups... (0 KB)"`, whether the intro panel opened and whether the game's player manager was there, and `LogOutput.log` has the start screen's own state on a `[ZLS-TEST] start screen fields` line. The run stops the game and puts everything back as usual. `ZLS_INGAME_STUCK_START=1` makes a run that stays there on purpose and gives up after ten seconds, to see that report.
 
 When the game hasn't started a minute after the launch, the run stops there and fails, with the reason Steam's log gives, such as `failed with AppError_19` when Steam has an update for the game to install first. Start the game from Steam once to let it update, and run again. What the Steam command itself printed is in `steam.log`, and `results.md` ends with the last of it. The run doesn't call off Steam's launch, so if Steam starts the game later anyway, close it.
 
