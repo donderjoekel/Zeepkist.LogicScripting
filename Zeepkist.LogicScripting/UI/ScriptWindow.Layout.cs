@@ -213,17 +213,18 @@ internal sealed partial class ScriptWindow
 
         // The center's padding, and a row of the startup check's warnings with the spacing under it
         var minStartupHeight = GetStartupWarnings().Count > 0 ? WindowRegion.GetRowHeight(gui) + spacing : 0;
-        var minCenterHeight = (spacing * 2) + minStartupHeight + GetMinScriptHeight(gui, _storageWarning != null);
+        var minCenterHeight = (spacing * 2) + minStartupHeight + GetMinScriptHeight(gui, _storageWarning != null, _renamePrompt.GetHeight(gui));
         return ImWindow.GetTitleBarHeight(gui) + gui.Style.Window.ContentPadding.Vertical + Mathf.Max(minScriptsHeight, minCenterHeight);
     }
 
     /// <summary>
-    /// The name row, a row of the storage warning while it shows, and the editor's minimum.
+    /// The name row, a row of the storage warning while it shows, the rename prompt's <paramref name="renameHeight"/>,
+    /// and the editor's minimum.
     /// </summary>
-    private static float GetMinScriptHeight(ImGui gui, bool hasStorageWarning)
+    private static float GetMinScriptHeight(ImGui gui, bool hasStorageWarning, float renameHeight)
     {
         var minStorageHeight = hasStorageWarning ? gui.Style.Layout.Spacing + WindowRegion.GetRowHeight(gui) : 0;
-        return gui.GetRowHeight() + minStorageHeight + GetMinEditorHeight(gui);
+        return gui.GetRowHeight() + minStorageHeight + renameHeight + GetMinEditorHeight(gui);
     }
 
     private static float GetMinEditorHeight(ImGui gui)
@@ -468,7 +469,7 @@ internal sealed partial class ScriptWindow
         var settings = WrappedText.GetSettings(gui);
         var minUnderStartupHeight = spacing + (_edited == null
             ? WrappedText.GetHeight(gui, NoScriptText, in settings, gui.GetLayoutWidth(), minHeight: 0)
-            : GetMinScriptHeight(gui, storageWarning != null));
+            : GetMinScriptHeight(gui, storageWarning != null, _renamePrompt.GetHeight(gui)));
         var startupWarnings = GetStartupWarnings();
         _startupWarningLayout = new WarningLayout(Time.frameCount, startupWarnings.Count > 0);
         DrawWarnings(gui, startupWarnings, minUnderStartupHeight, "startup check");
@@ -483,6 +484,7 @@ internal sealed partial class ScriptWindow
         if (storageWarning != null)
             DrawWarnings(gui, [storageWarning], GetMinEditorHeight(gui), "storage warning");
 
+        DrawRenamePrompt(gui);
         _edited.RefreshCheck();
 
         var available = gui.Layout.GetAvailableHeight() - (spacing * 2);
@@ -501,6 +503,8 @@ internal sealed partial class ScriptWindow
         var fieldHeight = Mathf.Max(minFieldHeight, available - errorsHeight);
         var field = gui.AddLayoutRectWithSpacing(gui.GetLayoutWidth(), fieldHeight);
         var compileRequested = DrawField(gui, field);
+        if (_edited.Editor.RenameRequested)
+            StartRename();
 
         ShowResult(compileClicked ? _edited.Compile() : compileRequested ? _edited.CompileFromKeyboard() : null);
 

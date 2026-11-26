@@ -72,7 +72,7 @@ internal sealed partial class GraphBuilder
             ?? (isFunction(name) ? $"'{name}' is a function and can't be used as a name" : null);
     }
 
-    private static string GetReservedNameError(string name)
+    internal static string GetReservedNameError(string name)
     {
         if (BlockManifest.TryGetFunction(name, out _))
             return $"'{name}' is a Block Function and can't be used as a name";
