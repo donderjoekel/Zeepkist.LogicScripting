@@ -67,6 +67,9 @@ internal sealed partial class ScriptWindow
         /// <inheritdoc cref="ScriptEditor.HoverLines"/>
         public IReadOnlyList<string> HoverLines => _window._edited?.Editor.HoverLines;
 
+        /// <inheritdoc cref="ScriptEditor.DrawnUsages"/>
+        public IReadOnlyList<TextSpan> DrawnUsages => _window._edited?.Editor.DrawnUsages ?? [];
+
         /// <inheritdoc cref="ScriptEditor.FindDrawnCharacter"/>
         public (ImRect Character, ImRect TextBounds, int Frame)? FindDrawnCharacter(int index)
         {

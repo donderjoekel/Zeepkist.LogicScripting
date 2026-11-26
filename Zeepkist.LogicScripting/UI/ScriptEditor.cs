@@ -81,6 +81,12 @@ internal sealed partial class ScriptEditor
     public IReadOnlyList<string> HoverLines => _hover.DrawnLines;
 
     /// <summary>
+    /// Where else the name at the caret is written, as the editor underlined it the last time it drew; empty when it
+    /// underlined none. The editor draws no such underlines yet.
+    /// </summary>
+    public IReadOnlyList<TextSpan> DrawnUsages => [];
+
+    /// <summary>
     /// Where the character at <paramref name="index"/> was drawn the last time the editor was, in Imui's pixels, with
     /// the bounds of the text that showed and Unity's frame count then; null before the first <see cref="Draw"/>. A
     /// line's end is as wide as a space, as the hover takes it.
