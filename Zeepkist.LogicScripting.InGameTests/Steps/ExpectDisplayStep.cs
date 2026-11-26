@@ -35,9 +35,6 @@ internal sealed class ExpectDisplayStep : ScenarioStep
         }
 
         var shown = display.powerLabel.text.Trim();
-        if (shown == Text)
-            context.Pass($"\"{Name}\" shows {shown}", Text, shown);
-        else
-            context.Fail($"\"{Name}\" shows {shown}", Text, shown);
+        context.Check(shown == Text, $"\"{Name}\" shows {shown}", Text, shown);
     }
 }

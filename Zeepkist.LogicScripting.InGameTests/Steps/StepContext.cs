@@ -113,6 +113,29 @@ internal sealed class StepContext
         Actual = actual;
     }
 
+    /// <summary>
+    /// Passes or fails the step by <paramref name="passed"/>, with the same result either way.
+    /// </summary>
+    public void Check(bool passed, string detail, string expected, string actual)
+    {
+        if (passed)
+            Pass(detail, expected, actual);
+        else
+            Fail(detail, expected, actual);
+    }
+
+    /// <summary>
+    /// Passes when <paramref name="found"/> contains <paramref name="text"/>, matching case. Fails with
+    /// <paramref name="failure"/> otherwise, reporting <paramref name="nothing"/> as found when it's empty.
+    /// </summary>
+    public void ExpectContains(string text, string found, string failure, string nothing)
+    {
+        if (found.IndexOf(text, StringComparison.Ordinal) >= 0)
+            Pass(found, text, found);
+        else
+            Fail(failure, text, found.Length == 0 ? nothing : found);
+    }
+
     public void FailNoScript(string name)
     {
         Fail($"no Script named \"{name}\"", name, string.Join(", ", Window.ScriptNames));

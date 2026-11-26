@@ -33,9 +33,7 @@ internal sealed class ExpectWiresStep : ScenarioStep
         var detail = LevelWires.Describe(central, context.PlacedBlocks, wires);
         if (oneEnded.Count > 0)
             context.Fail($"stored on only one block: {LevelWires.Describe(central, context.PlacedBlocks, oneEnded)}", "both blocks store each Wire", detail);
-        else if (wires.Count == Count)
-            context.Pass(detail, Count.ToString(), wires.Count.ToString());
         else
-            context.Fail(detail, Count.ToString(), wires.Count.ToString());
+            context.Check(wires.Count == Count, detail, Count.ToString(), wires.Count.ToString());
     }
 }

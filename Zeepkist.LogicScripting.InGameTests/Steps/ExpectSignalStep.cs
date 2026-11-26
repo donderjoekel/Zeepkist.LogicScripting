@@ -41,9 +41,6 @@ internal sealed class ExpectSignalStep : ScenarioStep
 
         var expected = Signal.ToString(CultureInfo.InvariantCulture);
         var actual = signals[input.Index].ToString(CultureInfo.InvariantCulture);
-        if (signals[input.Index] == Signal)
-            context.Pass($"\"{Name}\"'s input {Input} is {actual}", expected, actual);
-        else
-            context.Fail($"\"{Name}\"'s input {Input} is {actual}", expected, actual);
+        context.Check(signals[input.Index] == Signal, $"\"{Name}\"'s input {Input} is {actual}", expected, actual);
     }
 }

@@ -27,9 +27,6 @@ internal sealed class ExpectWindowSizeStep : ScenarioStep
         var rect = context.Window.WindowRect;
         var expected = RectCheck.Size(Width, Height);
         var actual = RectCheck.Size(rect.W, rect.H);
-        if (RectCheck.HasSize(rect, Width, Height))
-            context.Pass(RectCheck.Describe(rect), expected, actual);
-        else
-            context.Fail(RectCheck.Describe(rect), expected, actual);
+        context.Check(RectCheck.HasSize(rect, Width, Height), RectCheck.Describe(rect), expected, actual);
     }
 }

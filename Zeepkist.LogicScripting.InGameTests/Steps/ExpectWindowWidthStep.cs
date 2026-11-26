@@ -33,9 +33,6 @@ internal sealed class ExpectWindowWidthStep : ScenarioStep
         var expected = Width == null ? $"the screen's {RectCheck.Pixels(screenWidth)}" : RectCheck.Pixels(expectedWidth);
         var actual = RectCheck.Pixels(width);
         var detail = $"{actual} px wide, on a screen {RectCheck.Pixels(screenWidth)} px wide";
-        if (Mathf.Abs(width - expectedWidth) <= RectCheck.Tolerance)
-            context.Pass(detail, expected, actual);
-        else
-            context.Fail(detail, expected, actual);
+        context.Check(Mathf.Abs(width - expectedWidth) <= RectCheck.Tolerance, detail, expected, actual);
     }
 }
