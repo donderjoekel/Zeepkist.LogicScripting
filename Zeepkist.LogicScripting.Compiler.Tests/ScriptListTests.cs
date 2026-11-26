@@ -362,6 +362,26 @@ public class ScriptListTests
         Assert.Single(list.OrphanedGroups);
     }
 
+    [Fact]
+    public void RedoneImports_HoldsWhatTheLastUpdateBroughtBack()
+    {
+        var list = new ScriptList();
+        var stored = ImportOrphan(list);
+        Assert.Empty(list.RedoneImports);
+        list.Update([], Groups(_orphanId), NoDraft);
+
+        list.Update([stored], Groups(_orphanId), NoDraft);
+        Assert.Same(Assert.Single(list.Entries), Assert.Single(list.RedoneImports));
+
+        list.Update([stored], Groups(_orphanId), NoDraft);
+        Assert.Empty(list.RedoneImports);
+
+        list.Update([], Groups(_orphanId), NoDraft);
+        list.Update([stored], Groups(_orphanId), NoDraft);
+        list.Clear();
+        Assert.Empty(list.RedoneImports);
+    }
+
     [Theory]
     [InlineData("Imported", "x = 2")]
     [InlineData("doors", "x = 1")]

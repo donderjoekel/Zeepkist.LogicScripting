@@ -273,6 +273,11 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         var (stored, blockCounts) = LevelScripts.Find(central);
         var dropped = _scripts.Update(stored, blockCounts, _drafts.Find);
         _readLevelChanges = LevelChanges.Count;
+
+        // Under another name it differs from what was taken as saved on import, and would be written over its Draft
+        foreach (var entry in _scripts.RedoneImports)
+            _draftSaver.TakeAsSaved(entry);
+
         foreach (var entry in dropped)
         {
             _scriptListPanel.ClosePromptOn(entry);

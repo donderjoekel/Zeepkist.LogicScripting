@@ -1,0 +1,36 @@
+# Redoing an Orphaned Group's Import under another name leaves its newer Draft alone
+open-window
+new-script Lights
+set-text
+power_display(generator(power: 3) & 1)
+end
+compile
+expect-result Placed
+set-text
+# newer
+power_display(generator(power: 4) & 1)
+end
+wait 2
+delete-carrier Lights
+save-level orphaned
+load-level orphaned
+expect-orphans 1
+
+import-orphan Lights
+wait 2
+undo
+expect-orphans 1
+
+# Another Script takes the name, so redo brings the import back as "Lights 2"
+new-script Lights
+redo
+expect-orphans 0
+select-script Lights 2
+wait 2
+
+undo
+expect-orphans 1
+restore-orphan Lights
+expect-orphan-result Restored "Lights 2"
+expect-text # newer
+expect-no-exceptions
