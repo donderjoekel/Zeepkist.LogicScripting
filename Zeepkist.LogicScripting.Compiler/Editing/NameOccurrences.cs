@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Graph;
-using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
@@ -151,32 +150,7 @@ public static class NameOccurrences
         if (next == TokenKind.OpenParen && functions.Any(f => f.Name == token.Text))
             return false;
 
-        return index < 2 || tokens[index - 1].Kind != TokenKind.Colon || IsArgumentValue(tokens, index, scope);
-    }
-
-    /// <summary>
-    /// Whether the name after a named argument's colon is a value rather than a word: anything given to a Script's own
-    /// Function, a Library's Function or a Placed Block Reference, or to a Block Function's input or a Setting that takes
-    /// placed blocks. A word given to any other Setting is an option, unless it spells an input of the Function it's in,
-    /// <c>delay(x, ticks: ticks)</c>.
-    /// </summary>
-    private static bool IsArgumentValue(List<Token> tokens, int index, DefinedFunction scope)
-    {
-        var argument = tokens[index - 2];
-        if (argument.Kind != TokenKind.Name)
-            return false;
-
-        var call = OpenCall.FindStartedAt(tokens, argument.Span.Start);
-        if (call == null)
-            return false;
-
-        if (call.Callee == null || !BlockManifest.TryGetFunction(call.Callee, out var type))
-            return true;
-
-        if (type.IndexOfInput(argument.Text) >= 0 || type.FindSetting(argument.Text)?.Type == SettingType.Targets)
-            return true;
-
-        return scope != null && scope.Inputs.Contains(tokens[index].Text);
+        return !NamedArgumentValue.IsWord(tokens, index, scope);
     }
 
     /// <summary>

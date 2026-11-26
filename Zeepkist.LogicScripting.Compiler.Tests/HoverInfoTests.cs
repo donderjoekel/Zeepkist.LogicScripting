@@ -120,6 +120,52 @@ public class HoverInfoTests
         Assert.Null(At(marked));
     }
 
+    [Theory]
+    [InlineData("x = 1\ny = logic(a: |x, b: 1)")]
+    [InlineData("x = 1\nt = toggler(1, targets: |x)")]
+    [InlineData("x = 1\nfunction f(a) -> b\n    b = a\nend\ny = f(a: |x)")]
+    [InlineData("x = 1\ny = timing.edge(a: |x)")]
+    [InlineData("x = 1\nlamp_1 = placed(\"L\")\nlamp_1(intensity: |x)")]
+    [InlineData("x = 1\ny = logic(a:\n    |x, b: 1)")]
+    [InlineData("x = 1\ny = logic(a:\n    |x")]
+    public void DefinedName_GivenToANamedArgument_IsTheLineThatDefinesIt(string marked)
+    {
+        var info = At(marked, uid => _level.GetValueOrDefault(uid));
+
+        Assert.Equal((1, "x = 1"), (info.DefinitionLine, info.Definition));
+    }
+
+    [Theory]
+    [InlineData("function f(a) -> b\n    b = a\nend\ndefault hide:\n|f(1)", 1)]
+    [InlineData("lamp_1 = placed(\"L\")\ndefault hide:\n|lamp_1(intensity: 1)", 1)]
+    public void HalfTypedColonOutsideACall_TheNextLineStillHovers(string marked, int line)
+    {
+        Assert.Equal(line, At(marked, uid => _level.GetValueOrDefault(uid)).DefinitionLine);
+    }
+
+    [Fact]
+    public void FunctionInput_GivenToASetting_IsItsFirstLine()
+    {
+        Assert.Equal(1, At("function f(ticks) -> y\n    y = delay(1, ticks: |ticks)\nend").DefinitionLine);
+    }
+
+    [Fact]
+    public void BlockFunction_GivenToANamedArgument_IsItsReferenceEntry()
+    {
+        Assert.Same(BlockReference.GetEntry(BlockManifest.Delay), At("x = logic(a: |delay(1, ticks: 1))").Function);
+    }
+
+    [Theory]
+    [InlineData("modulo = 1\nx = math(1, 2, op: |modulo)")]
+    [InlineData("modulo = 1\nx = math(1, 2,\n    op:\n    |modulo)")]
+    [InlineData("modulo = 1\nx = math(1, 2, op:\n    |modulo")]
+    [InlineData("compact = 1\nx = power_display(1, style: |compact)")]
+    [InlineData("x = 1\ndefault hide: |x")]
+    public void DefinedName_SpelledLikeAWord_IsNull(string marked)
+    {
+        Assert.Null(At(marked));
+    }
+
     [Fact]
     public void NamedArgument_IsItsSettingsRow()
     {

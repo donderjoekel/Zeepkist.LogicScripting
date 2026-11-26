@@ -6,6 +6,9 @@ set-text
 x = logic(1, 2, op: or)
 y = logic(x, b: 3)
 power_display(nope)
+z = logic(a: x, b: y)
+modulo = 1
+m = math(x, y, op: modulo)
 end
 expect-errors 1
 
@@ -25,6 +28,13 @@ screenshot setting
 # A defined name is the line that defines it
 hover x, b
 expect-hover 1: x = logic(1, 2, op: or)
+
+# A defined name given to a named argument is too, but not a Setting's word spelled like one
+hover x, b: y
+expect-hover 1: x = logic(1, 2, op: or)
+screenshot named-argument
+hover modulo)
+expect-no-hover
 
 # An error underline is its message
 hover nope

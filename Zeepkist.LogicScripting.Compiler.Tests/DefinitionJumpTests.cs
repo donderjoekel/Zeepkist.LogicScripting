@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
+using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using Xunit;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
@@ -8,6 +10,11 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 /// </summary>
 public class DefinitionJumpTests
 {
+    private static readonly Dictionary<string, PlacedBlock> _level = new()
+    {
+        ["L"] = new PlacedBlock(BlockManifest.Lamp.DefaultStyle.BlockId)
+    };
+
     [Fact]
     public void DefinedName_JumpsToTheNameInItsDefinition()
     {
@@ -70,6 +77,46 @@ public class DefinitionJumpTests
     }
 
     [Theory]
+    [InlineData("x = 1\ny = logic(a: |x, b: 1)")]
+    [InlineData("x = 1\nt = toggler(1, targets: |x)")]
+    [InlineData("x = 1\nfunction f(a) -> b\n    b = a\nend\ny = f(a: |x)")]
+    [InlineData("x = 1\ny = timing.edge(a: |x)")]
+    [InlineData("x = 1\nlamp_1 = placed(\"L\")\nlamp_1(intensity: |x)")]
+    [InlineData("x = 1\ny = logic(a:\n    |x, b: 1)")]
+    [InlineData("x = 1\ny = logic(a:\n    |x")]
+    public void DefinedName_GivenToANamedArgument_Jumps(string marked)
+    {
+        var jump = At(marked);
+
+        Assert.Equal((0, 1), (jump.Target.Start, jump.Target.Length));
+    }
+
+    [Theory]
+    [InlineData("function f(a) -> b\n    b = a\nend\ndefault hide:\n|f(1)", 9)]
+    [InlineData("lamp_1 = placed(\"L\")\ndefault hide:\n|lamp_1(intensity: 1)", 0)]
+    public void HalfTypedColonOutsideACall_TheNextLineStillJumps(string marked, int target)
+    {
+        Assert.Equal(target, At(marked).Target.Start);
+    }
+
+    [Fact]
+    public void FunctionInput_GivenToASetting_JumpsToItsFirstLine()
+    {
+        Assert.Equal(11, At("function f(ticks) -> y\n    y = delay(1, ticks: |ticks)\nend").Target.Start);
+    }
+
+    [Theory]
+    [InlineData("modulo = 1\nx = math(1, 2, op: |modulo)")]
+    [InlineData("modulo = 1\nx = math(1, 2,\n    op:\n    |modulo)")]
+    [InlineData("modulo = 1\nx = math(1, 2, op:\n    |modulo")]
+    [InlineData("compact = 1\nx = power_display(1, style: |compact)")]
+    [InlineData("x = 1\ndefault hide: |x")]
+    public void DefinedName_SpelledLikeAWord_NoJump(string marked)
+    {
+        Assert.Null(At(marked));
+    }
+
+    [Theory]
     [InlineData("x = |nothing")]
     [InlineData("x = |logic(1, 2)")]
     [InlineData("x = m|ux(1, 2)")]
@@ -97,6 +144,6 @@ public class DefinitionJumpTests
     private static DefinitionJump At(string marked)
     {
         var index = marked.IndexOf('|');
-        return DefinitionJump.At(marked.Remove(index, 1), index);
+        return DefinitionJump.At(marked.Remove(index, 1), index, new EditorLookups(uid => _level.GetValueOrDefault(uid), null));
     }
 }
