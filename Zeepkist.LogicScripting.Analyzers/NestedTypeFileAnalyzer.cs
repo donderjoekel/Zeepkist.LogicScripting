@@ -75,9 +75,6 @@ public sealed class NestedTypeFileAnalyzer : DiagnosticAnalyzer
         return GetQualifiedName(type) + ".cs";
     }
 
-    /// <summary>
-    /// The type's name prefixed with each containing type's name, outermost first: <c>Outer.Inner.Deeper</c>.
-    /// </summary>
     private static string GetQualifiedName(SyntaxNode type)
     {
         var name = GetIdentifier(type).ValueText;

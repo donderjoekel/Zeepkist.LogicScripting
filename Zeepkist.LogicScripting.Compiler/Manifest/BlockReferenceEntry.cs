@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
-/// <summary>
-/// One block type as the window's Reference tab shows it.
-/// </summary>
 public sealed class BlockReferenceEntry
 {
     private const string PlacedOnlyNote = "placed(\"UID\") only";
@@ -48,14 +45,8 @@ public sealed class BlockReferenceEntry
     /// </summary>
     public IReadOnlyList<ReferenceRow> ModeOutputs { get; }
 
-    /// <summary>
-    /// Empty when the type takes none.
-    /// </summary>
     public IReadOnlyList<ReferenceRow> Settings { get; }
 
-    /// <summary>
-    /// A type Scripts only reach through <c>placed("UID")</c>.
-    /// </summary>
     public bool IsPlacedOnly { get; }
 
     public ReferenceEntryLayout Layout { get; }

@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the Blocks side shows this tab.
-/// </summary>
 internal sealed class ExpectBlocksTabStep : ScenarioStep
 {
     public ExpectBlocksTabStep(bool reference)

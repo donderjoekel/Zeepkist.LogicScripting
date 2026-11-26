@@ -19,9 +19,6 @@ internal sealed class RunningBlock
     public BlockType Type { get; }
     public LogicScript_Base Script { get; }
 
-    /// <summary>
-    /// Null, with why in <paramref name="error"/>, when the level that's running has no Logic Block with the UID.
-    /// </summary>
     public static RunningBlock Find(string name, string uid, out string error)
     {
         if (!StaticConnectorTracker.allBlocksByUID.TryGetValue(uid, out var block) || block == null)

@@ -8,16 +8,14 @@ using ZeepSDK.Utilities;
 namespace TNRD.Zeepkist.LogicScripting;
 
 /// <summary>
-/// Compiles a Script and places its blocks in the open level, where its <see cref="CompilePlacement"/> says. The
-/// Script's name and text go into the level with its blocks, in the same undo step (ADR 0006).
+/// The Script's name and text go into the level with its blocks, in the same undo step (ADR 0006).
 /// </summary>
 internal static class ScriptCompile
 {
     private const string UndoLabel = "Logic Scripting Compile";
 
     /// <summary>
-    /// Returns the result to show in the window: one line, or the error list. The new blocks replace the Script's Block
-    /// Group.
+    /// Returns the result to show in the window: one line, or the error list.
     /// </summary>
     public static string Run(StoredScript script, StartupCheck check, Func<string, string> findLibrary, ManualLogSource logger)
     {
@@ -58,7 +56,7 @@ internal static class ScriptCompile
     }
 
     /// <summary>
-    /// Compiles without placing anything, for the Placed blocks panel; null outside the editor.
+    /// Null outside the editor.
     /// </summary>
     public static CompileResult Check(string text, ScriptId scriptId, StartupCheck check, Func<string, string> findLibrary)
     {

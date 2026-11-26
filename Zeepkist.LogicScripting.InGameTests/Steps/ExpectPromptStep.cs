@@ -3,9 +3,6 @@ using TNRD.Zeepkist.LogicScripting.UI;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the shown tab's footer has this prompt open, or none.
-/// </summary>
 internal sealed class ExpectPromptStep : ScenarioStep
 {
     public ExpectPromptStep(ListPrompt prompt)

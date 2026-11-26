@@ -57,24 +57,15 @@ public sealed class HoverInfo
     /// </summary>
     public string Definition { get; }
 
-    /// <summary>
-    /// Whether there's something to tell about the name, apart from <see cref="Errors"/>.
-    /// </summary>
     public bool HasName => Function != null || Argument != null || Definition != null;
 
     /// <summary>
     /// What there is to tell about the character at <paramref name="index"/>; null when there's nothing. A name tells
     /// one thing: the Block Function it is, the input or Setting it names in an argument, or else its definition. The
     /// latest definition above it is the one used, or the first below it when there's none above, as only
-    /// <c>delay(...)</c> may refer to a name defined later.
+    /// <c>delay(...)</c> may refer to a name defined later. <paramref name="errors"/> are the editor's error underlines
+    /// for the same text.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="index"></param>
-    /// <param name="errors">The editor's error underlines for the same text.</param>
-    /// <param name="lookups">
-    /// The level gives a Placed Block Reference its type, and the Libraries give a Library's Function its inputs, so
-    /// they can be named.
-    /// </param>
     public static HoverInfo At(
         string text,
         int index,

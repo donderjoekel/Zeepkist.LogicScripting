@@ -9,9 +9,6 @@ using Xunit;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
-/// <summary>
-/// Imports the compiled blocks of every Script example in the README.
-/// </summary>
 public class BlockImportReadmeTests
 {
     private const string Fence = "```";

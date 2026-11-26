@@ -7,9 +7,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// The completions for what is being typed at the caret, and what accepting one does to the text.
-/// </summary>
 public static class Completion
 {
     private const string OutputDetail = "output";
@@ -25,12 +22,6 @@ public static class Completion
     /// top level's, or the inputs and definitions of the Function the caret is in. Of those, only the ones defined
     /// before the caret's statement, unless the caret is inside <c>delay(...)</c>.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="definedNames"></param>
-    /// <param name="lookups">
-    /// The level gives <c>placed(...)</c> before a dot its type, and the Libraries give a Library's name before a dot
-    /// its Functions, a Library's Function before a dot its outputs, and a call to a Library's Function its inputs.
-    /// </param>
     public static IReadOnlyList<CompletionItem> GetItems(
         CaretContext context,
         IReadOnlyList<DefinedName> definedNames = null,

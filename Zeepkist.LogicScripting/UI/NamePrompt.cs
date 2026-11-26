@@ -5,9 +5,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The name field for a new Script or Library, or for renaming one.
-/// </summary>
 internal sealed class NamePrompt
 {
     private readonly string _noun;
@@ -31,9 +28,6 @@ internal sealed class NamePrompt
 
     public bool IsOpen => _open;
 
-    /// <summary>
-    /// Whether it's open to rename a Script or Library, rather than to name a new one.
-    /// </summary>
     public bool IsRenaming => _open && _renamed != null;
 
     public void OpenNew()

@@ -3,7 +3,7 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Clicks the Library in the list, which selects it while the window draws the list, as a player's click does.
+/// The click selects the Library while the window draws the list, as a player's click does.
 /// </summary>
 internal sealed class SelectLibraryStep : ScenarioStep
 {

@@ -4,9 +4,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Moves a named block by an offset, as one undo step.
-/// </summary>
 internal sealed class MoveBlockStep : ScenarioStep
 {
     private const string UndoLabel = "In-game test: move block";

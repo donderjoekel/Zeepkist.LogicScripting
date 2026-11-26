@@ -159,17 +159,11 @@ internal sealed partial class ScriptWindow
         return new ImRect(screen.X + ((screen.W - width) / 2), screen.Y + ((screen.H - height) / 2), width, height);
     }
 
-    /// <summary>
-    /// Like dragging the window's resize handle: the left edge stays where it is.
-    /// </summary>
     private static ImRect WithWidth(ImRect rect, float width)
     {
         return WithSize(rect, width, rect.H);
     }
 
-    /// <summary>
-    /// Like dragging the window's resize handle: the top edge stays where it is.
-    /// </summary>
     private static ImRect WithHeight(ImRect rect, float height)
     {
         return WithSize(rect, rect.W, height);
@@ -183,17 +177,11 @@ internal sealed partial class ScriptWindow
         return new ImRect(rect.X, rect.Top - height, width, height);
     }
 
-    /// <summary>
-    /// The window is no narrower than the center's minimum with both sides collapsed.
-    /// </summary>
     private static float GetMinWidth(ImGui gui)
     {
         return gui.Style.Window.ContentPadding.Horizontal + MinCenterWidth + (GetCollapsedSideWidth(gui) * 2);
     }
 
-    /// <summary>
-    /// A collapsed side is a strip as wide as its header is tall.
-    /// </summary>
     private static float GetCollapsedSideWidth(ImGui gui)
     {
         return GetPanelHeaderHeight(gui);
@@ -211,16 +199,11 @@ internal sealed partial class ScriptWindow
         var minTabHeight = Mathf.Max(ScriptListPanel.GetMinHeightWithImport(gui), LibraryListPanel.GetMinHeightWithWarning(gui, ShowsLibraryReadFailed));
         var minScriptsHeight = GetPanelHeaderHeight(gui) + ImTabsPane.GetTabBarHeight(gui) + (spacing * 2) + minTabHeight;
 
-        // The center's padding, and a row of the startup check's warnings with the spacing under it
         var minStartupHeight = GetStartupWarnings().Count > 0 ? WindowRegion.GetRowHeight(gui) + spacing : 0;
         var minCenterHeight = (spacing * 2) + minStartupHeight + GetMinScriptHeight(gui, _storageWarning != null, _renamePrompt.GetHeight(gui));
         return ImWindow.GetTitleBarHeight(gui) + gui.Style.Window.ContentPadding.Vertical + Mathf.Max(minScriptsHeight, minCenterHeight);
     }
 
-    /// <summary>
-    /// The name row, a row of the storage warning while it shows, the rename prompt's <paramref name="renameHeight"/>,
-    /// and the editor's minimum.
-    /// </summary>
     private static float GetMinScriptHeight(ImGui gui, bool hasStorageWarning, float renameHeight)
     {
         var minStorageHeight = hasStorageWarning ? gui.Style.Layout.Spacing + WindowRegion.GetRowHeight(gui) : 0;
@@ -405,9 +388,6 @@ internal sealed partial class ScriptWindow
         return GetMinTabsWidth(gui, widestLabel, MinScriptsWidth);
     }
 
-    /// <summary>
-    /// A side with two tabs, each half its width, and at least <paramref name="min"/>.
-    /// </summary>
     private static float GetMinTabsWidth(ImGui gui, float widestLabel, float min)
     {
         var tabWidth = widestLabel + (gui.Style.Layout.Indent * 2);

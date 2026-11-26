@@ -27,9 +27,6 @@ internal readonly struct WindowLayout
 
     public float MinHeight { get; }
 
-    /// <summary>
-    /// The corner the player drags to resize the window.
-    /// </summary>
     public ImRect ResizeHandle { get; }
 
     /// <summary>
@@ -37,8 +34,5 @@ internal readonly struct WindowLayout
     /// </summary>
     public bool IsResizing { get; }
 
-    /// <summary>
-    /// Imui's safe screen rect.
-    /// </summary>
     public ImRect SafeScreen { get; }
 }

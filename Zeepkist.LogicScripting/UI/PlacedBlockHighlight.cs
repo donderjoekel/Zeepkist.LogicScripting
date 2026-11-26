@@ -2,9 +2,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// Paints the block under a hovered Placed blocks row with the game's selection paint, and frames it with the camera.
-/// </summary>
 internal sealed class PlacedBlockHighlight
 {
     private const float MinFrameDistance = 32;

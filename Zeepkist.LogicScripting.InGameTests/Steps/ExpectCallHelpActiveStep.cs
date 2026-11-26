@@ -4,8 +4,7 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the call help box shows and the input or Setting it highlights is the one with the label, as the box
-/// writes it (<c>b</c>, <c>op:</c>), or, without a label, when it highlights none of them.
+/// The label is as the box writes it (<c>b</c>, <c>op:</c>).
 /// </summary>
 internal sealed class ExpectCallHelpActiveStep : ScenarioStep
 {

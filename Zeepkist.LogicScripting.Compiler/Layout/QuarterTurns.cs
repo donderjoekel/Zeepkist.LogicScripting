@@ -2,9 +2,6 @@ using System;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Layout;
 
-/// <summary>
-/// A yaw in 90° steps, as blocks in a Block Group are turned.
-/// </summary>
 internal static class QuarterTurns
 {
     public static int Normalize(int quarterTurns)

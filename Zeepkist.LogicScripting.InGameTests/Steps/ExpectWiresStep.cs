@@ -3,10 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Counts the Wires of a named block, into its inputs and out of its outputs, and checks that the block at each one's
-/// other end stores it too.
-/// </summary>
 internal sealed class ExpectWiresStep : ScenarioStep
 {
     public ExpectWiresStep(string name, int count)

@@ -55,9 +55,6 @@ internal sealed partial class ScriptEditor
     /// </summary>
     public bool RenameRequested { get; private set; }
 
-    /// <summary>
-    /// The level's blocks and the Libraries, as the editor's help reads them.
-    /// </summary>
     public EditorLookups Lookups => _assist.Lookups;
 
     /// <summary>
@@ -65,7 +62,6 @@ internal sealed partial class ScriptEditor
     /// </summary>
     public bool HoldsEscape { get; private set; }
 
-    /// <inheritdoc cref="CompletionPopup.Items"/>
     public IReadOnlyList<CompletionItem> CompletionItems => _completion.Items;
 
     /// <inheritdoc cref="CompletionPopup.IsRequestPending"/>

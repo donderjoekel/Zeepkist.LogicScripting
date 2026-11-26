@@ -57,9 +57,6 @@ internal sealed class RecompilePlacement : CompilePlacement
         return new GroupBlock(position.x, position.z, block.transform.eulerAngles.y, style, IsReshaped(block));
     }
 
-    /// <summary>
-    /// Whether the block is scaled or tilted away from how <see cref="CompiledBlockJson"/> places it.
-    /// </summary>
     internal static bool IsReshaped(BlockProperties block)
     {
         var scale = block.transform.localScale;

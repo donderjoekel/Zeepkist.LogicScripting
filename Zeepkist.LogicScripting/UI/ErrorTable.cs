@@ -37,9 +37,6 @@ internal static class ErrorTable
         return gui.GetTextLineHeight() + gui.Style.Layout.ExtraRowHeight;
     }
 
-    /// <summary>
-    /// The column names in the muted color, over a line that sets them apart from the rows.
-    /// </summary>
     public static void DrawHeader(ImGui gui, ImRect rect, ErrorColumns columns)
     {
         var settings = GetSingleLineSettings(gui, 0);

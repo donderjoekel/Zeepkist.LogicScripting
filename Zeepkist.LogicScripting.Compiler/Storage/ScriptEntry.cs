@@ -31,9 +31,6 @@ public sealed class ScriptEntry
 
     public bool HasGroup { get; internal set; }
 
-    /// <summary>
-    /// What a Compile stores in the level: the window's name and text.
-    /// </summary>
     public StoredScript ToStored()
     {
         return new StoredScript(Id, Name, Text, ScriptCarrier.LanguageVersion);

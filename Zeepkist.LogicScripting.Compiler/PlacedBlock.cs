@@ -2,9 +2,6 @@ using System.Collections.Generic;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler;
 
-/// <summary>
-/// A block already in the level, as a Placed Block Reference sees it.
-/// </summary>
 public sealed class PlacedBlock
 {
     public PlacedBlock(
@@ -39,8 +36,5 @@ public sealed class PlacedBlock
     /// </summary>
     public IReadOnlyCollection<string> Downstream { get; }
 
-    /// <summary>
-    /// Whether a Compile placed the block, as a member of some Script's Block Group.
-    /// </summary>
     public bool IsInBlockGroup { get; }
 }

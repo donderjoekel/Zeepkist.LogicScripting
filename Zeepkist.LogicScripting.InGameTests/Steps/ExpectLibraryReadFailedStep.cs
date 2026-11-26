@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the Libraries tab draws its warning that libraries.json couldn't be read, or doesn't, as expected.
-/// </summary>
 internal sealed class ExpectLibraryReadFailedStep : ScenarioStep
 {
     public ExpectLibraryReadFailedStep(bool shown)

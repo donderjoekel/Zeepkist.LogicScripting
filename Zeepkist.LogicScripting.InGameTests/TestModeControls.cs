@@ -28,17 +28,11 @@ internal static class TestModeControls
         central.testMap.TestMap();
     }
 
-    /// <summary>
-    /// Opens the pause menu and presses Quit, which goes back to the editor from a test level.
-    /// </summary>
     public static IEnumerator Leave()
     {
         return PressInPauseMenu(menu => menu.OnQuit());
     }
 
-    /// <summary>
-    /// Opens the pause menu and presses Reset, which restarts the round.
-    /// </summary>
     public static IEnumerator Restart()
     {
         return PressInPauseMenu(menu => menu.OnReset());

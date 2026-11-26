@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Checks that the game logged no exception since the scenario started, or since the last time this step ran.
-/// </summary>
 internal sealed class ExpectNoExceptionsStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

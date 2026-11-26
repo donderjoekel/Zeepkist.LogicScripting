@@ -3,9 +3,6 @@ using ZeepSDK.Storage;
 
 namespace TNRD.Zeepkist.LogicScripting.Storage;
 
-/// <summary>
-/// Keeps the <see cref="WindowState"/> in the mod's storage folder, next to the Drafts.
-/// </summary>
 internal sealed class WindowStateStore
 {
     private const string FileName = "window";

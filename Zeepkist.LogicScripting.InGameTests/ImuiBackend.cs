@@ -9,9 +9,6 @@ internal static class ImuiBackend
 {
     private static ImuiUnityGUIBackend _backend;
 
-    /// <summary>
-    /// Null when there's none.
-    /// </summary>
     public static ImuiUnityGUIBackend Find()
     {
         if (_backend == null)

@@ -11,10 +11,6 @@ internal static class WrappedText
         return new ImTextSettings(gui.Style.Layout.TextSize, 0, 0, wrap: true);
     }
 
-    /// <summary>
-    /// The height of <paramref name="text"/> wrapped to <paramref name="width"/>, so a short or empty text still takes
-    /// <paramref name="minHeight"/>.
-    /// </summary>
     public static float GetHeight(ImGui gui, string text, in ImTextSettings settings, float width, float minHeight)
     {
         // Imui doesn't wrap at all when the width is 0 or less, which would measure the text as one long line

@@ -1,7 +1,7 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 /// <summary>
-/// <c>target.output</c>: one output of a multi-output block. Its position is the output name's.
+/// Its position is the output name's, not the target's.
 /// </summary>
 internal sealed class MemberExpression : Expression
 {

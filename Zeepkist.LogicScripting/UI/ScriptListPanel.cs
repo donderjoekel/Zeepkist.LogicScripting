@@ -9,9 +9,6 @@ using TNRD.Zeepkist.LogicScripting.Storage;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The window's Scripts with their marks, New, Import selected, and per Script Rename, Select group and Delete.
-/// </summary>
 internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
 {
     public const string Help = "Right-click a Script to rename it, select its blocks or delete it";
@@ -47,9 +44,6 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
 
     protected override bool HasImport => true;
 
-    /// <summary>
-    /// Like <see cref="ItemListPanel{T}.GetMinHeight"/>, with Import selected's row.
-    /// </summary>
     public static float GetMinHeightWithImport(ImGui gui)
     {
         return GetMinHeight(gui) + WindowRegion.GetRowHeight(gui);
@@ -66,7 +60,7 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
     }
 
     /// <summary>
-    /// What Import selected does. Returns the new Script, or null with why not as the result line.
+    /// Returns the new Script, or null with why not as the result line.
     /// </summary>
     public ScriptEntry ImportSelected()
     {
@@ -171,9 +165,6 @@ internal sealed class ScriptListPanel : ItemListPanel<ScriptEntry>
             Message = $"Deleted \"{entry.Name}\" and its {count} blocks";
     }
 
-    /// <summary>
-    /// What Select group in the Script's context menu does.
-    /// </summary>
     public void SelectGroup(ScriptEntry entry)
     {
         var central = LevelEdit.GetCentral(out var blocker);

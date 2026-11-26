@@ -2,10 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Loads a level <see cref="SaveLevelStep"/> saved, as the editor's load panel does, and waits until all its blocks are
-/// there. A step for while it loads starts in the frame the load does, so it's never too late for a small level.
-/// </summary>
 internal sealed class LoadLevelStep : ScenarioStep
 {
     private const float PanelSeconds = 5;
@@ -20,7 +16,8 @@ internal sealed class LoadLevelStep : ScenarioStep
     public string Name { get; }
 
     /// <summary>
-    /// Null when nothing runs while the level loads.
+    /// Null when nothing runs while the level loads. It starts in the frame the load does, so it's never too late for a
+    /// small level.
     /// </summary>
     public ScenarioStep Meanwhile { get; }
 

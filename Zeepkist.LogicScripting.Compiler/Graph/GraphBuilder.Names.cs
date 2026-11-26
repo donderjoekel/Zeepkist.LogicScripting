@@ -10,9 +10,6 @@ internal sealed partial class GraphBuilder
     private readonly Scope _topScope = new(null, null, null);
     private Scope _scope;
 
-    /// <summary>
-    /// Notes the first definition of each name up front, so a use can tell a later definition from no definition.
-    /// </summary>
     private void CollectDefinitions(Scope scope, List<Statement> statements)
     {
         foreach (var statement in statements)
@@ -80,9 +77,6 @@ internal sealed partial class GraphBuilder
         return IsReserved(name) ? $"'{name}' is a reserved word and can't be used as a name" : null;
     }
 
-    /// <summary>
-    /// Block Functions, <c>placed</c>, the words around a Function, and the words Settings use for true and false.
-    /// </summary>
     internal static bool IsReserved(string name)
     {
         return name is "true" or "false" or PlacedFunction or FunctionDefinition.Keyword or FunctionDefinition.EndKeyword

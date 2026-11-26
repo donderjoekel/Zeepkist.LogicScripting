@@ -11,10 +11,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 
 namespace TNRD.Zeepkist.LogicScripting;
 
-/// <summary>
-/// Makes blocks in the level, the selected ones or an Orphaned Group's, the Block Group of a Script that describes them,
-/// where they stand, as one undo step.
-/// </summary>
 internal static class ScriptImport
 {
     /// <summary>
@@ -39,8 +35,7 @@ internal static class ScriptImport
     }
 
     /// <summary>
-    /// Makes the selected blocks a new Script. Returns the Script the level now holds, or null when the level is
-    /// unchanged, with the result line either way.
+    /// Returns the Script the level now holds, or null when the level is unchanged, with the result line either way.
     /// </summary>
     public static StoredScript RunSelected(string name, StartupCheck check, ManualLogSource logger, out string message)
     {

@@ -53,9 +53,6 @@ internal static class TestLevels
             central.unsavedContentPopup.Yes();
     }
 
-    /// <summary>
-    /// Picks the file in the open load panel and presses Load.
-    /// </summary>
     public static void Load(LEV_LevelEditorCentral central, FileInfo file)
     {
         central.saveload.SelectThisFile(Path.GetFileNameWithoutExtension(file.Name), file);

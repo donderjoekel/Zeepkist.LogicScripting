@@ -19,9 +19,6 @@ public sealed class CallHelpSession
         _lookups = lookups ?? EditorLookups.None;
     }
 
-    /// <summary>
-    /// The help to show; null while there's none.
-    /// </summary>
     public CallHelp Help { get; private set; }
 
     /// <summary>

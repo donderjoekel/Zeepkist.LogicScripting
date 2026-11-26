@@ -166,9 +166,6 @@ internal static class Lexer
         return joined;
     }
 
-    /// <summary>
-    /// Whether the token is written right after a dot: an output, or a Library's Function in a qualified call.
-    /// </summary>
     internal static bool IsAfterDot(List<Token> tokens, int index)
     {
         return index > 0 && tokens[index - 1].Kind == TokenKind.Dot;

@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the window is drawn this big, to within <see cref="RectCheck.Tolerance"/>.
-/// </summary>
 internal sealed class ExpectWindowSizeStep : ScenarioStep
 {
     public ExpectWindowSizeStep((int Width, int Height) size)

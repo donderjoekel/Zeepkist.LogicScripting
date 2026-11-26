@@ -36,7 +36,7 @@ internal sealed class LibrarySaver
     }
 
     /// <summary>
-    /// Saves a change without waiting for the delay. Also call when the mod unloads.
+    /// Also call when the mod unloads.
     /// </summary>
     public void Save()
     {

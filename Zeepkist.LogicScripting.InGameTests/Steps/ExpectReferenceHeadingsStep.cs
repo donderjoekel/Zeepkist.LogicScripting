@@ -4,9 +4,6 @@ using TNRD.Zeepkist.LogicScripting.UI;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the Reference tab draws exactly these headings, in this order, each open or closed as given.
-/// </summary>
 internal sealed class ExpectReferenceHeadingsStep : ScenarioStep
 {
     public ExpectReferenceHeadingsStep(IReadOnlyList<ReferenceHeading> headings)
@@ -14,9 +11,6 @@ internal sealed class ExpectReferenceHeadingsStep : ScenarioStep
         Headings = headings;
     }
 
-    /// <summary>
-    /// Empty for none, as when nothing matches the filter.
-    /// </summary>
     public IReadOnlyList<ReferenceHeading> Headings { get; }
 
     public override IEnumerator Run(StepContext context)

@@ -1155,9 +1155,6 @@ public class CompletionTests
         Assert.Equal(expected, Format(Completion.Accept(context, item)));
     }
 
-    /// <summary>
-    /// With the names the text itself defines.
-    /// </summary>
     private static IReadOnlyList<CompletionItem> Names(string text, EditorLookups lookups = null)
     {
         var context = At(text);
@@ -1179,14 +1176,8 @@ public class CompletionTests
         return Completion.GetItems(At(text), lookups: new EditorLookups(findPlacedBlock)).Select(i => i.Label).ToList();
     }
 
-    /// <summary>
-    /// A Library with a Function of two outputs.
-    /// </summary>
     private const string EdgeLibrary = "function edge(a) -> lo, hi\n  lo = a\n  hi = !a\nend";
 
-    /// <summary>
-    /// A Library whose Function takes two inputs, as the issue's <c>timing</c> does.
-    /// </summary>
     private const string TwoInputLibrary = "function edge(a, b) -> lo\n  lo = a & b\nend";
 
     /// <summary>
@@ -1199,9 +1190,6 @@ public class CompletionTests
         return new EditorLookups(uid => level.GetValueOrDefault(uid));
     }
 
-    /// <summary>
-    /// A lookup with one Library, <c>timing</c>.
-    /// </summary>
     private static EditorLookups Library(string text)
     {
         return new EditorLookups(findLibrary: name => name == "timing" ? text : null);

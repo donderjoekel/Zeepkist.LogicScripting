@@ -149,9 +149,6 @@ public static partial class EditCommands
         return index;
     }
 
-    /// <summary>
-    /// The end of the selection that stays put while the caret moves.
-    /// </summary>
     private static int GetAnchor(TextSnapshot snapshot)
     {
         return snapshot.Caret + snapshot.Selection;

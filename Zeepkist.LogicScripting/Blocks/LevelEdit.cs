@@ -4,9 +4,6 @@ using ZeepSDK.Utilities;
 
 namespace TNRD.Zeepkist.LogicScripting.Blocks;
 
-/// <summary>
-/// The checks and failure handling every change the mod makes to the open level shares.
-/// </summary>
 internal static class LevelEdit
 {
     public const string GrabbingMessage = "Let go of the grabbed blocks first";

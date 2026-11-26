@@ -280,10 +280,6 @@ internal sealed class TestRun : IDisposable
         yield return new WaitForSecondsRealtime(2);
     }
 
-    /// <summary>
-    /// Takes the game to a new level in the editor the way a player starts one: out of test mode if the last scenario
-    /// stopped there, back to the main menu without saving, and into the editor again.
-    /// </summary>
     private IEnumerator NewLevel(string scenario)
     {
         _walkScenario = scenario;
@@ -319,9 +315,6 @@ internal sealed class TestRun : IDisposable
         return Object.FindObjectOfType<T>(true);
     }
 
-    /// <summary>
-    /// Clicks the main menu's Level Editor button, or calls what it calls when no button is wired to it.
-    /// </summary>
     private void PressLevelEditorButton(LevelEditorUI menu)
     {
         foreach (var button in Object.FindObjectsOfType<GenericButton>(true))
@@ -446,9 +439,6 @@ internal sealed class TestRun : IDisposable
         return texts;
     }
 
-    /// <summary>
-    /// The component's simple fields, and for each object it holds whether it's there and active.
-    /// </summary>
     private static string FieldValues(Component component)
     {
         List<string> values = [];

@@ -20,9 +20,6 @@ internal sealed class StartupCheck
     private readonly HashSet<int> _disabledBlockIds = [];
     private readonly List<string> _disabledBlocks = [];
 
-    /// <summary>
-    /// What <see cref="TurnOff"/> added to <see cref="DisabledBlocks"/>, by block ID.
-    /// </summary>
     private readonly Dictionary<int, string> _turnedOffByTests = [];
     private bool _hasRun;
 

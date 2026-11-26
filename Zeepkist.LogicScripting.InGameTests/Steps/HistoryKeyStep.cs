@@ -2,10 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Presses the level editor's undo or redo key once, and fails when the editor's history didn't move, such as with
-/// nothing left to undo.
-/// </summary>
 internal abstract class HistoryKeyStep : ScenarioStep
 {
     private readonly EditorKey _key;

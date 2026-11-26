@@ -44,9 +44,6 @@ internal static class LevelScripts
         properties.SetIntDictionaryValue(ScriptCarrier.LanguageVersionKey, script.LanguageVersion);
     }
 
-    /// <summary>
-    /// Takes the block out of its Block Group, with the Script it carries, if any.
-    /// </summary>
     public static void Untag(PropertyDictionariesJSON properties)
     {
         properties.t?.Remove(BlockGroupTag.Key);
@@ -55,9 +52,6 @@ internal static class LevelScripts
         properties.n?.Remove(ScriptCarrier.LanguageVersionKey);
     }
 
-    /// <summary>
-    /// Whether the block, a member of a Block Group, holds its Script's text.
-    /// </summary>
     public static bool IsCarrier(BlockProperties block)
     {
         return block.customBlockEditProperties?.t?.ContainsKey(ScriptCarrier.TextKey) == true;

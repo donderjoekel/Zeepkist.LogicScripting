@@ -231,7 +231,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     }
 
     /// <summary>
-    /// Writes the Draft of every Script that changed since its last one. Also call when the mod unloads.
+    /// Also call when the mod unloads.
     /// </summary>
     public void SaveDrafts()
     {
@@ -239,7 +239,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     }
 
     /// <summary>
-    /// Writes the Libraries if they changed since they were last written. Also call when the mod unloads.
+    /// Also call when the mod unloads.
     /// </summary>
     public void SaveLibraries()
     {
@@ -298,9 +298,6 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
             Select(_scripts.Entries[0]);
     }
 
-    /// <summary>
-    /// Orphaned Groups are listed under the Scripts, in the same scroll region.
-    /// </summary>
     private void DrawScriptsTab(ImGui gui, ImRect rect)
     {
         _scriptListPanel.BeginList(gui, rect);

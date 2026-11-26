@@ -6,8 +6,7 @@ using TNRD.Zeepkist.LogicScripting.Compiler;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the editor underlines exactly these places as the other usages of the name at the caret, each by the
-/// one-based line and column it starts at, or none.
+/// The other usages of the name at the caret, each by the one-based line and column it starts at.
 /// </summary>
 internal sealed class ExpectUsagesStep : ScenarioStep
 {
@@ -23,9 +22,6 @@ internal sealed class ExpectUsagesStep : ScenarioStep
         Positions = positions;
     }
 
-    /// <summary>
-    /// Empty for none.
-    /// </summary>
     public IReadOnlyList<Position> Positions { get; }
 
     public override IEnumerator Run(StepContext context)

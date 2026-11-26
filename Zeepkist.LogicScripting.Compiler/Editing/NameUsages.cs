@@ -39,9 +39,6 @@ internal sealed class NameUsages
     /// </summary>
     public HashSet<string> DefinedNames { get; } = [];
 
-    /// <summary>
-    /// The Script as it compiled when it was read.
-    /// </summary>
     public CompileResult Compiled { get; }
 
     public static NameUsages Read(List<Token> tokens, List<Statement> statements, CompileResult compiled)
@@ -286,9 +283,6 @@ internal sealed class NameUsages
             : null;
     }
 
-    /// <summary>
-    /// What <paramref name="name"/> stands for in the scope, or null when the scope doesn't define it.
-    /// </summary>
     private NameSymbol Resolve(string name, FunctionDefinition scope)
     {
         if (scope == null)

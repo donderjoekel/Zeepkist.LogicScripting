@@ -33,9 +33,6 @@ internal static class StepArgument
             : throw new ScenarioFormatException($"{what}, not '{argument}'");
     }
 
-    /// <summary>
-    /// One of the words in <paramref name="choices"/>.
-    /// </summary>
     public static T Choice<T>(string step, string argument, IReadOnlyDictionary<string, T> choices)
     {
         var words = choices.Keys.ToList();
@@ -70,9 +67,6 @@ internal static class StepArgument
         return TryPositive(argument, out var pixels) ? pixels : throw new ScenarioFormatException($"{what}, not '{argument}'");
     }
 
-    /// <summary>
-    /// A width and a height, as <see cref="Pixels"/> reads each.
-    /// </summary>
     public static (int Width, int Height) Size(string step, string argument)
     {
         var what = $"{step} takes a width and a height, each a whole number of pixels above 0";
@@ -85,9 +79,6 @@ internal static class StepArgument
             : throw new ScenarioFormatException($"{what}, not '{argument}'");
     }
 
-    /// <summary>
-    /// A whole number of 1 or more, such as a one-based line.
-    /// </summary>
     public static bool TryPositive(string text, out int number)
     {
         return int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out number) && number > 0;

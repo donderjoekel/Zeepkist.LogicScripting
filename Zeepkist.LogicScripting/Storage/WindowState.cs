@@ -32,14 +32,8 @@ internal sealed class WindowState
     public PanelState Blocks { get; set; } = new();
     public PanelState Errors { get; set; } = new();
 
-    /// <summary>
-    /// The names of the Reference tab's categories shown as just their header.
-    /// </summary>
     public List<string> CollapsedReferenceCategories { get; set; } = [];
 
-    /// <summary>
-    /// Whether the Scripts side shows its Libraries tab rather than its Scripts tab.
-    /// </summary>
     public bool ShowLibraries { get; set; }
 
     public bool OrphanedGroupsCollapsed { get; set; }

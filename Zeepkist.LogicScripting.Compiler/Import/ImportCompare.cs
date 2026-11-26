@@ -82,9 +82,6 @@ internal static class ImportCompare
         return number == 0 ? null : number.ToString(CultureInfo.InvariantCulture);
     }
 
-    /// <summary>
-    /// Whether a fresh block of the type stores the same.
-    /// </summary>
     public static bool IsFresh(Setting setting, BlockType type)
     {
         var fresh = type.FreshSettings.FirstOrDefault(s => s.Kind == setting.Kind && s.Key == setting.Key);

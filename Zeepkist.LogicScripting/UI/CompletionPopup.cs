@@ -20,7 +20,7 @@ internal sealed class CompletionPopup
     private const float MaxWidth = 720;
 
     /// <summary>
-    /// The gap between a label and its detail, in layout spacings.
+    /// In layout spacings.
     /// </summary>
     private const float DetailGap = 4;
 
@@ -50,16 +50,12 @@ internal sealed class CompletionPopup
     /// <inheritdoc cref="CompletionSession.IsRequestPending"/>
     public bool IsRequestPending => _session.IsRequestPending;
 
-    /// <summary>
-    /// The list's rows; empty while it's closed.
-    /// </summary>
     public IReadOnlyList<CompletionItem> Items => _session.IsOpen ? _session.Items : [];
 
-    /// <inheritdoc cref="CompletionSession.WordStart"/>
     public int? WordStart => _session.WordStart;
 
     /// <summary>
-    /// Where the list was drawn this frame; empty while it's closed.
+    /// Where the list was drawn this frame.
     /// </summary>
     public ImRect Rect => _session.IsOpen ? _rect : default;
 

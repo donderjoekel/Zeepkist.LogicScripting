@@ -21,8 +21,7 @@ internal sealed partial class ScriptEditor
     public IReadOnlyList<TextSpan> DrawnUsages { get; private set; } = [];
 
     /// <summary>
-    /// Underlines every other place the name at the caret is written, while the field has a typing cursor. Read again
-    /// only when the text or the caret change.
+    /// Read again only when the text or the caret change.
     /// </summary>
     private void DrawUsages(ImGui gui, ImRect textRect, SyntaxPalette palette, bool typing)
     {

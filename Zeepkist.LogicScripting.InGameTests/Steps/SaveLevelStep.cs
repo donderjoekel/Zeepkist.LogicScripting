@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Saves the level to a file, as the editor's save panel does, for <see cref="LoadLevelStep"/>.
-/// </summary>
 internal sealed class SaveLevelStep : ScenarioStep
 {
     private const float PanelSeconds = 5;

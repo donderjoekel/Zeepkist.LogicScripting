@@ -199,9 +199,6 @@ internal sealed partial class ScriptEditor
         _heldEscape.Hold(Time.frameCount);
     }
 
-    /// <summary>
-    /// Closes the completion list, else hides the call's help, else leaves the field; returns whether it left.
-    /// </summary>
     private bool HandleEscape(ImGui gui)
     {
         if (_completion.IsOpen)

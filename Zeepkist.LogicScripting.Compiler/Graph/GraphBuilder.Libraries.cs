@@ -14,9 +14,6 @@ internal sealed partial class GraphBuilder
 {
     private readonly Func<string, string> _findLibrary;
 
-    /// <summary>
-    /// Whether the text being compiled is itself a Library, checked on its own.
-    /// </summary>
     private readonly bool _isLibrary;
 
     /// <summary>
@@ -45,12 +42,10 @@ internal sealed partial class GraphBuilder
     }
 
     /// <summary>
-    /// The Functions of the Library by <paramref name="name"/>, each with the inputs its body uses as a Setting; empty
-    /// when there's none by that name.
+    /// Each Function with the inputs its body uses as a Setting; empty when there's no Library by that name.
+    /// <paramref name="findLibrary"/> returns null when there's none; <paramref name="hasErrors"/> is set when the
+    /// Library's text has an error, which stops every call into it.
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="findLibrary">A Library's text by its name, or null when there's none.</param>
-    /// <param name="hasErrors">Whether its text has an error, which stops every call into it.</param>
     public static List<(FunctionDefinition Function, IReadOnlyCollection<string> SettingInputs)> DescribeLibrary(
         string name,
         Func<string, string> findLibrary,
@@ -147,9 +142,6 @@ internal sealed partial class GraphBuilder
         }
     }
 
-    /// <summary>
-    /// A Library's Function with its Library's name, <c>timing.edge</c>; any other just by its own.
-    /// </summary>
     private string GetQualifiedName(FunctionDefinition function)
     {
         return _libraryFunctions.TryGetValue(function, out var library)

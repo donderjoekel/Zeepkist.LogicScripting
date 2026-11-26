@@ -27,9 +27,6 @@ internal sealed class NamedBlock
     /// </summary>
     public IReadOnlyList<BlockConnector> Outputs { get; }
 
-    /// <summary>
-    /// Null, with why in <paramref name="error"/>, when the level has no Logic Block with the UID.
-    /// </summary>
     public static NamedBlock Find(LEV_LevelEditorCentral central, string name, string uid, out string error)
     {
         var block = LevelBlocks.Find(central, uid);
@@ -50,8 +47,7 @@ internal sealed class NamedBlock
     }
 
     /// <summary>
-    /// Null, with why in <paramref name="error"/>, when none of <paramref name="connectors"/> has the name.
-    /// <paramref name="kind"/> is <c>output</c> or <c>input</c>.
+    /// <paramref name="kind"/> is <c>output</c> or <c>input</c>, for the error.
     /// </summary>
     public static BlockConnector FindConnector(string block, string kind, IReadOnlyList<BlockConnector> connectors, string name, out string error)
     {

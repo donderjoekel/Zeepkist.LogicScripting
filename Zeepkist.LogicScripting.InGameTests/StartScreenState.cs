@@ -28,9 +28,6 @@ internal sealed class StartScreenState
     public bool IntroPanelActive { get; set; }
     public bool PlayerManagerExists { get; set; }
 
-    /// <summary>
-    /// The texts the screen showed, in the order they were found.
-    /// </summary>
     public List<string> Texts { get; set; } = [];
 
     /// <summary>
@@ -50,9 +47,6 @@ internal sealed class StartScreenState
                + $"player manager {(PlayerManagerExists ? "there" : "missing")}";
     }
 
-    /// <summary>
-    /// The texts as the detail lists them: one line each, without empty or repeated ones, the first few only.
-    /// </summary>
     public static string Shown(IEnumerable<string> texts)
     {
         var cleaned = texts

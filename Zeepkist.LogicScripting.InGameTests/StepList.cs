@@ -487,7 +487,6 @@ internal static class StepList
         var words = StepArgument.Text(step, argument, what).Split([' '], StringSplitOptions.RemoveEmptyEntries);
         var moves = new List<DragMove>();
         var start = 0;
-        // Each move ends at the next 'then', or at the end of the words
         for (var end = 0; end <= words.Length; end++)
         {
             if (end < words.Length && words[end] != "then")

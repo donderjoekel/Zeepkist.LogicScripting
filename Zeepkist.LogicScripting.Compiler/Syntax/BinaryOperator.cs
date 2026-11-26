@@ -4,8 +4,7 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 /// <summary>
-/// A binary operator: its symbol, its precedence, and the Block Function call it's shorthand for. Adding an operator
-/// to <see cref="All"/> is all the lexer, parser and graph builder need.
+/// Adding an operator to <see cref="All"/> is all the lexer, parser and graph builder need.
 /// </summary>
 internal sealed class BinaryOperator
 {

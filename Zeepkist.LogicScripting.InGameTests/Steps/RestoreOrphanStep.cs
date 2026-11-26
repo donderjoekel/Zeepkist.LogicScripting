@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Brings an Orphaned Group's Script back and selects it, as Restore from Draft on its row does.
-/// </summary>
 internal sealed class RestoreOrphanStep : ScenarioStep
 {
     public RestoreOrphanStep(string name)

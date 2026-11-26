@@ -4,8 +4,8 @@ using System.Linq;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the completion list is open and has no row with the label. A closed list fails, as it does for
-/// <see cref="ExpectCompletionStep"/>, so a list that didn't open can't pass for one that left the row out.
+/// A closed list fails, as it does for <see cref="ExpectCompletionStep"/>, so a list that didn't open can't pass for one
+/// that left the row out.
 /// </summary>
 internal sealed class ExpectCompletionMissingStep : ScenarioStep
 {

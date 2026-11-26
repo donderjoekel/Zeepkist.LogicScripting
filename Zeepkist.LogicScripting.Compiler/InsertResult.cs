@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler;
 
-/// <summary>
-/// The Script after <see cref="PlacedBlockReferenceInsert.Insert"/>.
-/// </summary>
 public sealed class InsertResult
 {
     public InsertResult(string text, int caret, int insertedCount, int alreadyReferencedCount, int skippedGroupBlockCount)

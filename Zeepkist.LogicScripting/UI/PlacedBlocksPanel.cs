@@ -8,9 +8,6 @@ using ZeepSDK.Utilities;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The Script's Placed Block References from its last check, and Insert selected.
-/// </summary>
 internal sealed class PlacedBlocksPanel
 {
     private string _insertMessage = string.Empty;

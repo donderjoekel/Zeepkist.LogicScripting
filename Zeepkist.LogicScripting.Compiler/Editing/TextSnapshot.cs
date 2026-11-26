@@ -2,9 +2,6 @@ using System;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// The editor's text with its caret and selection, as <see cref="EditHistory"/> stores it.
-/// </summary>
 public readonly struct TextSnapshot : IEquatable<TextSnapshot>
 {
     private readonly string _text;

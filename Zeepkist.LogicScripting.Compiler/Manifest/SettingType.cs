@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
-/// <summary>
-/// What a Setting accepts in a Script and how its value is stored.
-/// </summary>
 public enum SettingType
 {
     /// <summary>

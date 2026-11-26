@@ -52,15 +52,9 @@ public sealed class CallHelp
     /// inputs and a first line the compiler accepts, or a Library's Function with inputs, or whose name is a Placed
     /// Block Reference to a block with inputs; null when there's none, and inside a comment or string. A named argument
     /// is active from its name on; any other argument gives the input after those the positional arguments before it
-    /// give, unless a named argument comes before it, which a positional one can't follow.
+    /// give, unless a named argument comes before it, which a positional one can't follow. The level in
+    /// <paramref name="lookups"/> is only asked when the call isn't to a Block Function.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="caret"></param>
-    /// <param name="lookups">
-    /// The level gives a Placed Block Reference its type, and is only asked when the call isn't to a Block Function.
-    /// The Libraries give a call to a Library's Function its inputs. None come from a Library with an error, since the
-    /// compiler rejects every call into it.
-    /// </param>
     public static CallHelp At(string text, int caret, EditorLookups lookups = null)
     {
         text ??= string.Empty;

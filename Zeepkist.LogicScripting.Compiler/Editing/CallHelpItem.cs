@@ -24,8 +24,5 @@ public sealed class CallHelpItem
     /// </summary>
     public string Detail { get; }
 
-    /// <summary>
-    /// A Setting with its colon.
-    /// </summary>
     public string Label => IsInput ? Name : $"{Name}:";
 }

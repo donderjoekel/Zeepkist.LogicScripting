@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Quits test mode and waits until the editor has loaded the level again, blocks and all.
-/// </summary>
 internal sealed class BackToEditorStep : ScenarioStep
 {
     private const float LoadSeconds = 60;

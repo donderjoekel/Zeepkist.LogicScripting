@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// What a piece of Script text is, for its color in the editor.
-/// </summary>
 public enum HighlightKind
 {
     Name,

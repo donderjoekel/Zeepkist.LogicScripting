@@ -6,8 +6,8 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Runs the checks of <see cref="ExpectEditorInViewStep"/> without waiting for the window to settle: on the frame the
-/// step before ended on, frame 0, and on each of the next frames the window draws, so it catches a single bad frame.
+/// Doesn't wait for the window to settle: frame 0 is the frame the step before ended on, then each next frame the window
+/// draws, so it catches a single bad frame.
 /// </summary>
 internal sealed class ExpectEditorInViewEachFrameStep : ScenarioStep
 {

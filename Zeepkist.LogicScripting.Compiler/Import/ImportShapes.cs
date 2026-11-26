@@ -67,9 +67,6 @@ internal sealed class ImportShapes
         return _wiresFrom.Contains(uid);
     }
 
-    /// <summary>
-    /// Whether the block has one output, and that feeds one input.
-    /// </summary>
     public bool IsUsedOnce(string uid)
     {
         return _graph.GetOutputs(uid).Count == 1 && _wiresFrom[uid].Count() == 1;

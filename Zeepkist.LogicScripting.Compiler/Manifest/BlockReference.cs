@@ -15,9 +15,6 @@ public static class BlockReference
     /// </summary>
     public static IReadOnlyList<BlockReferenceCategory> Categories { get; } = BlockCategory.All.Select(DescribeCategory).ToList();
 
-    /// <summary>
-    /// The entry the Reference tab shows for a type in <see cref="BlockManifest.All"/>.
-    /// </summary>
     public static BlockReferenceEntry GetEntry(BlockType type)
     {
         return Categories.SelectMany(c => c.Entries).First(e => e.Function == type.Function);
@@ -60,9 +57,6 @@ public static class BlockReference
         return type.Arguments.Where(a => !a.IsInput).Select(a => new ReferenceRow(a.Name, a.Detail)).ToList();
     }
 
-    /// <summary>
-    /// The values a Setting accepts, and whether a call must give it.
-    /// </summary>
     internal static string DescribeValues(BlockSetting setting)
     {
         var accepts = setting.Type switch

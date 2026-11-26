@@ -132,7 +132,6 @@ internal sealed class CallHelpPopup
             y -= lineHeight;
             Add($"{active.Label} ", palette.Get(HighlightKind.Keyword));
 
-            // Wraps between the options a Setting lists
             var values = active.Detail.Split([Separator], StringSplitOptions.None);
             for (var i = 0; i < values.Length; i++)
             {

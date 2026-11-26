@@ -4,9 +4,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Counts the errors the window's check found.
-/// </summary>
 internal class ExpectErrorsStep : ErrorCheckStep
 {
     public ExpectErrorsStep(int count)

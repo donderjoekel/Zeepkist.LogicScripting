@@ -15,9 +15,6 @@ internal sealed class ExceptionLog
 
     public List<LoggedException> Logged { get; } = [];
 
-    /// <summary>
-    /// Lists what's logged from now on under <paramref name="scenario"/>, and starts what the next check looks at.
-    /// </summary>
     public void StartScenario(string scenario)
     {
         _scenario = scenario;
@@ -31,9 +28,6 @@ internal sealed class ExceptionLog
         Count(_sinceCheck, message, frame);
     }
 
-    /// <summary>
-    /// What was logged since the last call, or since the scenario started.
-    /// </summary>
     public List<LoggedException> TakeSinceCheck()
     {
         List<LoggedException> taken = [.. _sinceCheck];

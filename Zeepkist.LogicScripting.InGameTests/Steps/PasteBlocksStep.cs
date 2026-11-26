@@ -4,10 +4,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Presses the editor's duplicate key, which pastes a copy of the selected blocks, selects the copies and grabs them,
-/// and names the copies in the selection's order.
-/// </summary>
 internal sealed class PasteBlocksStep : ScenarioStep
 {
     public PasteBlocksStep(IReadOnlyList<string> names)

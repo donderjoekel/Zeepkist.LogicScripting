@@ -27,9 +27,6 @@ internal sealed partial class ScriptWindow
         public bool IsOpen => _window.IsOpen;
         public bool HasScript => _window.CurrentScript != null;
 
-        /// <summary>
-        /// Whether a Script or a Library is selected, so there's text in the editor.
-        /// </summary>
         public bool HasText => _window._edited != null;
 
         public IReadOnlyList<string> ScriptNames => [.. _window._scripts.Entries.Select(e => e.Name)];
@@ -40,9 +37,6 @@ internal sealed partial class ScriptWindow
         /// </summary>
         public string Result => _window._result;
 
-        /// <summary>
-        /// The selected Script's or Library's text in the editor, or null with neither selected.
-        /// </summary>
         public string Text => _window._edited?.Editor.Text;
 
         /// <summary>
@@ -55,7 +49,6 @@ internal sealed partial class ScriptWindow
         /// </summary>
         public IReadOnlyList<Diagnostic> Errors => _window._edited?.Errors;
 
-        /// <inheritdoc cref="ScriptEditor.CompletionItems"/>
         public IReadOnlyList<CompletionItem> CompletionItems => _window._edited?.Editor.CompletionItems ?? [];
 
         /// <inheritdoc cref="ScriptEditor.CallHelp"/>
@@ -78,9 +71,6 @@ internal sealed partial class ScriptWindow
 
         public bool IsFieldFocused => _window.AnyFieldFocused;
 
-        /// <summary>
-        /// The shown tab's list and footer.
-        /// </summary>
         public IListPanel ShownList => _window._state.ShowLibraries ? _window._libraryListPanel : _window._scriptListPanel;
 
         /// <summary>
@@ -94,13 +84,10 @@ internal sealed partial class ScriptWindow
         /// <inheritdoc cref="UI.WindowLayout"/>
         public WindowLayout WindowLayout => _window._windowLayout;
 
-        /// <summary>
-        /// Whether the center drew the startup check's warnings.
-        /// </summary>
         public WarningLayout StartupWarningLayout => _window._startupWarningLayout;
 
         /// <summary>
-        /// Whether the Libraries tab drew its libraries.json warning, the last frame it was shown.
+        /// As of the last frame the Libraries tab was shown.
         /// </summary>
         public WarningLayout LibraryReadFailedLayout => _window._libraryReadFailedLayout;
 
@@ -175,9 +162,6 @@ internal sealed partial class ScriptWindow
             return true;
         }
 
-        /// <summary>
-        /// The Orphaned Groups the Scripts tab lists.
-        /// </summary>
         public IReadOnlyList<OrphanedGroup> Orphans => _window._scripts.OrphanedGroups;
 
         /// <inheritdoc cref="OrphanedGroupsPanel.DrawnMessage"/>
@@ -215,7 +199,6 @@ internal sealed partial class ScriptWindow
         /// </summary>
         public bool IsOrphanInputPending => _window._orphanedGroupsPanel.IsInputPending;
 
-        /// <inheritdoc cref="OrphanedGroupsPanel.CancelInput"/>
         public void CancelOrphanInput()
         {
             _window._orphanedGroupsPanel.CancelInput();
@@ -239,9 +222,6 @@ internal sealed partial class ScriptWindow
             _window._readLevelChanges = null;
         }
 
-        /// <summary>
-        /// The Scripts side's width as it was last drawn.
-        /// </summary>
         public float DrawnScriptsWidth => _window._drawnScriptsWidth;
 
         /// <summary>
@@ -305,9 +285,6 @@ internal sealed partial class ScriptWindow
             return _window._startupCheck.TurnOff(type, style);
         }
 
-        /// <summary>
-        /// The Script's ID, or null when there's none by that name.
-        /// </summary>
         public ScriptId FindScriptId(string name)
         {
             return FindScript(name)?.Id;
@@ -406,9 +383,6 @@ internal sealed partial class ScriptWindow
             _window._state.ShowLibraries = libraries;
         }
 
-        /// <summary>
-        /// Like clicking the Blocks side's Placed blocks or Reference tab.
-        /// </summary>
         public void ShowBlocksTab(bool reference)
         {
             _window._showReference = reference;
@@ -423,9 +397,6 @@ internal sealed partial class ScriptWindow
             _window._referencePanel.SetFilter(filter);
         }
 
-        /// <summary>
-        /// Null when there's none by that name.
-        /// </summary>
         private ScriptEntry FindScript(string name)
         {
             return _window._scripts.Entries.FirstOrDefault(e => e.Name == name);

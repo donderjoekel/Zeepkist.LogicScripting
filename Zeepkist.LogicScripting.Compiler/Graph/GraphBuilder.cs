@@ -196,9 +196,6 @@ internal sealed partial class GraphBuilder
         }
     }
 
-    /// <summary>
-    /// A block with one output stands for that output.
-    /// </summary>
     private static Resolved ValueOf(BlockNode block)
     {
         return block.Outputs.Count == 1

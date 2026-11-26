@@ -7,10 +7,8 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Names a block of a Logic Block type, by its Block Function's name, in a Script's Block Group, the first by UID when
-/// there are several, so the scenario's later steps can use it as they use a block
-/// <c>place-block ... as &lt;name&gt;</c> placed. No other step can reach a Block Group's block: Insert selected skips
-/// them.
+/// So the scenario's later steps can use a Block Group's block as they use one <c>place-block ... as &lt;name&gt;</c>
+/// placed. No other step can reach it: Insert selected skips them.
 /// </summary>
 internal sealed class NameGroupBlockStep : ScenarioStep
 {

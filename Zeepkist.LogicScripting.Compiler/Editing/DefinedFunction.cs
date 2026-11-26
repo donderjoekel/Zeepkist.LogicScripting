@@ -2,9 +2,6 @@ using System.Collections.Generic;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// A Function a Script defines, as the editor reads it.
-/// </summary>
 public sealed class DefinedFunction
 {
     public DefinedFunction(
@@ -46,14 +43,8 @@ public sealed class DefinedFunction
     /// </summary>
     public bool IsRejected { get; }
 
-    /// <summary>
-    /// The <see cref="Inputs"/> a call to the Function can give, which are none when <see cref="IsRejected"/>.
-    /// </summary>
     public IReadOnlyList<string> UsableInputs => IsRejected ? [] : Inputs;
 
-    /// <summary>
-    /// The <see cref="Outputs"/> a call to the Function has, which are none when <see cref="IsRejected"/>.
-    /// </summary>
     public IReadOnlyList<string> UsableOutputs => IsRejected ? [] : Outputs;
 
     /// <summary>

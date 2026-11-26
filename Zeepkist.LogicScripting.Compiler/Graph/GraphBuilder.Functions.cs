@@ -105,11 +105,9 @@ internal sealed partial class GraphBuilder
 
     /// <summary>
     /// Why each input and output that can't have its name can't: it's reserved or a Function's, written twice, or an
-    /// output with an input's name. The editor checks a first line with these too.
+    /// output with an input's name. The editor checks a first line with these too. <paramref name="isFunction"/> tells
+    /// whether the scope has a Function by the name.
     /// </summary>
-    /// <param name="inputs"></param>
-    /// <param name="outputs"></param>
-    /// <param name="isFunction">Whether the scope has a Function by the name.</param>
     internal static List<(FunctionParameter Parameter, string Message)> GetFirstLineNameErrors(
         List<FunctionParameter> inputs,
         List<FunctionParameter> outputs,

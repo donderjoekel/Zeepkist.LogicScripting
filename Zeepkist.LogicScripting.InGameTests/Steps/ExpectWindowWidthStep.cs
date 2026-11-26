@@ -3,9 +3,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the window is drawn this wide, or as wide as the screen, to within <see cref="RectCheck.Tolerance"/>.
-/// </summary>
 internal sealed class ExpectWindowWidthStep : ScenarioStep
 {
     public ExpectWindowWidthStep(int? width)

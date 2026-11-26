@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// In test mode, passes when a named Power Display shows exactly this text.
-/// </summary>
 internal sealed class ExpectDisplayStep : ScenarioStep
 {
     public ExpectDisplayStep(string name, string text)

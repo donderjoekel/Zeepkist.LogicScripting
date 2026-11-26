@@ -4,10 +4,9 @@ using System.Linq;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Turns a style of a Logic Block type off, as the startup check does when it doesn't match this game version, so
-/// Compile and the window's check report a Script that places one or refers to one. The type's first style when none is
-/// given. The run turns it back on before the next scenario. The window checks a Script a moment after an edit, so turn
-/// it off before the <c>set-text</c> whose check should see it.
+/// Turns a style off as the startup check does when it doesn't match this game version, so Compile and the window's
+/// check report a Script that places one or refers to one. The run turns it back on before the next scenario. The
+/// window checks a Script a moment after an edit, so turn it off before the <c>set-text</c> whose check should see it.
 /// </summary>
 internal sealed class TurnOffStyleStep : ScenarioStep
 {

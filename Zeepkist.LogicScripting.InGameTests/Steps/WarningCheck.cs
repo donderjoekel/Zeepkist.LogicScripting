@@ -5,14 +5,10 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// For the steps that check whether the window drew a warning, in the frame it was last drawn.
-/// </summary>
 internal static class WarningCheck
 {
     /// <summary>
-    /// Reads whether the window drew the warning with <paramref name="readLayout"/>, failing with
-    /// <paramref name="notDrawn"/> when the part of the window it goes in wasn't drawn that frame.
+    /// Fails with <paramref name="notDrawn"/> when the part of the window the warning goes in wasn't drawn that frame.
     /// </summary>
     public static IEnumerator Run(StepContext context, bool shown, string warning, Func<ScriptWindow.Driver, WarningLayout> readLayout, string notDrawn)
     {

@@ -5,15 +5,8 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the call help box shows and its call, as it's written there (<c>logic(a, b, op_in, op:, hide:)</c>),
-/// contains the text, matching case.
-/// </summary>
 internal sealed class ExpectCallHelpStep : ScenarioStep
 {
-    /// <summary>
-    /// What a call help step reports as found when the call help doesn't show.
-    /// </summary>
     public const string NoCallHelp = "(no call help)";
 
     private const float WaitSeconds = 1;

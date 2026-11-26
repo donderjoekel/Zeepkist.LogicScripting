@@ -35,10 +35,6 @@ internal sealed class EditorAssist
         Lookups = new EditorLookups(findPlacedBlock ?? FindInLevel, name => Libraries.FindText(name));
     }
 
-    /// <summary>
-    /// The Libraries on this machine, whose Functions the editor colors, and whose outputs completion lists after a
-    /// call's dot.
-    /// </summary>
     public LibraryList Libraries { get; }
 
     /// <summary>

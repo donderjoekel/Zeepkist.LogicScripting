@@ -15,7 +15,7 @@ using ZeepSDK.Utilities;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// What a step works with, and where it leaves its outcome. One per scenario, reset before each step.
+/// One per scenario, reset before each step.
 /// </summary>
 internal sealed class StepContext
 {
@@ -50,24 +50,12 @@ internal sealed class StepContext
     public ExceptionLog Exceptions { get; }
     public ManualLogSource Logger { get; }
 
-    /// <summary>
-    /// They last the scenario.
-    /// </summary>
     public PlacedBlockNames PlacedBlocks { get; } = new();
 
-    /// <summary>
-    /// What remember-window-rect remembered, for the rest of the scenario, or null.
-    /// </summary>
     public ImRect? RememberedWindowRect { get; set; }
 
-    /// <summary>
-    /// What remember-blocks remembered, by the block's name, for the rest of the scenario.
-    /// </summary>
     public Dictionary<string, BlockPose> RememberedPoses { get; } = [];
 
-    /// <summary>
-    /// The files save-level saved, by the name it was given, for the rest of the scenario.
-    /// </summary>
     public Dictionary<string, FileInfo> SavedLevels { get; } = [];
 
     /// <summary>
@@ -79,7 +67,7 @@ internal sealed class StepContext
     public bool Failed { get; private set; }
 
     /// <summary>
-    /// What the step found, such as a result line, shown whether it passed or not.
+    /// Shown whether the step passed or not.
     /// </summary>
     public string Detail { get; set; } = string.Empty;
 
@@ -94,9 +82,6 @@ internal sealed class StepContext
         Actual = null;
     }
 
-    /// <summary>
-    /// For a check that passed, so the results show what it compared.
-    /// </summary>
     public void Pass(string detail, string expected, string actual)
     {
         Detail = detail;
@@ -117,27 +102,18 @@ internal sealed class StepContext
         Fail($"no Script named \"{name}\"", name, string.Join(", ", Window.ScriptNames));
     }
 
-    /// <summary>
-    /// For a step on an entry of the shown tab's list that has none by the name.
-    /// </summary>
     public void FailNoEntry(string name)
     {
         var list = Window.ShownList;
         Fail($"no {list.Noun} named \"{name}\" on the shown tab", name, string.Join(", ", list.Names));
     }
 
-    /// <summary>
-    /// The Orphaned Groups the window lists, for a step's result.
-    /// </summary>
     public string DescribeOrphans()
     {
         var orphans = Window.Orphans.Select(o => $"\"{OrphanedGroupsPanel.GetName(o)}\" with {o.BlockCount} blocks and {(o.Draft == null ? "no Draft" : "a Draft")}");
         return Window.Orphans.Count == 0 ? "no Orphaned Groups" : string.Join(", ", orphans);
     }
 
-    /// <summary>
-    /// The Orphaned Group whose row has the name, or null after failing the step when there's none.
-    /// </summary>
     public OrphanedGroup RequireOrphan(string name)
     {
         var orphan = Window.FindOrphan(name);
@@ -147,25 +123,16 @@ internal sealed class StepContext
         return orphan;
     }
 
-    /// <summary>
-    /// For a step that remembers a block by a name another step already placed or named a block as.
-    /// </summary>
     public void FailNameTaken(string name)
     {
         Fail($"a block was already placed or named as \"{name}\"", "a new name", PlacedBlocks.Listed);
     }
 
-    /// <summary>
-    /// For a step whose text has <c>{uid:&lt;name&gt;}</c> with a name no block was placed or named as.
-    /// </summary>
     public void FailUnknownUid(string name)
     {
         Fail($"no block placed or named as \"{name}\": add place-block <function> as {name} or name-group-block first", name, PlacedBlocks.Listed);
     }
 
-    /// <summary>
-    /// The Logic Block type with the Block Function's name, or null after failing the step when there's none.
-    /// </summary>
     public BlockType RequireBlockType(string function)
     {
         var type = BlockManifest.All.FirstOrDefault(t => t.Function == function);
@@ -175,9 +142,6 @@ internal sealed class StepContext
         return type;
     }
 
-    /// <summary>
-    /// The block the Scenario gave the name, or null after failing the step when there's none in the level.
-    /// </summary>
     public NamedBlock RequireNamedBlock(LEV_LevelEditorCentral central, string name)
     {
         var uid = RequireUid(name);
@@ -191,10 +155,6 @@ internal sealed class StepContext
         return block;
     }
 
-    /// <summary>
-    /// The block the Scenario gave the name, as it runs in test mode, or null after failing the step when the game isn't
-    /// in test mode or the running level has no such block.
-    /// </summary>
     public RunningBlock RequireRunningBlock(string name)
     {
         if (!TestModeControls.IsActive)
@@ -215,8 +175,7 @@ internal sealed class StepContext
     }
 
     /// <summary>
-    /// The Wire between the named blocks' Connectors, whether the level has it or not, or null after failing the step
-    /// when one of the blocks or Connectors doesn't exist.
+    /// Whether the level has the Wire or not: null only when one of the blocks or Connectors doesn't exist.
     /// </summary>
     public BlockWire RequireWire(LEV_LevelEditorCentral central, WireArgument wire, out NamedBlock from, out NamedBlock to)
     {
@@ -257,8 +216,7 @@ internal sealed class StepContext
     public string LastBlankColor => _screenshots.LastBlankColor;
 
     /// <summary>
-    /// Waits until <paramref name="condition"/> holds or <paramref name="seconds"/> pass, whichever is first, so the
-    /// step checks again afterwards.
+    /// Doesn't fail the step when time runs out, so the step checks again afterwards.
     /// </summary>
     public IEnumerator WaitUntil(Func<bool> condition, float seconds)
     {
@@ -269,10 +227,6 @@ internal sealed class StepContext
         }
     }
 
-    /// <summary>
-    /// Presses one of the level editor's keys once and waits until the editor has read it. Fails the step when it isn't
-    /// read in time.
-    /// </summary>
     public IEnumerator PressEditorKey(EditorKey key)
     {
         EditorKeys.Press(key);
@@ -285,9 +239,8 @@ internal sealed class StepContext
     }
 
     /// <summary>
-    /// Waits for the shown tab's list to take the button or click handed to it, the next time the window draws it. When
-    /// it isn't drawn in time, such as with the Scripts side collapsed, fails the step and drops the input, so it can't
-    /// land in a later step.
+    /// When the list isn't drawn in time, such as with the Scripts side collapsed, drops the input too, so it can't land
+    /// in a later step.
     /// </summary>
     public IEnumerator WaitForShownList(string failure)
     {
@@ -302,7 +255,7 @@ internal sealed class StepContext
 
     /// <summary>
     /// Waits for the window to be drawn, unless it was this frame, so its rect is the one Imui keeps now and not the one
-    /// it had before it closed. Fails the step when it isn't drawn in time.
+    /// it had before it closed.
     /// </summary>
     public IEnumerator WaitForWindowDrawn()
     {
@@ -311,10 +264,6 @@ internal sealed class StepContext
             Fail("the window wasn't drawn", $"Unity frame {Time.frameCount}", $"Unity frame {Window.WindowLayout.Frame}");
     }
 
-    /// <summary>
-    /// Waits for the window to be drawn, as <see cref="WaitForWindowDrawn"/> does, and fails the step when that frame
-    /// didn't draw the Reference tab: with the Placed blocks tab shown or the Blocks side collapsed.
-    /// </summary>
     public IEnumerator WaitForReferenceTabDrawn()
     {
         yield return WaitForWindowDrawn();
@@ -331,9 +280,6 @@ internal sealed class StepContext
         }
     }
 
-    /// <summary>
-    /// For a step that checks the window is drawn at <paramref name="expected"/>, so its result has both rects.
-    /// </summary>
     public IEnumerator ExpectWindowRect(ImRect expected, string passDetail, string failDetail)
     {
         yield return WaitForWindowDrawn();
@@ -347,10 +293,6 @@ internal sealed class StepContext
             Fail(failDetail, RectCheck.Describe(expected), RectCheck.Describe(rect));
     }
 
-    /// <summary>
-    /// Waits for the window to take the size or position a step asked for, which it does as it's next drawn, and to lay
-    /// itself out in it. Fails the step when it isn't drawn in time.
-    /// </summary>
     public IEnumerator WaitForWindowRect()
     {
         yield return WaitUntil(() => !Window.IsRectPending, WindowDrawSeconds);
@@ -365,9 +307,6 @@ internal sealed class StepContext
         yield return null;
     }
 
-    /// <summary>
-    /// The level editor, or null after failing the step when the game isn't in it.
-    /// </summary>
     public LEV_LevelEditorCentral RequireEditor()
     {
         var central = ComponentCache.Get<LEV_LevelEditorCentral>();
@@ -377,9 +316,6 @@ internal sealed class StepContext
         return central;
     }
 
-    /// <summary>
-    /// Like <see cref="RequireEditor"/>, with blocks selected and none grabbed too.
-    /// </summary>
     public LEV_LevelEditorCentral RequireSelectedBlocks()
     {
         var central = RequireEditor();
@@ -395,7 +331,7 @@ internal sealed class StepContext
     }
 
     /// <summary>
-    /// Fails the step when the window isn't open, as a player can't use its buttons then. Returns whether it is.
+    /// A player can't use the window's buttons while it's closed.
     /// </summary>
     public bool RequireOpenWindow()
     {
@@ -406,8 +342,7 @@ internal sealed class StepContext
     }
 
     /// <summary>
-    /// Fails the step when no field in the window has focus, as keys typed then go to the level editor. Returns whether
-    /// one has.
+    /// Keys typed while no field in the window has focus go to the level editor.
     /// </summary>
     public bool RequireFocusedField()
     {
@@ -420,9 +355,6 @@ internal sealed class StepContext
         return Window.IsFieldFocused;
     }
 
-    /// <summary>
-    /// Like <see cref="RequireOpenWindow"/>, with a Script selected too.
-    /// </summary>
     public bool RequireScript()
     {
         if (!RequireOpenWindow())
@@ -434,9 +366,6 @@ internal sealed class StepContext
         return Window.HasScript;
     }
 
-    /// <summary>
-    /// Like <see cref="RequireOpenWindow"/>, with a Script or a Library selected too, for a step on the editor's text.
-    /// </summary>
     public bool RequireText()
     {
         if (!RequireOpenWindow())
@@ -448,9 +377,6 @@ internal sealed class StepContext
         return Window.HasText;
     }
 
-    /// <summary>
-    /// The UID of the block the Scenario gave the name, or null after failing the step when it gave none.
-    /// </summary>
     private string RequireUid(string name)
     {
         if (PlacedBlocks.TryGetUid(name, out var uid))

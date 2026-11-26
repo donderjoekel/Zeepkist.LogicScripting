@@ -9,10 +9,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The Block Functions and placed-only types a Script can use, by category, then the Libraries' Functions, with a
-/// filter.
-/// </summary>
 internal sealed class ReferencePanel
 {
     private const string LibrariesHeader = "Libraries";
@@ -173,10 +169,6 @@ internal sealed class ReferencePanel
         return gui.MeasureTextSize(ReferenceEntryLayout.OutputsLabel).x + gui.Style.Layout.Indent;
     }
 
-    /// <summary>
-    /// Indented, with the names in a column as wide as the longest. A name too long for that column gets a row of its
-    /// own, with its value on the next.
-    /// </summary>
     private static void DrawNamedRows(ImGui gui, IReadOnlyList<ReferenceRow> rows, Color32 nameColor, Color32 valueColor)
     {
         gui.BeginIndent();
@@ -199,9 +191,6 @@ internal sealed class ReferencePanel
         gui.EndIndent();
     }
 
-    /// <summary>
-    /// The label in a column <paramref name="labelWidth"/> wide, the value wrapping in the rest.
-    /// </summary>
     private static void DrawRow(ImGui gui, string label, Color32 labelColor, string value, Color32 valueColor, float labelWidth)
     {
         var line = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0);

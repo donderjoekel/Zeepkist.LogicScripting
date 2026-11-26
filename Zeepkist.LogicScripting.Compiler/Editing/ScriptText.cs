@@ -4,9 +4,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// Converts between the compiler's line and column and the editor's character index.
-/// </summary>
 public static class ScriptText
 {
     /// <summary>
@@ -19,9 +16,6 @@ public static class ScriptText
         return GetIndex(GetLineStarts(text), text.Length, position);
     }
 
-    /// <summary>
-    /// Whether a name can start with the character, as the lexer reads names.
-    /// </summary>
     public static bool IsNameStart(char c)
     {
         return Lexer.IsNameStart(c);

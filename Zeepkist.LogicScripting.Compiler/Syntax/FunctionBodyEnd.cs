@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
-/// <summary>
-/// Where a Function's body ends, and why.
-/// </summary>
 internal readonly struct FunctionBodyEnd
 {
     public FunctionBodyEnd(int index, FunctionBodyEndReason reason)

@@ -32,9 +32,6 @@ public sealed class DefinedValue
     /// </summary>
     public bool IsPlaced { get; }
 
-    /// <summary>
-    /// The Script's own Function the value calls; null for a block.
-    /// </summary>
     public DefinedFunction Callee { get; }
 
     public static DefinedValue BlockFunctionCall(BlockType type, string mode)

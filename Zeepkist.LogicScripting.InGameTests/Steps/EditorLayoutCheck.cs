@@ -3,9 +3,6 @@ using TNRD.Zeepkist.LogicScripting.UI;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// The checks of <see cref="ExpectEditorInViewStep"/>, for one frame's <see cref="EditorLayout"/>.
-/// </summary>
 internal readonly struct EditorLayoutCheck
 {
     private EditorLayoutCheck(string failure, string expected, string actual)
@@ -17,9 +14,6 @@ internal readonly struct EditorLayoutCheck
 
     public bool Passed => Failure == null;
 
-    /// <summary>
-    /// What's wrong, or null when the layout passed.
-    /// </summary>
     public string Failure { get; }
 
     public string Expected { get; }

@@ -13,8 +13,8 @@ internal abstract class Expression : SyntaxNode
     }
 
     /// <summary>
-    /// The expressions this one is made of, in the order they're written. A walk that only looks for names can go
-    /// through these without knowing each kind of expression.
+    /// In the order they're written, so a walk that only looks for names can go through these without knowing each
+    /// kind of expression.
     /// </summary>
     public IReadOnlyList<Expression> Children { get; }
 

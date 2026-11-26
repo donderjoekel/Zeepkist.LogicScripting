@@ -5,8 +5,6 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Moves the mouse, as <see cref="ImuiMouse"/> hands it to Imui, onto the first character of the first time the text
-/// is in the selected Script's or Library's editor, and waits until it has rested there long enough for the hover box.
 /// The mouse stays there for the steps after it, until the Scenario ends.
 /// </summary>
 internal sealed class HoverStep : ScenarioStep

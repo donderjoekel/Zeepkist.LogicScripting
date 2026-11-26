@@ -3,8 +3,7 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Replaces the text in the Reference tab's filter, as typing it does. Empty text clears it. The tab has to be on
-/// screen, as typing can't reach it otherwise.
+/// Empty text clears the filter. The tab has to be on screen, as typing can't reach it otherwise.
 /// </summary>
 internal sealed class SetReferenceFilterStep : ScenarioStep
 {

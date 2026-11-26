@@ -1,8 +1,7 @@
 namespace TNRD.Zeepkist.LogicScripting.Storage;
 
 /// <summary>
-/// One collapsible, resizable panel of the Script window: whether it's collapsed to its header, and its size along
-/// the axis it's resized on. A zero size means the panel was never resized.
+/// <see cref="Size"/> is along the axis the panel is resized on; zero means it was never resized.
 /// </summary>
 internal sealed class PanelState
 {

@@ -16,9 +16,6 @@ internal sealed class PlacedBlockNames
 
     public string Listed => _uids.Count == 0 ? "(none)" : string.Join(", ", _uids.Keys);
 
-    /// <summary>
-    /// Returns false when a block was already placed or named as <paramref name="name"/>.
-    /// </summary>
     public bool Remember(string name, string uid)
     {
         if (_uids.ContainsKey(name))
@@ -33,17 +30,14 @@ internal sealed class PlacedBlockNames
         return _uids.TryGetValue(name, out uid);
     }
 
-    /// <summary>
-    /// Null when no block with the UID was placed or named.
-    /// </summary>
     public string FindName(string uid)
     {
         return _uids.Where(u => u.Value == uid).Select(u => u.Key).FirstOrDefault();
     }
 
     /// <summary>
-    /// Writes each <c>{uid:&lt;name&gt;}</c> in <paramref name="text"/> as that block's UID. Returns null, with the
-    /// first name no block was placed or named as in <paramref name="unknown"/>, when there is one.
+    /// Returns null, with the first name no block was placed or named as in <paramref name="unknown"/>, when there is
+    /// one.
     /// </summary>
     public string Expand(string text, out string unknown)
     {

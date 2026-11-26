@@ -5,14 +5,11 @@ using System.Collections.Generic;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the hover box shows and its text, as it's drawn, contains the text, matching case. A row's name and
-/// value are one line, a space between, and the lines are separated by <c>|</c>.
+/// Matches the text as it's drawn: a row's name and value are one line, a space between, and the lines are separated
+/// by <c>|</c>.
 /// </summary>
 internal sealed class ExpectHoverStep : ScenarioStep
 {
-    /// <summary>
-    /// What a hover step reports as found when the hover box doesn't show.
-    /// </summary>
     public const string NoHover = "(no hover box)";
 
     private const float WaitSeconds = 1;

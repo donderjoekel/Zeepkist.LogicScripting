@@ -9,8 +9,7 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
 /// <summary>
-/// What the Script window's editor shows: a Script or a Library, with its check. Made anew each time one is selected,
-/// so the errors and checks belong to the one they were made for.
+/// Made anew each time a Script or Library is selected, so the errors and checks belong to the one they were made for.
 /// </summary>
 internal abstract class EditedItem
 {
@@ -48,9 +47,6 @@ internal abstract class EditedItem
     /// </summary>
     public abstract bool BelongsToLevel { get; }
 
-    /// <summary>
-    /// The warning pinned under the name row, or null.
-    /// </summary>
     public virtual string StorageWarning => null;
 
     /// <summary>
@@ -113,9 +109,6 @@ internal abstract class EditedItem
         _nextCheckTime = 0;
     }
 
-    /// <summary>
-    /// Adds the row the name is drawn in, and returns it with the settings to draw it with.
-    /// </summary>
     protected static ImRect AddNameRow(ImGui gui, out ImTextSettings settings)
     {
         gui.AddSpacingIfLayoutFrameNotEmpty();
