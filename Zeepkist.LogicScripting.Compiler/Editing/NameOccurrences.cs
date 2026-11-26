@@ -30,7 +30,7 @@ public static class NameOccurrences
         if (name < 0)
             return [];
 
-        var functions = DefinedNames.ReadFunctions(tokens).Select(f => f.Function).ToList();
+        var functions = DefinedNames.ReadEveryFunction(tokens);
         var firstLines = ReadFirstLines(tokens, functions);
         if (!TryGetScope(tokens, name, functions, firstLines, out var scope))
             return [];

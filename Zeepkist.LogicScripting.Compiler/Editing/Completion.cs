@@ -163,7 +163,7 @@ public static class Completion
                 .Concat(type.Arguments.Where(a => !a.IsInput && !context.GivenArguments.Contains(a.Name)).Select(ArgumentItem));
         }
 
-        var function = context.Functions.FirstOrDefault(f => f.Name != null && f.Name == context.Callee);
+        var function = DefinedNames.FindFunction(context.Functions, context.Callee);
         if (function != null)
             return GetInputItems(context, function.UsableInputs);
 
@@ -244,7 +244,7 @@ public static class Completion
         if (BlockManifest.TryGetFunction(context.DottedCallee, out var type))
             return GetOutputNames(type, context.DottedMode);
 
-        return context.Functions.FirstOrDefault(f => f.Name == context.DottedCallee)?.UsableOutputs ?? [];
+        return DefinedNames.FindFunction(context.Functions, context.DottedCallee)?.UsableOutputs ?? [];
     }
 
     private static IReadOnlyList<string> GetLibraryOutputs(CaretContext context, EditorLookups lookups)

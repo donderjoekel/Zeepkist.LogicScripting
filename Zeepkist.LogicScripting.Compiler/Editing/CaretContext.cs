@@ -244,7 +244,7 @@ public sealed class CaretContext
             givenArguments,
             positionalArguments,
             IsFirstOnLine(tokens, word),
-            DefinedNames.ReadFunctions(tokens).Select(f => f.Function).ToList());
+            DefinedNames.ReadEveryFunction(tokens));
     }
 
     private static TextSpan FindWord(string text, int caret)

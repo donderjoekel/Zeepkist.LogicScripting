@@ -64,7 +64,7 @@ public sealed class DefinitionJump
     /// </summary>
     internal static DefinitionJump Find(string text, List<Token> tokens, Token token, EditorLookups lookups)
     {
-        var functions = DefinedNames.ReadFunctions(tokens).Select(f => f.Function).ToList();
+        var functions = DefinedNames.ReadEveryFunction(tokens);
         var targets = DefinedNames.Read(text, lookups)
             .Where(n => n.Name == token.Text && n.IsInScopeAt(token.Span.Start, functions))
             .Select(n => n.Span)

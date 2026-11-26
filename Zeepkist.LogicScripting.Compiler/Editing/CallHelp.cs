@@ -71,7 +71,7 @@ public sealed class CallHelp
         if (CaretContext.IsInCommentOrString(tokens, comments, caret))
             return null;
 
-        var functions = DefinedNames.ReadFunctions(tokens).Select(f => f.Function).ToList();
+        var functions = DefinedNames.ReadEveryFunction(tokens);
         var calls = OpenCall.FindAll(tokens, caret);
         var enclosingCalls = calls.Select(c => c.OpenParen).ToList();
         foreach (var call in calls)
@@ -102,7 +102,7 @@ public sealed class CallHelp
         if (BlockManifest.TryGetFunction(callee, out var type))
             return type.Arguments.Select(a => new CallHelpItem(a.Name, a.IsInput, a.Detail)).ToList();
 
-        var function = functions.FirstOrDefault(f => f.Name != null && f.Name == callee);
+        var function = DefinedNames.FindFunction(functions, callee);
         if (function != null)
             return function.UsableInputs.Select(InputItem).ToList();
 
