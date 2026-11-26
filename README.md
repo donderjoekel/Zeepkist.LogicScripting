@@ -52,6 +52,7 @@ click outside the text, then **Ctrl+Z** takes the whole thing back.
 Inside the text, Ctrl+Z undoes your typing.
 
 The blocks one Compile places are the Script's Block Group.
+So are the blocks you [import](#importing-blocks) into a Script.
 Compile the Script again after you change it.
 The new group replaces the old one, at the same spot.
 
@@ -60,12 +61,12 @@ The new group replaces the old one, at the same spot.
 - **Use `default hide: true`.**
   Visible logic blocks and wires are solid in play mode, so cars bump into them.
   Put `default hide: true` at the top of a Script to hide all its blocks in play mode.
-- **Don't edit compiled blocks by hand.**
+- **Don't edit compiled or imported blocks by hand.**
   The next Compile replaces them, so hand edits are lost.
   Change the Script instead.
   A copy you paste of a compiled block is a normal block, and Compile leaves it alone.
 - **Compile to save.**
-  The level stores a Script's text when you compile it.
+  The level stores a Script's text when you compile it, or when you import it.
   Text you type after that is a Draft, kept on your own machine.
   A Script you never compiled is lost when you load another level or go back to the main menu.
 - **After a game update**, the mod checks its block list against the game.
@@ -76,20 +77,24 @@ The new group replaces the old one, at the same spot.
 
 - **Scripts**: two tabs. Switching between them leaves the editor as it is,
   and a dot marks the tab that holds what the editor shows.
-  - **Scripts**: the Scripts in this level, and **New Script** pinned at the bottom of the tab.
+  - **Scripts**: the Scripts in this level, and **New Script** pinned at the bottom of the tab,
+    with **Import selected** above it: see [Importing blocks](#importing-blocks).
     Right-click a Script to rename it, select its blocks, or delete it, with or without its blocks.
     A Script marked ● has changes you haven't compiled, ○ was never compiled,
     and ! has blocks in the level but lost its text: compile it to store the text again.
     Under the list, when the level has any, are its **Orphaned Groups**:
-    compiled blocks whose Script text the level no longer holds,
+    the blocks of Scripts whose text the level no longer holds,
     for example because you deleted the block that holds the text.
-    You can delete them, untag them into plain blocks, select them, or restore their Script from its Draft.
+    You can delete them, untag them into plain blocks, select them,
+    or get their Script back with **Import** or **Restore from Draft**:
+    see [Getting an Orphaned Group's Script back](#getting-an-orphaned-groups-script-back).
     Click the heading to collapse them. While the level has any, the tab shows a `!`.
   - **Libraries**: your Libraries, kept on your own machine and shared by every level.
     Click **New Library**, pinned at the bottom of the tab, to make one, and right-click a Library to rename or delete it.
     See [Libraries](#libraries).
 
   The name and delete prompts, and what the last action did, show just above the New button, in view however long the list.
+  What an Orphaned Group's buttons did shows under the Orphaned Groups list.
   Hover a tab for its help.
 - **Blocks**: two tabs.
   - **Placed blocks**: the blocks you placed by hand that the Script refers to.
@@ -152,6 +157,84 @@ Moving the mouse or pressing a key hides it.
 
 Ctrl+click (Cmd+click on macOS) a name your Script defines to jump to the line that defines it.
 While Ctrl is held, the name under the mouse is underlined when there's a definition to jump to.
+
+## Importing blocks
+
+Import makes a Script from logic blocks that are already in the level, with their settings and wires.
+Use it to keep working on a contraption you built by hand, as text.
+
+1. Select the blocks in the level.
+2. On the Scripts tab, click **Import selected (N)**, just above **New Script**.
+
+The new Script is called "Imported", or "Imported 2" and so on when that name is taken.
+The level stores its text right away, so it doesn't need a Compile to be kept.
+The button is greyed out, and its tooltip says why, until you select blocks in the level,
+let go of grabbed blocks, or the level finishes loading.
+
+Import is one undo step: click outside the text, then **Ctrl+Z**.
+Undo leaves the new Script in the list, without blocks.
+
+### The blocks stay as they are until you compile
+
+Import doesn't move or change the blocks.
+They become the new Script's Block Group, like the blocks a Compile places.
+
+The next Compile replaces them with a new layout, at the same spot.
+What you set on the blocks by hand is lost then: their position, rotation, scale and paint,
+and any wire you add after the import that isn't in the text.
+Generators with the same power can become one, as each number gets one Generator.
+So after an import, change the Script, not the blocks.
+
+### What stays as a placed block
+
+Some blocks can't be written as a block function.
+The Script refers to them with `placed(...)` instead, like [blocks you placed by hand](#blocks-you-placed-by-hand),
+and they stay where they are at the next Compile:
+
+- A block that isn't a logic block a Script can create, such as a trigger, a lamp or a wall,
+  or a block you didn't select, when a selected block is wired to it or a selected Toggler targets it.
+  Blocks like that with no wire or target to the selection are left out, and left alone.
+- A selected logic block with something a Script can't write,
+  such as a Math block's input override, a Property Multiplier's multipliers, a Random whose `min` is above its `max`,
+  a Toggler without targets or a Delay with 0 ticks.
+  A comment above its `placed(...)` line says why.
+
+The result line says how many blocks stayed, for example:
+`Imported 6 blocks as "Imported". The next Compile replaces them with a new layout. 1 stayed as a placed block: it uses settings a Script can't write`.
+
+### When Import refuses
+
+Import takes the whole selection or nothing.
+When it can't, it says `Nothing imported:` and why, naming the block or wire, for example when:
+
+- a Script can't create any of the selected blocks,
+- a selected block, or a block wired to one, is in a Block Group: it belongs to another Script,
+- a Toggler targets a block that the import takes in, so the next Compile would lose the target,
+- a loop of wires has no Delay in it,
+- a block type is turned off for this game version,
+- the text it would write doesn't give the same blocks, settings and wires.
+
+### Getting an Orphaned Group's Script back
+
+An Orphaned Group is a Block Group whose Script text the level no longer holds,
+for example because you deleted the block that holds the text.
+It's listed under the Scripts, with buttons on its row:
+
+- **Import** turns the group back into a Script, whichever blocks are selected.
+  It works on any machine, with or without a Draft.
+  The text is written from the blocks, so comments, names and functions you had written don't come back.
+  The Script gets its Draft's name, or else "Imported".
+  What it did, or why it couldn't, shows under the Orphaned Groups list.
+- **Restore from Draft** brings back the text you last typed, when this machine has the Script's Draft.
+  That text can be newer than the blocks: compile it to store it in the level.
+
+After an **Import**, the Draft stays until you edit or rename the imported Script.
+So to get your own text back after all, undo the import and click **Restore from Draft**.
+Undo makes the group an Orphaned Group again, unless you edited the imported Script.
+A block that stays as a placed block leaves the group, so the next Compile doesn't replace it.
+
+When you delete the block that holds a Script's text, the Script shows `!` until you load another level or reload this one.
+Compile it before then to store the text again. After that, its blocks are an Orphaned Group.
 
 ## Writing Scripts
 
