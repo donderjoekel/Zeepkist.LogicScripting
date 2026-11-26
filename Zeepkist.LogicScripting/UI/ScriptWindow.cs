@@ -217,6 +217,8 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
         _mouseOver = false;
         _fieldFocused = false;
         ReleasePanelFocus();
+        // Not in ReleasePanelFocus, which runs every frame: the prompt reads its keys by last frame's focus
+        _renamePrompt.ReleaseFocus();
         SetMouseBlocked(false);
         SetKeyboardBlocked(false);
     }

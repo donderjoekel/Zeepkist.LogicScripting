@@ -41,3 +41,19 @@ expect-text b = logic(a, b: a)
 
 compile
 expect-result Placed 4 blocks
+
+# Any other change to the text, such as Insert selected, closes the prompt: its caret index may then be on another
+# name. Insert selected writes its line above the first, where the prompt's index was
+place-block lamp as lamp
+set-text
+xyz = logic(1, 1)
+power_display(xyz)
+end
+caret-at-start
+press f2
+type abc
+insert-selected
+expect-text = placed(
+expect-step-fails press enter because no field is focused
+expect-text xyz = logic(1, 1)
+expect-no-errors

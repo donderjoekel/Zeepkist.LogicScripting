@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using Xunit;
@@ -20,7 +21,8 @@ public class NameRenameTests
 
     private static readonly Dictionary<string, string> _libraries = new()
     {
-        ["timing"] = "function edge(x) -> rising\n    rising = x & !delay(x, ticks: 1)\nend"
+        ["timing"] = "function edge(x) -> rising\n    rising = x & !delay(x, ticks: 1)\nend",
+        ["util"] = "function id(v) -> w\n    w = v\nend"
     };
 
     private static readonly EditorLookups _lookups = new(uid => _level.GetValueOrDefault(uid), _libraries.GetValueOrDefault);
@@ -281,9 +283,54 @@ public class NameRenameTests
 
         Assert.True(result.Succeeded, result.Error);
         Assert.True(after.Succeeded);
-        Assert.Equal(before.Blocks.Count, after.Blocks.Count);
-        Assert.Equal(before.Wires.Count, after.Wires.Count);
-        Assert.Equal(before.PlacedWires.Count, after.PlacedWires.Count);
+        Assert.Equal(before.Blocks.Select(DescribeBlock), after.Blocks.Select(DescribeBlock));
+        Assert.Equal(before.Wires.Select(DescribeWire), after.Wires.Select(DescribeWire));
+        Assert.Equal(before.PlacedWires.Select(DescribeWire), after.PlacedWires.Select(DescribeWire));
+    }
+
+    [Fact]
+    public void FunctionOutput_PickedThroughAnotherFunctionsOutput_IsRenamed()
+    {
+        var text = Latch + "function wrap() -> l, m\n    l = latch(1, 0)\n    m = 1\nend\nx = wrap().l\npower_display(x.q & wrap().m)";
+
+        var result = Rename(text.Replace("-> q,", "-> @q,"), "set");
+
+        Assert.True(result.Succeeded, result.Error);
+        Assert.EndsWith("x = wrap().l\npower_display(x.set & wrap().m)", result.Text);
+    }
+
+    [Fact]
+    public void FunctionOutput_PickedThroughAOneOutputFunction_IsRenamed()
+    {
+        var text = Latch + "function make() -> l\n    l = latch(1, 0)\nend\npower_display(make().q)";
+
+        var result = Rename(text.Replace("-> q,", "-> @q,"), "set");
+
+        Assert.True(result.Succeeded, result.Error);
+        Assert.EndsWith("power_display(make().set)", result.Text);
+    }
+
+    [Fact]
+    public void FunctionOutput_PickedFromALibraryCall_IsRefusedNamingThePick()
+    {
+        var text = Latch + "x = util.id(latch(1, 0))\npower_display(x.q)";
+
+        var result = Rename(text.Replace("-> q,", "-> @q,"), "set");
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("'.q' on line 6", result.Error);
+        Assert.Equal(Unmarked(text), result.Text);
+    }
+
+    private static string DescribeBlock(CompiledBlock block)
+    {
+        var settings = string.Join(",", block.Settings.Select(s => $"{s.Key}={s.Kind}:{s.IntValue}:{s.TextValue}"));
+        return $"{block.Type}/{block.Style}/{block.Yaw}/{block.Cell.X},{block.Cell.Z}/{settings}";
+    }
+
+    private static string DescribeWire(CompiledWire wire)
+    {
+        return $"{wire.From}:{wire.FromConnector}>{wire.To}:{wire.ToConnector}";
     }
 
     private static RenameResult Rename(string marked, string newName)

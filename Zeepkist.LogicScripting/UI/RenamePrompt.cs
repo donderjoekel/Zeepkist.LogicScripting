@@ -37,6 +37,11 @@ internal sealed class RenamePrompt
     public int Index { get; private set; }
 
     /// <summary>
+    /// The Script's text when it opened, which <see cref="Index"/> is in.
+    /// </summary>
+    public string Text { get; private set; }
+
+    /// <summary>
     /// The error the last confirmed name got, or empty.
     /// </summary>
     public string Error => _error;
@@ -53,10 +58,11 @@ internal sealed class RenamePrompt
         return gui.GetRowsHeightWithSpacing(rows) + gui.Style.Layout.Spacing;
     }
 
-    public void Open(string name, int index)
+    public void Open(string name, int index, string text)
     {
         Name = name;
         Index = index;
+        Text = text;
         _input = name;
         _error = string.Empty;
         IsOpen = true;
@@ -68,6 +74,15 @@ internal sealed class RenamePrompt
         IsOpen = false;
         Focused = false;
         _error = string.Empty;
+        Text = null;
+    }
+
+    /// <summary>
+    /// For when the window stops drawing, so a field focused then doesn't keep the level editor's keys blocked.
+    /// </summary>
+    public void ReleaseFocus()
+    {
+        Focused = false;
     }
 
     /// <summary>

@@ -28,17 +28,21 @@ internal sealed partial class ScriptWindow
         }
 
         _result = string.Empty;
-        _renamePrompt.Open(name, editor.Caret);
+        _renamePrompt.Open(name, editor.Caret, editor.Text);
     }
 
     /// <summary>
-    /// The prompt, while it's open. The rename is one undo step, and the blocks only change at the next Compile.
+    /// The prompt, while it's open. The rename is one undo step, and the blocks only change at the next Compile. Any
+    /// change to the text closes it, as its index may then be on another name.
     /// </summary>
     private void DrawRenamePrompt(ImGui gui)
     {
+        var editor = _edited.Editor;
+        if (_renamePrompt.IsOpen && _renamePrompt.Text != editor.Text)
+            _renamePrompt.Close();
+
         var wasOpen = _renamePrompt.IsOpen;
         var newName = _renamePrompt.Draw(gui, null);
-        var editor = _edited.Editor;
         if (newName == null)
         {
             if (wasOpen && !_renamePrompt.IsOpen)

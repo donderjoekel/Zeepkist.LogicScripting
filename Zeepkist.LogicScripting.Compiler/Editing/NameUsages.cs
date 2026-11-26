@@ -225,24 +225,41 @@ internal sealed class NameUsages
     }
 
     /// <summary>
-    /// The Script Function with several outputs whose call <paramref name="target"/> is, directly or through names
-    /// defined as it; null when it's something else, such as a block. <paramref name="unclear"/> when that can't be
-    /// told from the text: an input, or a call to a Function with one output, could be any value.
+    /// The Script Function with several outputs whose call <paramref name="target"/> is, directly, through names
+    /// defined as it, or through the outputs of other Script Functions that give it; null when it's something else,
+    /// such as a block. <paramref name="unclear"/> when that can't be told from the text: an input, or a call into a
+    /// Library, could be any value.
     /// </summary>
     private FunctionDefinition FindOutputs(Expression target, FunctionDefinition scope, int depth, out bool unclear)
     {
         unclear = false;
+        if (depth >= MaxAliasDepth)
+        {
+            unclear = true;
+            return null;
+        }
+
         switch (target)
         {
             case CallExpression { Library: null } call when _functions.TryGetValue(call.Function, out var function):
-                unclear = function.Outputs.Count == 1;
-                return function.Outputs.Count > 1 ? function : null;
+                // A Function with one output gives that output's value
+                return function.Outputs.Count > 1
+                    ? function
+                    : FindOutputDefinition(function, function.Outputs[0].Name, depth, out unclear);
+            case CallExpression { Library: not null }:
+                unclear = true;
+                return null;
+            case MemberExpression member:
+                var picked = FindOutputs(member.Target, scope, depth + 1, out unclear);
+                return picked != null && picked.Outputs.Exists(o => o.Name == member.Output)
+                    ? FindOutputDefinition(picked, member.Output, depth, out unclear)
+                    : null;
             case NameExpression name:
                 var symbol = Resolve(name.Name, scope);
                 if (symbol == null)
                     return null;
 
-                if (symbol.Kind == NameSymbolKind.Input || depth >= MaxAliasDepth)
+                if (symbol.Kind == NameSymbolKind.Input)
                 {
                     unclear = true;
                     return null;
@@ -255,6 +272,18 @@ internal sealed class NameUsages
             default:
                 return null;
         }
+    }
+
+    /// <summary>
+    /// <see cref="FindOutputs"/> for the value <paramref name="function"/>'s body gives its output
+    /// <paramref name="output"/>.
+    /// </summary>
+    private FunctionDefinition FindOutputDefinition(FunctionDefinition function, string output, int depth, out bool unclear)
+    {
+        unclear = false;
+        return _bodyDefinitions[function].TryGetValue(output, out var definition)
+            ? FindOutputs(definition.Value, function, depth + 1, out unclear)
+            : null;
     }
 
     /// <summary>
