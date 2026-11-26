@@ -26,6 +26,12 @@ internal sealed class RunRequest
     /// </summary>
     public bool StuckStart { get; set; }
 
+    /// <summary>
+    /// Has the walk take the game off its start screen itself, before its wait there checks it, so a run shows what a
+    /// run does when the game moves on to the main menu by itself. Set by the script's --leave-start-screen.
+    /// </summary>
+    public bool LeaveStartScreen { get; set; }
+
     public static bool TryRead(string folder, string[] args, out RunRequest request)
     {
         request = null;

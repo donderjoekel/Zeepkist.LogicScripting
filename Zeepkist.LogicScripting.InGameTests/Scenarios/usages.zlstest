@@ -1,0 +1,16 @@
+# expect-usages reads the underlines the editor draws under the other usages of the name at the caret
+
+open-window
+new-script Usages
+set-text
+x = 1
+y = logic(x, x)
+end
+expect-no-errors
+
+# Without a typing cursor the editor underlines nothing
+expect-usages none
+
+caret-at-start
+expect-usages 2:11 2:14
+expect-no-exceptions

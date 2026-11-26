@@ -73,6 +73,15 @@ internal sealed partial class ScriptEditor
                     continue;
             }
 
+            // Unity marks F2 with the FunctionKey modifier
+            const EventModifiers held = EventModifiers.Shift | EventModifiers.Control | EventModifiers.Alt | EventModifiers.Command;
+            if (editable && evt.Key == KeyCode.F2 && (evt.Modifiers & held) == 0)
+            {
+                RenameRequested = true;
+                gui.Input.UseKeyboardEvent(i);
+                continue;
+            }
+
             var command = IsCommand(evt);
             if (command && evt.Key is KeyCode.Return or KeyCode.KeypadEnter)
             {

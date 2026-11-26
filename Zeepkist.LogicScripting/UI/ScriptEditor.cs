@@ -51,6 +51,16 @@ internal sealed partial class ScriptEditor
     public uint Id { get; private set; }
 
     /// <summary>
+    /// Whether F2 was pressed in the field during the last <see cref="Draw"/>, to rename the name at the caret.
+    /// </summary>
+    public bool RenameRequested { get; private set; }
+
+    /// <summary>
+    /// The level's blocks and the Libraries, as the editor's help reads them.
+    /// </summary>
+    public EditorLookups Lookups => _assist.Lookups;
+
+    /// <summary>
     /// Whether the field holds this frame's Escape to handle at its key event, which leaves it focused until then.
     /// </summary>
     public bool HoldsEscape { get; private set; }
@@ -141,6 +151,7 @@ internal sealed partial class ScriptEditor
     public bool Draw(ImGui gui, ImRect rect, out bool compileRequested)
     {
         compileRequested = false;
+        RenameRequested = false;
         HoldsEscape = false;
         Id = gui.GetNextControlId();
         if (_focusRequested)
@@ -184,6 +195,7 @@ internal sealed partial class ScriptEditor
 
         DrawText(gui, textRect, textBounds, palette);
         DrawErrors(gui, textRect, palette);
+        DrawUsages(gui, textRect, palette, selected && !gui.IsReadOnly);
 
         // The list takes its clicks and keys before the editor, which would otherwise lose focus or move the caret
         var completing = selected && !gui.IsReadOnly;

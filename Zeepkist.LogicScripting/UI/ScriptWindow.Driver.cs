@@ -67,6 +67,9 @@ internal sealed partial class ScriptWindow
         /// <inheritdoc cref="ScriptEditor.HoverLines"/>
         public IReadOnlyList<string> HoverLines => _window._edited?.Editor.HoverLines;
 
+        /// <inheritdoc cref="ScriptEditor.DrawnUsages"/>
+        public IReadOnlyList<TextSpan> DrawnUsages => _window._edited?.Editor.DrawnUsages ?? [];
+
         /// <inheritdoc cref="ScriptEditor.FindDrawnCharacter"/>
         public (ImRect Character, ImRect TextBounds, int Frame)? FindDrawnCharacter(int index)
         {
@@ -459,6 +462,22 @@ internal sealed partial class ScriptWindow
         {
             _window._edited?.Editor.HoldSentEscape();
         }
+
+        /// <summary>
+        /// Holds the jump modifier for the selected Script's or Library's editor, or lets go of it, as
+        /// <see cref="ScriptEditor.HoldsSentJumpModifier"/> says.
+        /// </summary>
+        public void HoldSentJumpModifier(bool held)
+        {
+            if (_window._edited != null)
+                _window._edited.Editor.HoldsSentJumpModifier = held;
+        }
+
+        /// <inheritdoc cref="ScriptEditor.JumpedFrame"/>
+        public int JumpedFrame => _window._edited?.Editor.JumpedFrame ?? -1;
+
+        /// <inheritdoc cref="ScriptEditor.Caret"/>
+        public int Caret => _window._edited?.Editor.Caret ?? -1;
 
         /// <summary>
         /// Like Insert selected. Returns whether it changed the text.

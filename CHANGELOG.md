@@ -34,6 +34,8 @@ All notable changes to Logic Scripting are listed here.
   a block function's Reference entry, the line that defines a name, a named argument's input or setting,
   and an error underline's message.
 - Ctrl+click (Cmd+click on macOS) a name in the Script editor to jump to the line that defines it.
+- With the caret on a name your Script defines, or a Function's input, the editor underlines the other places it's written
+  in the same scope. Words only spelled like it, such as an option word, a Function's name or an output after a `.`, aren't.
 - The Reference tab lists the blocks under four headings, Inputs, Operators, Outputs and Movers,
   split the same way as the subfolders of the game's logic block folder, and sorted by name.
   A heading can be collapsed, and stays collapsed when you reopen the window.
@@ -72,6 +74,9 @@ All notable changes to Logic Scripting are listed here.
   Undo makes it an Orphaned Group again, and a newer Draft stays, so **Restore from Draft** still brings back the typed text.
 - The README explains importing: what the next Compile does to the blocks, what stays as a placed block,
   when an import is refused and how to get an Orphaned Group's Script back.
+- F2 in the Script editor renames the name at the cursor where it's defined and everywhere the Script uses it:
+  a name, a `placed(...)` name, a function, or a function's input or output.
+  It's refused, with the text left as it was, when the Script has errors or the new name isn't free.
 
 ### Changed
 

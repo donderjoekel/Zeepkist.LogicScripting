@@ -60,15 +60,33 @@ public class StartScreenStateTests
     }
 
     [Fact]
-    public void ARunRequest_ReadsStuckStart()
+    public void AStartScreenTheGameLeft_SaysSo_NotThatThereWasNone()
+    {
+        var state = new StartScreenState { ScreenLeft = true, PlayerManagerExists = false, Texts = ["Loading"] };
+
+        Assert.Equal("the game left its start screen, player manager missing; on screen: \"Loading\"", state.Describe());
+    }
+
+    [Fact]
+    public void Shown_ListsTheTextsAsTheDetailDoes()
+    {
+        Assert.Equal("\"Play\", \"Level Editor\"", StartScreenState.Shown(["<b>Play</b>", "Level Editor", "Play"]));
+        Assert.Equal("no text", StartScreenState.Shown([" "]));
+    }
+
+    [Fact]
+    public void ARunRequest_ReadsStuckStartAndLeaveStartScreen()
     {
         var folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
         try
         {
-            File.WriteAllText(Path.Combine(folder, "run.json"), "{\"runId\":\"r1\",\"stuckStart\":true,\"scenarios\":[]}");
+            File.WriteAllText(
+                Path.Combine(folder, "run.json"),
+                "{\"runId\":\"r1\",\"stuckStart\":true,\"leaveStartScreen\":true,\"scenarios\":[]}");
 
             Assert.True(RunRequest.TryRead(folder, ["game.exe", RunRequest.Flag, "r1"], out var request));
             Assert.True(request.StuckStart);
+            Assert.True(request.LeaveStartScreen);
         }
         finally
         {
