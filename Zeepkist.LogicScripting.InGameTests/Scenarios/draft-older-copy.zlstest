@@ -1,0 +1,46 @@
+# Loading an older copy of a level leaves the Draft typed over a newer copy alone until the Script is edited
+open-window
+new-script Lights
+set-text
+power_display(generator(power: 1) & 1)
+end
+compile
+expect-result Placed
+save-level older
+set-text
+power_display(generator(power: 2) & 1)
+end
+compile
+expect-result Replaced
+save-level newer
+set-text
+# typed
+power_display(generator(power: 2) & 1)
+end
+wait 2
+
+# The older copy shows its own text, and the Draft stays
+load-level older
+select-script Lights
+expect-text power: 1
+wait 2
+load-level newer
+select-script Lights
+expect-text # typed
+
+# An edit over the older copy replaces the Draft
+load-level older
+select-script Lights
+set-text
+# edited
+power_display(generator(power: 1) & 1)
+end
+wait 2
+load-level newer
+select-script Lights
+expect-text power: 2
+expect-step-fails expect-text # typed because doesn't contain it
+load-level older
+select-script Lights
+expect-text # edited
+expect-no-exceptions

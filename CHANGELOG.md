@@ -104,6 +104,7 @@ All notable changes to Logic Scripting are listed here.
 - A call to a Library's function, like `timing.f(`, no longer lists the inputs and settings by name, or shows the call help,
   of your Script's own `f` or a block function by that name.
 - What an Orphaned Group's Delete, Untag or Restore did stays under the list after the last Orphaned Group is gone, instead of vanishing with it.
+- Loading another copy of a level no longer overwrites the text you typed but didn't compile.
 
 ## 0.1.0-alpha.1
 

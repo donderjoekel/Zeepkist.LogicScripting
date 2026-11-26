@@ -249,7 +249,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     /// </summary>
     public void ForgetScripts()
     {
-        SaveDrafts();
+        _draftSaver.SaveAndForget();
         _scripts.Clear();
         _editors.Clear();
         _scriptListPanel.Clear();

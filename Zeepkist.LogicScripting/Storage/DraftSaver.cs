@@ -62,4 +62,14 @@ internal sealed class DraftSaver
             _store.Save(draft);
         }
     }
+
+    /// <summary>
+    /// Saves the Drafts, then forgets every Script seen, so a level loaded next treats its Scripts as new: an older
+    /// copy of a level doesn't write over a newer Draft.
+    /// </summary>
+    public void SaveAndForget()
+    {
+        Save();
+        _changes.Clear();
+    }
 }
