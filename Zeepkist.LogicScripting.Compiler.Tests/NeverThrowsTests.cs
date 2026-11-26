@@ -141,6 +141,24 @@ public class NeverThrowsTests
         }
     }
 
+    /// <summary>
+    /// F2 can be pressed with the caret anywhere, and the new name can be anything the player types.
+    /// </summary>
+    [Fact]
+    public void ValidScripts_RenamedAtEveryCharacter()
+    {
+        foreach (var script in _validScripts)
+        {
+            for (var index = 0; index <= script.Length; index++)
+            {
+                NameRename.Find(script, index, _lookups, out _);
+                var result = NameRename.Rename(script, index, "renamed", _lookups);
+                Assert.True(result.Succeeded || result.Text == script, script);
+                NameRename.Rename(script, index, _tokens[index % _tokens.Length], _lookups);
+            }
+        }
+    }
+
     [Fact]
     public void ValidScripts_CutOffAtEveryPosition()
     {
@@ -391,7 +409,7 @@ public class NeverThrowsTests
     {
         HoverInfo.At(text, index, underlines, _lookups);
         DefinitionJump.At(text, index, _lookups);
-        NameUsages.At(text, index);
+        NameOccurrences.At(text, index);
     }
 
     private static CompileResult Compile(string text)

@@ -9,7 +9,7 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 /// <summary>
 /// Texts mark the caret with <c>|</c>, and each place expected to be underlined with <c>[</c> and <c>]</c> around it.
 /// </summary>
-public class NameUsagesTests
+public class NameOccurrencesTests
 {
     [Fact]
     public void Definition_UnderlinesEachUse()
@@ -169,7 +169,7 @@ public class NameUsagesTests
     private static void AssertUsages(string marked)
     {
         var (text, caret, expected) = Parse(marked);
-        var actual = NameUsages.At(text, caret).Select(s => (s.Start, s.Length)).ToList();
+        var actual = NameOccurrences.At(text, caret).Select(s => (s.Start, s.Length)).ToList();
 
         Assert.Equal(expected, actual);
     }

@@ -33,7 +33,7 @@ internal sealed partial class ScriptEditor
         if (!ReferenceEquals(_usagesFound.Text, Text) || _usagesFound.Caret != _state.Caret)
         {
             _usagesFound = (Text, _state.Caret);
-            _usages = NameUsages.At(Text, _state.Caret);
+            _usages = NameOccurrences.At(Text, _state.Caret);
         }
 
         foreach (var span in _usages)

@@ -161,6 +161,13 @@ While Ctrl is held, the name under the mouse is underlined when there's a defini
 With the caret on a name your Script defines, or on a Function's input, the other places that name is written get a thin underline.
 A name inside a Function is a different one from the same name outside it, so only the ones in the same Function, or outside every Function, are underlined.
 
+Press F2 on a name your Script defines to rename it: type the new name and press Enter or **Rename**.
+It changes the name where it's defined and everywhere the Script uses it, and nothing else:
+not a Library's names, a block's inputs and outputs, or a word given to a setting, like `or` in `op: or`.
+It works for names, `placed(...)` names, your functions and their inputs and outputs.
+The Script needs to be free of errors first, and the new name can't be one the Script already uses.
+Undo takes the whole rename back. The blocks change at your next Compile.
+
 ## Importing blocks
 
 Import makes a Script from logic blocks that are already in the level, with their settings and wires.

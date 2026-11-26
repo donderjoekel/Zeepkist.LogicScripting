@@ -7,186 +7,305 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
 /// <summary>
-/// Where else the name at the caret is written: a name the Script defines, or a Function's input, in the same scope,
-/// the top level or one Function's body. Read from the tokens, like <see cref="DefinitionJump"/>, so half-typed text has
-/// them too.
+/// Every place a Script without errors defines or uses one of its own names, read from the parsed Script. The top
+/// level and each Function's body are separate scopes: a body sees only its inputs and its own names (ADR 0008).
 /// </summary>
-public static class NameUsages
+/// <remarks>
+/// Not uses: a Library's name and its Functions' names in <c>timing.edge(...)</c>, Block Functions, the labels of a
+/// call's named arguments (except a Script Function's inputs), outputs picked from blocks, and a word a named argument
+/// gives that the scope doesn't define, such as <c>op: or</c>.
+/// </remarks>
+internal sealed class NameUsages
 {
-    /// <summary>
-    /// Every other place the name the caret is in or right after is written, its definitions included, in text order;
-    /// empty when the caret isn't on a name the Script defines in that scope. Words spelled like the name don't count: a
-    /// Function's name or a call to it, an output or a Library's Function after a dot, a Library's name, a named
-    /// argument's name, or a Setting's option word.
-    /// </summary>
-    public static IReadOnlyList<TextSpan> At(string text, int caret)
+    // Deeper than any alias chain a Script writes, and it stops a definition that refers to itself
+    private const int MaxAliasDepth = 32;
+
+    private readonly Dictionary<Position, Token> _names = [];
+    private readonly Dictionary<string, FunctionDefinition> _functions = [];
+    private readonly Dictionary<string, Definition> _topDefinitions = [];
+    private readonly Dictionary<FunctionDefinition, Dictionary<string, Definition>> _bodyDefinitions = [];
+    private readonly List<NameUsage> _usages = [];
+    private readonly List<MemberExpression> _unclearOutputs = [];
+
+    private NameUsages(CompileResult compiled)
     {
-        var tokens = Lexer.Tokenize(text ?? string.Empty, []);
-        var name = FindNameAt(tokens, caret);
-        if (name < 0)
-            return [];
+        Compiled = compiled;
+    }
 
-        var functions = DefinedNames.ReadFunctions(tokens).Select(f => f.Function).ToList();
-        var firstLines = ReadFirstLines(tokens, functions);
-        if (!TryGetScope(tokens, name, functions, firstLines, out var scope))
-            return [];
+    public IReadOnlyList<NameUsage> All => _usages;
 
-        var spelling = tokens[name].Text;
-        var isDefined = DefinedNames.Read(text).Any(n => n.Name == spelling && IsSameScope(n.Function, scope));
-        if (!isDefined)
-            return [];
+    /// <summary>
+    /// Every name the Script defines, in any scope: names, Functions, inputs and outputs.
+    /// </summary>
+    public HashSet<string> DefinedNames { get; } = [];
 
-        List<TextSpan> usages = [];
-        for (var i = 0; i < tokens.Count; i++)
-        {
-            if (i != name
-                && tokens[i].Kind == TokenKind.Name
-                && tokens[i].Text == spelling
-                && TryGetScope(tokens, i, functions, firstLines, out var other)
-                && IsSameScope(other, scope))
-            {
-                usages.Add(tokens[i].Span);
-            }
-        }
+    /// <summary>
+    /// The Script as it compiled when it was read.
+    /// </summary>
+    public CompileResult Compiled { get; }
 
+    public static NameUsages Read(List<Token> tokens, List<Statement> statements, CompileResult compiled)
+    {
+        var usages = new NameUsages(compiled);
+        usages.Collect(tokens, statements);
         return usages;
     }
 
     /// <summary>
-    /// The name token the caret is in or right after; of two, the one that can be a defined name's. -1 when there's
+    /// The use the character at <paramref name="index"/> is in, or else the one it's right after; null when there's
     /// none.
     /// </summary>
-    private static int FindNameAt(List<Token> tokens, int caret)
+    public NameUsage Find(int index)
     {
-        var found = -1;
-        for (var i = 0; i < tokens.Count; i++)
-        {
-            if (tokens[i].Kind != TokenKind.Name || tokens[i].Span.Start > caret || caret > tokens[i].Span.End)
-                continue;
-
-            if (found < 0 || !Lexer.IsAfterDot(tokens, i))
-                found = i;
-        }
-
-        return found;
+        return _usages.Find(u => u.Span.Start <= index && index < u.Span.End)
+            ?? _usages.Find(u => u.Span.End == index);
     }
 
     /// <summary>
-    /// The Function each first line belongs to, by the index of its keyword, with the index of the token that ends the
-    /// line. Matched by where its body starts, which is right after that line.
+    /// A <c>.name</c> picking an output by the <paramref name="symbol"/>'s name from a value this can't follow to a
+    /// call, such as an input, so it can't tell whether it's the symbol's; null when there's none or the symbol isn't
+    /// an output.
     /// </summary>
-    private static List<(int Start, int End, DefinedFunction Function)> ReadFirstLines(List<Token> tokens, List<DefinedFunction> functions)
+    public MemberExpression FindUnclearOutput(NameSymbol symbol)
     {
-        List<(int, int, DefinedFunction)> lines = [];
-        for (var i = 0; i + 1 < tokens.Count; i++)
+        return symbol.Kind == NameSymbolKind.Output ? _unclearOutputs.Find(m => m.Output == symbol.Name) : null;
+    }
+
+    private void Collect(List<Token> tokens, List<Statement> statements)
+    {
+        foreach (var token in tokens.Where(t => t.Kind == TokenKind.Name))
         {
-            if (!DefinedNames.IsFunctionLineStart(tokens, i))
-                continue;
-
-            var end = i;
-            while (tokens[end].Kind is not (TokenKind.NewLine or TokenKind.End))
-            {
-                end++;
-            }
-
-            var function = functions.FirstOrDefault(f => f.Body.Start == tokens[end].Span.End);
-            if (function != null)
-                lines.Add((i, end, function));
+            _names[token.Position] = token;
         }
 
-        return lines;
+        foreach (var function in statements.OfType<FunctionDefinition>())
+        {
+            _functions[function.Name.Name] = function;
+            _bodyDefinitions[function] = CollectDefinitions(function.Body);
+            DefinedNames.Add(function.Name.Name);
+            DefinedNames.UnionWith(function.Inputs.Select(i => i.Name));
+            DefinedNames.UnionWith(function.Outputs.Select(o => o.Name));
+            DefinedNames.UnionWith(_bodyDefinitions[function].Keys);
+        }
+
+        foreach (var pair in CollectDefinitions(statements))
+        {
+            _topDefinitions.Add(pair.Key, pair.Value);
+        }
+
+        DefinedNames.UnionWith(_topDefinitions.Keys);
+
+        foreach (var statement in statements)
+        {
+            if (statement is FunctionDefinition function)
+                VisitFunction(function);
+            else
+                VisitStatement(statement, null);
+        }
+    }
+
+    private static Dictionary<string, Definition> CollectDefinitions(List<Statement> statements)
+    {
+        Dictionary<string, Definition> definitions = [];
+        foreach (var definition in statements.OfType<Definition>())
+        {
+            if (!definitions.ContainsKey(definition.Name))
+                definitions.Add(definition.Name, definition);
+        }
+
+        return definitions;
+    }
+
+    private void VisitFunction(FunctionDefinition function)
+    {
+        Add(new NameSymbol(NameSymbolKind.Function, function, function.Name.Name), function.Name.Position);
+        foreach (var input in function.Inputs)
+        {
+            Add(new NameSymbol(NameSymbolKind.Input, function, input.Name), input.Position);
+        }
+
+        foreach (var output in function.Outputs)
+        {
+            Add(new NameSymbol(NameSymbolKind.Output, function, output.Name), output.Position);
+        }
+
+        foreach (var statement in function.Body)
+        {
+            VisitStatement(statement, function);
+        }
     }
 
     /// <summary>
-    /// Whether the name at <paramref name="index"/> can stand for a defined name or an input, and in which scope: null
-    /// for the top level, or the Function whose body or first line it's in.
+    /// <paramref name="scope"/> is the Function whose body it's in, or null at the top level.
     /// </summary>
-    private static bool TryGetScope(
-        List<Token> tokens,
-        int index,
-        List<DefinedFunction> functions,
-        List<(int Start, int End, DefinedFunction Function)> firstLines,
-        out DefinedFunction scope)
+    private void VisitStatement(Statement statement, FunctionDefinition scope)
     {
-        var token = tokens[index];
-        foreach (var (start, end, function) in firstLines)
+        switch (statement)
         {
-            if (index <= start || index >= end)
-                continue;
-
-            // The keyword's name is the Function's; after it come its inputs, and after the arrow its outputs
-            scope = function;
-            return index > start + 1 && !GraphBuilder.IsReserved(token.Text);
+            case Definition definition:
+                Add(Resolve(definition.Name, scope), definition.Position);
+                VisitExpression(definition.Value, scope);
+                break;
+            case ExpressionStatement expression:
+                VisitExpression(expression.Expression, scope);
+                break;
+            case DefaultStatement defaultStatement:
+                VisitConstant(defaultStatement.Setting.Value, scope);
+                break;
         }
-
-        scope = functions.FirstOrDefault(f => f.Contains(token.Span.Start));
-        return CanBeDefinedName(tokens, index, functions, scope);
     }
 
-    private static bool CanBeDefinedName(List<Token> tokens, int index, List<DefinedFunction> functions, DefinedFunction scope)
+    private void VisitExpression(Expression expression, FunctionDefinition scope)
     {
-        var token = tokens[index];
-        var next = tokens[index + 1].Kind;
-        if (GraphBuilder.IsReserved(token.Text) || IsDefaultKeyword(tokens, index) || Lexer.IsAfterDot(tokens, index))
-            return false;
-
-        // A named argument's name, or a Setting's name after default
-        if (next == TokenKind.Colon)
-            return false;
-
-        // timing in timing.edge(x)
-        if (next == TokenKind.Dot
-            && tokens[index + 2].Kind == TokenKind.Name
-            && tokens[index + 3].Kind == TokenKind.OpenParen
-            && Lexer.FindLibraryName(tokens, index + 2) == index)
+        switch (expression)
         {
-            return false;
+            case NameExpression name:
+                Add(Resolve(name.Name, scope), name.Position);
+                break;
+            case MemberExpression member:
+                VisitExpression(member.Target, scope);
+                VisitOutput(member, scope);
+                break;
+            case CallExpression call:
+                VisitCall(call, scope);
+                break;
+            default:
+                foreach (var child in expression.Children)
+                {
+                    VisitExpression(child, scope);
+                }
+
+                break;
+        }
+    }
+
+    private void VisitCall(CallExpression call, FunctionDefinition scope)
+    {
+        FunctionDefinition function = null;
+        BlockType blockType = null;
+        if (call.Library == null && _functions.TryGetValue(call.Function, out function))
+            Add(new NameSymbol(NameSymbolKind.Function, function, function.Name.Name), call.Position);
+        else if (call.Library == null && !BlockManifest.TryGetFunction(call.Function, out blockType))
+            Add(Resolve(call.Function, scope), call.Position); // a placed block to wire into: lamp_1(intensity: x)
+
+        foreach (var argument in call.Arguments)
+        {
+            VisitExpression(argument, scope);
         }
 
-        // A call to the Script's own Function; a call to a Placed Block Reference is a name's
-        if (next == TokenKind.OpenParen && functions.Any(f => f.Name == token.Text))
-            return false;
+        foreach (var argument in call.NamedArguments)
+        {
+            if (function != null && function.Inputs.Exists(i => i.Name == argument.Name))
+                Add(new NameSymbol(NameSymbolKind.Input, function, argument.Name), argument.Position);
 
-        return index < 2 || tokens[index - 1].Kind != TokenKind.Colon || IsArgumentValue(tokens, index, scope);
+            if (blockType != null && GraphBuilder.GivesConstant(blockType, argument.Name))
+                VisitConstant(argument.Value, scope);
+            else
+                VisitExpression(argument.Value, scope);
+        }
     }
 
     /// <summary>
-    /// Whether the name after a named argument's colon is a value rather than a word: anything given to a Script's own
-    /// Function, a Library's Function or a Placed Block Reference, or to a Block Function's input or a Setting that takes
-    /// placed blocks. A word given to any other Setting is an option, unless it spells an input of the Function it's in,
-    /// <c>delay(x, ticks: ticks)</c>.
+    /// A Setting's or style's value: a word such as <c>or</c>, even one the scope also defines as a name, unless it
+    /// names an input of the Function it's in, which passes on the constant its call gives.
     /// </summary>
-    private static bool IsArgumentValue(List<Token> tokens, int index, DefinedFunction scope)
+    private void VisitConstant(Expression value, FunctionDefinition scope)
     {
-        var argument = tokens[index - 2];
-        if (argument.Kind != TokenKind.Name)
-            return false;
+        if (value is NameExpression name && Resolve(name.Name, scope) is { Kind: NameSymbolKind.Input } input)
+            Add(input, name.Position);
+    }
 
-        var call = OpenCall.FindStartedAt(tokens, argument.Span.Start);
-        if (call == null)
-            return false;
-
-        if (call.Callee == null || !BlockManifest.TryGetFunction(call.Callee, out var type))
-            return true;
-
-        if (type.IndexOfInput(argument.Text) >= 0 || type.FindSetting(argument.Text)?.Type == SettingType.Targets)
-            return true;
-
-        return scope != null && scope.Inputs.Contains(tokens[index].Text);
+    private void VisitOutput(MemberExpression member, FunctionDefinition scope)
+    {
+        var function = FindOutputs(member.Target, scope, 0, out var unclear);
+        if (unclear)
+            _unclearOutputs.Add(member);
+        else if (function != null && function.Outputs.Exists(o => o.Name == member.Output))
+            Add(new NameSymbol(NameSymbolKind.Output, function, member.Output), member.Position);
     }
 
     /// <summary>
-    /// Each read of the Functions makes them anew, so the same one is told by where its body starts.
+    /// The Script Function with several outputs whose call <paramref name="target"/> is, directly, through names
+    /// defined as it, or through the outputs of other Script Functions that give it; null when it's something else,
+    /// such as a block. <paramref name="unclear"/> when that can't be told from the text: an input, or a call into a
+    /// Library, could be any value.
     /// </summary>
-    private static bool IsSameScope(DefinedFunction a, DefinedFunction b)
+    private FunctionDefinition FindOutputs(Expression target, FunctionDefinition scope, int depth, out bool unclear)
     {
-        return a == null ? b == null : b != null && a.Body.Start == b.Body.Start;
+        unclear = false;
+        if (depth >= MaxAliasDepth)
+        {
+            unclear = true;
+            return null;
+        }
+
+        switch (target)
+        {
+            case CallExpression { Library: null } call when _functions.TryGetValue(call.Function, out var function):
+                // A Function with one output gives that output's value
+                return function.Outputs.Count > 1
+                    ? function
+                    : FindOutputDefinition(function, function.Outputs[0].Name, depth, out unclear);
+            case CallExpression { Library: not null }:
+                unclear = true;
+                return null;
+            case MemberExpression member:
+                var picked = FindOutputs(member.Target, scope, depth + 1, out unclear);
+                return picked != null && picked.Outputs.Exists(o => o.Name == member.Output)
+                    ? FindOutputDefinition(picked, member.Output, depth, out unclear)
+                    : null;
+            case NameExpression name:
+                var symbol = Resolve(name.Name, scope);
+                if (symbol == null)
+                    return null;
+
+                if (symbol.Kind == NameSymbolKind.Input)
+                {
+                    unclear = true;
+                    return null;
+                }
+
+                var definitions = scope == null ? _topDefinitions : _bodyDefinitions[scope];
+                return definitions.TryGetValue(name.Name, out var definition)
+                    ? FindOutputs(definition.Value, scope, depth + 1, out unclear)
+                    : null;
+            default:
+                return null;
+        }
     }
 
-    private static bool IsDefaultKeyword(List<Token> tokens, int index)
+    /// <summary>
+    /// <see cref="FindOutputs"/> for the value <paramref name="function"/>'s body gives its output
+    /// <paramref name="output"/>.
+    /// </summary>
+    private FunctionDefinition FindOutputDefinition(FunctionDefinition function, string output, int depth, out bool unclear)
     {
-        return tokens[index].Text == DefaultStatement.Keyword
-            && (index == 0 || tokens[index - 1].Kind == TokenKind.NewLine)
-            && tokens[index + 1].Kind != TokenKind.Equals;
+        unclear = false;
+        return _bodyDefinitions[function].TryGetValue(output, out var definition)
+            ? FindOutputs(definition.Value, function, depth + 1, out unclear)
+            : null;
+    }
+
+    /// <summary>
+    /// What <paramref name="name"/> stands for in the scope, or null when the scope doesn't define it.
+    /// </summary>
+    private NameSymbol Resolve(string name, FunctionDefinition scope)
+    {
+        if (scope == null)
+            return _topDefinitions.ContainsKey(name) ? new NameSymbol(NameSymbolKind.TopLevel, null, name) : null;
+
+        if (scope.Inputs.Exists(i => i.Name == name))
+            return new NameSymbol(NameSymbolKind.Input, scope, name);
+
+        if (scope.Outputs.Exists(o => o.Name == name))
+            return new NameSymbol(NameSymbolKind.Output, scope, name);
+
+        return _bodyDefinitions[scope].ContainsKey(name) ? new NameSymbol(NameSymbolKind.Local, scope, name) : null;
+    }
+
+    private void Add(NameSymbol symbol, Position position)
+    {
+        if (symbol != null && _names.TryGetValue(position, out var token) && token.Text == symbol.Name)
+            _usages.Add(new NameUsage(symbol, token.Span));
     }
 }
