@@ -16,8 +16,7 @@ place-block math as add
 place-block generator as seven
 set-block-setting seven power 7
 place-block demultiplexer as dm
-place-block power_display as p1
-place-block power_display as p2
+place-block power_display as p
 place-block lamp as m
 wire-blocks t out to l a
 wire-blocks d out to l b
@@ -26,8 +25,7 @@ wire-blocks l out to add a
 wire-blocks one out to add b
 wire-blocks add out to dm select
 wire-blocks seven out to dm data
-wire-blocks dm ch1 to p1 x
-wire-blocks dm ch2 to p2 x
+wire-blocks dm ch1 to p x
 wire-blocks l out to m red
 wire-blocks dm ch2 to m intensity
 
@@ -39,8 +37,7 @@ move-block one 32 0 32
 move-block add 48 0 32
 move-block seven 64 0 32
 move-block dm 80 0 32
-move-block p1 96 0 24
-move-block p2 96 0 40
+move-block p 96 0 32
 move-block m 112 0 32
 
 # By hand first
@@ -50,18 +47,17 @@ expect-signal l a 1
 expect-signal l b 1
 expect-signal dm select 2
 expect-signal dm data 7
-expect-display p1 0
-expect-display p2 7
+expect-display p 0
 expect-signal m red 1
 expect-signal m intensity 7
 screenshot test-before
 back-to-editor
 open-window
 
-remember-blocks t l d one add seven dm p1 p2 m
-select-blocks t l d one add seven dm p1 p2 m
+remember-blocks t l d one add seven dm p m
+select-blocks t l d one add seven dm p m
 import-selected
-expect-list-result Imported 8 blocks as "Imported"
+expect-list-result Imported 7 blocks as "Imported"
 expect-text trigger_1 = placed("
 expect-text lamp_1 = placed("
 expect-text delay_1 = delay(logic_1, ticks: 1)
@@ -69,9 +65,8 @@ expect-text logic_1 = trigger_1 | delay_1
 expect-text demultiplexer_1 = demultiplexer(logic_1 + 1, 7)
 expect-text lamp_1(demultiplexer_1.ch2, logic_1)
 expect-text power_display(demultiplexer_1.ch1)
-expect-text power_display(demultiplexer_1.ch2)
 expect-no-errors
-expect-blocks-unmoved t l d one add seven dm p1 p2 m
+expect-blocks-unmoved t l d one add seven dm p m
 screenshot imported
 
 # One undo takes it back, leaving the blocks and their Wires as they were
@@ -79,11 +74,15 @@ undo
 wait 1
 select-group Imported
 expect-list-result "Imported" has no blocks in the level
-expect-blocks-unmoved t l d one add seven dm p1 p2 m
+expect-blocks-unmoved t l d one add seven dm p m
 expect-wire t out to l a
 expect-wire d out to l b
 expect-wire l out to d x
+expect-wire l out to add a
+expect-wire one out to add b
 expect-wire add out to dm select
+expect-wire seven out to dm data
+expect-wire dm ch1 to p x
 expect-wire dm ch2 to m intensity
 expect-wire l out to m red
 expect-wires m 2
@@ -93,18 +92,20 @@ expect-wires t 1
 redo
 wait 1
 select-group Imported
-expect-list-result Selected 8 blocks of "Imported"
+expect-list-result Selected 7 blocks of "Imported"
 compile
-expect-result Replaced 8 → 8 blocks
+expect-result Replaced 7 → 7 blocks
 name-group-block Imported logic as l2
 name-group-block Imported delay as d2
 name-group-block Imported math as add2
 name-group-block Imported demultiplexer as dm2
+name-group-block Imported power_display as p2
 expect-wire t out to l2 a
 expect-wire d2 out to l2 b
 expect-wire l2 out to d2 x
 expect-wire l2 out to add2 a
 expect-wire l2 out to m red
+expect-wire dm2 ch1 to p2 x
 expect-wire dm2 ch2 to m intensity
 expect-wires m 2
 expect-wires t 1
@@ -117,6 +118,7 @@ expect-signal l2 b 1
 expect-signal add2 a 1
 expect-signal dm2 select 2
 expect-signal dm2 data 7
+expect-display p2 0
 expect-signal m red 1
 expect-signal m intensity 7
 screenshot test-compiled
