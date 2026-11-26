@@ -1081,6 +1081,7 @@ public class StepListTests
     [InlineData("import-orphan-draft.zlstest")]
     [InlineData("import-orphan-kept.zlstest")]
     [InlineData("import-delay-feedback.zlstest")]
+    [InlineData("import-contraption.zlstest")]
     public void TheShippedScenarios_CanBeRead(string file)
     {
         var text = RepoFiles.Read($"Zeepkist.LogicScripting.InGameTests/Scenarios/{file}");
