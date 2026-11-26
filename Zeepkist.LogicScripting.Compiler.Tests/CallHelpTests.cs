@@ -223,7 +223,7 @@ public class CallHelpTests
     [InlineData("x = logic(timing.edge(1, |", 1)]
     public void Items_ForALibrarysFunction_ItsInputs(string text, int active)
     {
-        var help = At(text, findLibrary: Library(TwoInputLibrary));
+        var help = At(text, findLibrary: TestLibraries.Timing(TwoInputLibrary));
 
         Assert.Equal("edge", help.Callee);
         Assert.Equal(["a", "b"], help.Items.Select(i => i.Label));
@@ -240,19 +240,19 @@ public class CallHelpTests
     [InlineData("x = timing.pulse(|", "function pulse() -> b\n  b = true\nend")]
     public void None_ForALibrarysFunction_FromALibraryWithAnErrorOrWithoutInputs(string text, string libraryText)
     {
-        Assert.Null(At(text, findLibrary: Library(libraryText)));
+        Assert.Null(At(text, findLibrary: TestLibraries.Timing(libraryText)));
     }
 
     [Fact]
     public void NestedCalls_InACallToALibraryWithAnError_TheCallAroundIt()
     {
-        Assert.Equal("logic", At("x = logic(timing.edge(|", findLibrary: Library(TwoInputLibrary + "\nx = 1")).Callee);
+        Assert.Equal("logic", At("x = logic(timing.edge(|", findLibrary: TestLibraries.Timing(TwoInputLibrary + "\nx = 1")).Callee);
     }
 
     [Fact]
     public void Session_ForALibrarysFunction_ItsInputs()
     {
-        var session = new CallHelpSession(new EditorLookups(findLibrary: Library(TwoInputLibrary)));
+        var session = new CallHelpSession(new EditorLookups(findLibrary: TestLibraries.Timing(TwoInputLibrary)));
 
         session.Update(MarkedText.Parse("x = timing.edge(1, |"), focused: true);
 
@@ -262,7 +262,7 @@ public class CallHelpTests
     [Fact]
     public void Session_Dismissed_InACallToALibrarysFunction_StaysHiddenWhileTheCaretIsInIt()
     {
-        var session = new CallHelpSession(new EditorLookups(findLibrary: Library(TwoInputLibrary)));
+        var session = new CallHelpSession(new EditorLookups(findLibrary: TestLibraries.Timing(TwoInputLibrary)));
         session.Update(MarkedText.Parse("x = timing.edge(|"), focused: true);
         session.Dismiss();
 
@@ -388,13 +388,5 @@ public class CallHelpTests
     {
         var snapshot = MarkedText.Parse(marked);
         return CallHelp.At(snapshot.Text, snapshot.Caret, new EditorLookups(findPlacedBlock, findLibrary));
-    }
-
-    /// <summary>
-    /// A lookup with one Library, <c>timing</c>.
-    /// </summary>
-    private static Func<string, string> Library(string text)
-    {
-        return name => name == "timing" ? text : null;
     }
 }

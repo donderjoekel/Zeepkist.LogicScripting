@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using Xunit;
@@ -57,65 +56,65 @@ public class BlockReferenceTests
     [Fact]
     public void Entry_ShowsInputsOutputsAndOptions()
     {
-        var logic = Find("logic");
+        var logic = TestReferences.Find("logic");
 
         Assert.Equal("a, b, op_in", logic.Inputs);
         Assert.Equal("out", logic.Outputs);
         Assert.Empty(logic.ModeOutputs);
-        Assert.Equal([("op", "and, or, nand, nor, xor, xnor"), ("hide", "true, false")], Rows(logic.Settings));
+        Assert.Equal([("op", "and, or, nand, nor, xor, xnor"), ("hide", "true, false")], TestReferences.Rows(logic.Settings));
     }
 
     [Fact]
     public void Entry_WithoutConnectors_ShowsADash()
     {
-        var ticker = Find("ticker");
+        var ticker = TestReferences.Find("ticker");
 
         Assert.Equal("–", ticker.Inputs);
-        Assert.Equal("–", Find("toggler").Outputs);
+        Assert.Equal("–", TestReferences.Find("toggler").Outputs);
     }
 
     [Fact]
     public void Entry_ShowsAliases()
     {
-        Assert.Equal("mux", Find("multiplexer").Aliases);
-        Assert.Equal("door", Find("toggler").Aliases);
-        Assert.Equal(string.Empty, Find("logic").Aliases);
+        Assert.Equal("mux", TestReferences.Find("multiplexer").Aliases);
+        Assert.Equal("door", TestReferences.Find("toggler").Aliases);
+        Assert.Equal(string.Empty, TestReferences.Find("logic").Aliases);
     }
 
     [Fact]
     public void Entry_MarksRequiredSettings_AndShowsLimits()
     {
-        Assert.Equal(("ticks", "number, at least 1 (required)"), Rows(Find("delay").Settings)[0]);
+        Assert.Equal(("ticks", "number, at least 1 (required)"), TestReferences.Rows(TestReferences.Find("delay").Settings)[0]);
     }
 
     [Fact]
     public void Entry_ShowsStyles()
     {
-        Assert.Contains(("style", "normal, compact"), Rows(Find("power_display").Settings));
+        Assert.Contains(("style", "normal, compact"), TestReferences.Rows(TestReferences.Find("power_display").Settings));
     }
 
     [Fact]
     public void Entry_ShowsPlayersAndTargets()
     {
-        Assert.Equal(("player", "all, 1, 2, 3, 4"), Rows(Find("death").Settings)[0]);
-        Assert.Equal(("targets", "1–8 placed blocks"), Rows(Find("toggler").Settings)[0]);
+        Assert.Equal(("player", "all, 1, 2, 3, 4"), TestReferences.Rows(TestReferences.Find("death").Settings)[0]);
+        Assert.Equal(("targets", "1–8 placed blocks"), TestReferences.Rows(TestReferences.Find("toggler").Settings)[0]);
     }
 
     [Fact]
     public void Entry_WithModes_ShowsOutputsPerMode()
     {
-        var telemetry = Find("simple_telemetry");
+        var telemetry = TestReferences.Find("simple_telemetry");
 
         Assert.Equal(
             [("basic", "speed, yaw, up, state"), ("local_velocity", "yaw, x, y, z"), ("global_velocity", "x, y, z, heading")],
-            Rows(telemetry.ModeOutputs));
+            TestReferences.Rows(telemetry.ModeOutputs));
         Assert.Null(telemetry.Outputs);
     }
 
     [Fact]
     public void PlacedOnlyEntry_HasNoHide()
     {
-        var lamp = Find("lamp");
+        var lamp = TestReferences.Find("lamp");
 
         Assert.True(lamp.IsPlacedOnly);
         Assert.DoesNotContain(lamp.Settings, r => r.Name == "hide");
@@ -134,16 +133,6 @@ public class BlockReferenceTests
     [InlineData("xnor", "math", false)]
     public void Matches_LooksAtNameAliasesConnectorsAndSettings(string filter, string function, bool expected)
     {
-        Assert.Equal(expected, Find(function).Matches(filter));
-    }
-
-    private static List<(string, string)> Rows(IReadOnlyList<ReferenceRow> rows)
-    {
-        return rows.Select(r => (r.Name, r.Value)).ToList();
-    }
-
-    private static BlockReferenceEntry Find(string function)
-    {
-        return BlockReference.Categories.SelectMany(c => c.Entries).Single(e => e.Function == function);
+        Assert.Equal(expected, TestReferences.Find(function).Matches(filter));
     }
 }

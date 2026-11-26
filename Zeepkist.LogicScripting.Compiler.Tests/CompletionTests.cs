@@ -1204,7 +1204,7 @@ public class CompletionTests
     /// </summary>
     private static EditorLookups Library(string text)
     {
-        return new EditorLookups(findLibrary: name => name == "timing" ? text : null);
+        return new EditorLookups(findLibrary: TestLibraries.Timing(text));
     }
 
     private static CaretContext At(string marked)
