@@ -92,7 +92,7 @@ internal sealed class PlacedBlocksPanel
     {
         if (central == null || central.selection.list.Count == 0)
         {
-            _insertMessage = "Select blocks in the level first";
+            _insertMessage = LevelEdit.NothingSelectedMessage;
             return false;
         }
 

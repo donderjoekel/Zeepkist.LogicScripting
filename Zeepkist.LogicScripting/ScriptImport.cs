@@ -22,7 +22,6 @@ internal static class ScriptImport
     public const string DefaultName = "Imported";
 
     private const string UndoLabel = "Logic Scripting Import";
-    private const string NothingSelectedMessage = "Select blocks in the level first";
 
     /// <summary>
     /// The level editor, or null with the reason no selected blocks can be imported now.
@@ -33,7 +32,7 @@ internal static class ScriptImport
         if (central == null || central.selection.list.Count > 0)
             return central;
 
-        blocker = NothingSelectedMessage;
+        blocker = LevelEdit.NothingSelectedMessage;
         return null;
     }
 

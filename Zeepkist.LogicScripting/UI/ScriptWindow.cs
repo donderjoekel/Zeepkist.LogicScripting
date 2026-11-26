@@ -367,7 +367,7 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     {
         _libraryEditors.Remove(library.Id);
         if (library == CurrentLibrary)
-            Select(_scripts.Entries.Count > 0 ? _scripts.Entries[0] : null);
+            SelectFirstScript();
     }
 
     /// <summary>
@@ -377,7 +377,15 @@ internal sealed partial class ScriptWindow : IZeepGUIDrawer
     {
         _editors.Remove(entry.Id);
         if (entry == CurrentScript)
-            Select(_scripts.Entries.Count > 0 ? _scripts.Entries[0] : null);
+            SelectFirstScript();
+    }
+
+    /// <summary>
+    /// Shows nothing when there's no Script.
+    /// </summary>
+    private void SelectFirstScript()
+    {
+        Select(_scripts.Entries.Count > 0 ? _scripts.Entries[0] : null);
     }
 
     private void Select(ScriptEntry entry)
