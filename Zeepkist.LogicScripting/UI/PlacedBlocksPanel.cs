@@ -50,7 +50,7 @@ internal sealed class PlacedBlocksPanel
         }
 
         var rows = GetRows(check);
-        gui.Text(rows.Count == 1 ? "1 placed block" : $"{rows.Count} placed blocks", WindowColors.Muted);
+        gui.Text(MessageFragments.Count(rows.Count, "placed block"), WindowColors.Muted);
         BlockProperties hovered = null;
         foreach (var reference in rows)
         {

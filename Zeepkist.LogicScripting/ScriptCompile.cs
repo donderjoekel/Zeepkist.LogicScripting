@@ -85,7 +85,7 @@ internal static class ScriptCompile
 
     private static string FormatErrors(CompileResult result)
     {
-        var heading = result.Errors.Count == 1 ? "1 error, nothing placed" : $"{result.Errors.Count} errors, nothing placed";
+        var heading = $"{MessageFragments.Count(result.Errors.Count, "error")}, nothing placed";
         return heading + "\n" + string.Join("\n", result.Errors);
     }
 }

@@ -3,6 +3,7 @@ using Imui.Controls;
 using Imui.Core;
 using Imui.IO.Events;
 using Imui.Rendering;
+using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Storage;
 using UnityEngine;
@@ -571,7 +572,7 @@ internal sealed partial class ScriptWindow
         if (_edited.HasCurrentErrors)
         {
             var count = _edited.Errors.Count;
-            return (count == 1 ? "1 error" : $"{count} errors", WindowColors.Error);
+            return (MessageFragments.Count(count, "error"), WindowColors.Error);
         }
 
         // A pending check hides the old errors, so the panel doesn't claim the text is fine

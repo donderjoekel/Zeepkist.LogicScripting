@@ -242,7 +242,7 @@ internal sealed class ImportGraph
             return isWired ? $"{reach} {Describe(uid)}, which a Script can't wire" : null;
 
         if (_disabledBlockIds.Contains(style.BlockId))
-            return $"{reach} {Describe(uid)}, but '{type.Describe(style)}' {MessageFragments.TurnedOff}";
+            return $"{reach} {Describe(uid)}, but {MessageFragments.DescribeTurnedOff(type, style)}";
 
         return type.Modes != null && placed.Settings.Any(s => s.Key == type.Modes.Setting.Key && type.Modes.Setting.ToText(s) == null)
             ? $"{reach} {Describe(uid)}, which has a value for {type.Modes.Setting.Name} that a Script can't read"

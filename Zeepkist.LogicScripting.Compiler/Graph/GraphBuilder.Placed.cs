@@ -42,7 +42,7 @@ internal sealed partial class GraphBuilder
 
         AddPlacedBlockReference(new PlacedBlockReference(call.Position, name, uid.Value, type));
         if (style != null && _disabledBlockIds.Contains(style.BlockId))
-            return Fail(call, $"'{type.Describe(style)}' {MessageFragments.TurnedOff}");
+            return Fail(call, MessageFragments.DescribeTurnedOff(type, style));
 
         if (placed.IsInBlockGroup)
             return Fail(uid, $"Block \"{uid.Value}\" is {MessageFragments.InBlockGroup}. Refer to a hand-placed block, such as a Passthrough between two Scripts");

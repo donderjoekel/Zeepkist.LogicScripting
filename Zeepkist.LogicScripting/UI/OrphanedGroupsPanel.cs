@@ -92,7 +92,7 @@ internal sealed class OrphanedGroupsPanel
         foreach (var orphan in orphanedGroups)
         {
             var name = GetName(orphan);
-            gui.Text(orphan.BlockCount == 1 ? $"{name}, 1 block" : $"{name}, {orphan.BlockCount} blocks", wrap: true);
+            gui.Text($"{name}, {MessageFragments.Count(orphan.BlockCount, "block")}", wrap: true);
 
             // Three short buttons share a row and the others get their own, so all fit the narrow Scripts side
             gui.AddSpacingIfLayoutFrameNotEmpty();
@@ -179,7 +179,7 @@ internal sealed class OrphanedGroupsPanel
         if (count == null)
             _message = "That failed, level unchanged";
         else
-            _message = count == 1 ? $"{verb} 1 block" : $"{verb} {count} blocks";
+            _message = $"{verb} {MessageFragments.Count(count.Value, "block")}";
     }
 
     private void Select(OrphanedGroup orphan)

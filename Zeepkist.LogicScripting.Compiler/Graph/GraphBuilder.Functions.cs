@@ -275,7 +275,7 @@ internal sealed partial class GraphBuilder
 
         if (call.Arguments.Count > inputs.Count)
         {
-            Error(call, $"'{call.QualifiedName}' takes {Count(inputs.Count, "input")}, got {call.Arguments.Count}");
+            Error(call, $"'{call.QualifiedName}' takes {MessageFragments.Count(inputs.Count, "input")}, got {call.Arguments.Count}");
             failed = true;
         }
 
@@ -407,10 +407,5 @@ internal sealed partial class GraphBuilder
             ConnectDeferredWires(snapshot.DeferredWireCount);
             snapshot.Restore();
         }
-    }
-
-    private static string Count(int count, string noun)
-    {
-        return count == 1 ? $"1 {noun}" : $"{count} {noun}s";
     }
 }
