@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Imui.Controls;
 using Imui.Core;
 using Imui.IO.Events;
-using Imui.Rendering;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.Storage;
@@ -557,7 +556,7 @@ internal sealed partial class ScriptWindow
         var buttonRect = row.TakeRight(gui.GetRowHeight(), gui.Style.Layout.Spacing, out var labelRect);
 
         var (text, color) = _state.Errors.Collapsed && _result.Length > 0 ? (_result, gui.Style.Text.Color) : GetErrorsSummary();
-        var settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        var settings = SingleLineText.GetSettings(gui);
         gui.Text(text, settings, color, labelRect);
         if (labelRect.Contains(gui.Input.MousePosition) && gui.MeasureTextSize(text, settings).x > labelRect.W)
             gui.Tooltip(text, labelRect);

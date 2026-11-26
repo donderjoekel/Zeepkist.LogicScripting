@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Imui.Controls;
 using Imui.Core;
-using Imui.Rendering;
 using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 using UnityEngine;
@@ -119,7 +118,7 @@ internal abstract class EditedItem
     protected static ImRect AddNameRow(ImGui gui, out ImTextSettings settings)
     {
         gui.AddSpacingIfLayoutFrameNotEmpty();
-        settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        settings = SingleLineText.GetSettings(gui);
         return gui.AddSingleRowRect(default);
     }
 

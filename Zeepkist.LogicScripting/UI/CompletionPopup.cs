@@ -102,7 +102,7 @@ internal sealed class CompletionPopup
         gui.RegisterControl(gui.GetControlId("completion"), _rect);
 
         var palette = SyntaxPalette.For(gui.Style.Menu.Box.BackColor, gui.Style.Text.Color);
-        var settings = new ImTextSettings(gui.Style.Layout.TextSize, 0, 0.5f, overflow: ImTextOverflow.Ellipsis);
+        var settings = SingleLineText.GetSettings(gui);
         var detailSettings = new ImTextSettings(gui.Style.Layout.TextSize, 1, 0.5f, overflow: ImTextOverflow.Ellipsis);
         var hovered = GetRowAt(gui.Input.MousePosition);
         var selected = _session.Selected;
