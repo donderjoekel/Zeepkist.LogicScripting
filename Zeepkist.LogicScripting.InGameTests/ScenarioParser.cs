@@ -53,9 +53,7 @@ internal static class ScenarioParser
 
     private static ScenarioStep Create(string line)
     {
-        var space = line.IndexOf(' ');
-        var stepName = space < 0 ? line : line.Substring(0, space);
-        var argument = space < 0 ? string.Empty : line.Substring(space + 1).Trim();
+        StepArgument.TrySplitFirst(line, out var stepName, out var argument);
         if (stepName == StepList.End)
             throw new ScenarioFormatException($"{StepList.End} without {StepList.SetText}");
 
