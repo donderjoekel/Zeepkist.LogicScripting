@@ -33,6 +33,7 @@ internal static class KeyNames
         ["end"] = ("End", '\0'),
         ["pageup"] = ("PageUp", '\0'),
         ["pagedown"] = ("PageDown", '\0'),
+        ["f2"] = ("F2", '\0'),
     };
 
     private static readonly Dictionary<char, string> _symbols = new()
