@@ -140,6 +140,15 @@ public class NameOccurrencesTests
     {
         AssertUsages("|x = 1\nd = logic(a:\n    [x], b: 1)");
         AssertUsages("|and = 1\nd = logic([and], 1, op:\n    and)");
+        AssertUsages("|x = 1\nd = logic(a:\n    [x]");
+        AssertUsages("|and = 1\nd = logic([and], 1, op:\n    and");
+    }
+
+    [Fact]
+    public void HalfTypedColonOutsideACall_LeavesTheNextLineAlone()
+    {
+        AssertUsages("|lamp_1 = placed(\"L\")\ndefault hide:\n[lamp_1](intensity: 1)");
+        AssertUsages("|t = 1\ndefault hide:\ntoggler([t], targets: door)");
     }
 
     [Fact]

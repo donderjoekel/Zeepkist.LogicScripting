@@ -127,11 +127,20 @@ public class HoverInfoTests
     [InlineData("x = 1\ny = timing.edge(a: |x)")]
     [InlineData("x = 1\nlamp_1 = placed(\"L\")\nlamp_1(intensity: |x)")]
     [InlineData("x = 1\ny = logic(a:\n    |x, b: 1)")]
+    [InlineData("x = 1\ny = logic(a:\n    |x")]
     public void DefinedName_GivenToANamedArgument_IsTheLineThatDefinesIt(string marked)
     {
         var info = At(marked, uid => _level.GetValueOrDefault(uid));
 
         Assert.Equal((1, "x = 1"), (info.DefinitionLine, info.Definition));
+    }
+
+    [Theory]
+    [InlineData("function f(a) -> b\n    b = a\nend\ndefault hide:\n|f(1)", 1)]
+    [InlineData("lamp_1 = placed(\"L\")\ndefault hide:\n|lamp_1(intensity: 1)", 1)]
+    public void HalfTypedColonOutsideACall_TheNextLineStillHovers(string marked, int line)
+    {
+        Assert.Equal(line, At(marked, uid => _level.GetValueOrDefault(uid)).DefinitionLine);
     }
 
     [Fact]
@@ -149,6 +158,7 @@ public class HoverInfoTests
     [Theory]
     [InlineData("modulo = 1\nx = math(1, 2, op: |modulo)")]
     [InlineData("modulo = 1\nx = math(1, 2,\n    op:\n    |modulo)")]
+    [InlineData("modulo = 1\nx = math(1, 2, op:\n    |modulo")]
     [InlineData("compact = 1\nx = power_display(1, style: |compact)")]
     [InlineData("x = 1\ndefault hide: |x")]
     public void DefinedName_SpelledLikeAWord_IsNull(string marked)

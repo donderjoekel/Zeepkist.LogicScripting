@@ -83,11 +83,20 @@ public class DefinitionJumpTests
     [InlineData("x = 1\ny = timing.edge(a: |x)")]
     [InlineData("x = 1\nlamp_1 = placed(\"L\")\nlamp_1(intensity: |x)")]
     [InlineData("x = 1\ny = logic(a:\n    |x, b: 1)")]
+    [InlineData("x = 1\ny = logic(a:\n    |x")]
     public void DefinedName_GivenToANamedArgument_Jumps(string marked)
     {
         var jump = At(marked);
 
         Assert.Equal((0, 1), (jump.Target.Start, jump.Target.Length));
+    }
+
+    [Theory]
+    [InlineData("function f(a) -> b\n    b = a\nend\ndefault hide:\n|f(1)", 9)]
+    [InlineData("lamp_1 = placed(\"L\")\ndefault hide:\n|lamp_1(intensity: 1)", 0)]
+    public void HalfTypedColonOutsideACall_TheNextLineStillJumps(string marked, int target)
+    {
+        Assert.Equal(target, At(marked).Target.Start);
     }
 
     [Fact]
@@ -99,6 +108,7 @@ public class DefinitionJumpTests
     [Theory]
     [InlineData("modulo = 1\nx = math(1, 2, op: |modulo)")]
     [InlineData("modulo = 1\nx = math(1, 2,\n    op:\n    |modulo)")]
+    [InlineData("modulo = 1\nx = math(1, 2, op:\n    |modulo")]
     [InlineData("compact = 1\nx = power_display(1, style: |compact)")]
     [InlineData("x = 1\ndefault hide: |x")]
     public void DefinedName_SpelledLikeAWord_NoJump(string marked)

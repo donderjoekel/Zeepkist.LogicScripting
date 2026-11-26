@@ -1,5 +1,6 @@
 # Ctrl+click on a name given to a named argument jumps to its definition: a Block Function's input, a Script
-# Function's argument, a Placed Block Reference's input and a Toggler's targets. A Setting's word doesn't jump.
+# Function's argument, a Placed Block Reference's input and a Toggler's targets. A call on the line after a half-typed
+# `default hide:` still jumps. A Setting's word doesn't jump.
 # Each case has its own short text, so a jump doesn't scroll the next case's name out from under the mouse
 place-block lamp as lamp
 open-window
@@ -47,6 +48,16 @@ set-text
 end
 expect-no-errors
 ctrl-click lamp_1)
+type zz
+expect-text zzlamp_1 = placed(
+
+# A half-typed `default hide:` doesn't take the call on the next line as its word
+set-text
+    lamp_1 = placed("{uid:lamp}")
+    default hide:
+    lamp_1(intensity: 1)
+end
+ctrl-click lamp_1(intensity
 type zz
 expect-text zzlamp_1 = placed(
 

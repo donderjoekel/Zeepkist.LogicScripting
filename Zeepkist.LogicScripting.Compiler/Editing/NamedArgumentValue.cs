@@ -36,17 +36,17 @@ internal static class NamedArgumentValue
 
     private static bool IsWord(List<Token> tokens, int index, Func<DefinedFunction> findScope)
     {
-        var colon = FindColon(tokens, index);
+        var colon = FindColon(tokens, index, out var onLineAbove);
         if (colon < 0)
             return false;
 
         if (colon == 0 || tokens[colon - 1].Kind != TokenKind.Name)
-            return true;
+            return !onLineAbove;
 
         var argument = tokens[colon - 1];
         var call = OpenCall.FindStartedAt(tokens, argument.Span.Start);
         if (call == null)
-            return true;
+            return !onLineAbove;
 
         if (call.Callee == null || !BlockManifest.TryGetFunction(call.Callee, out var type))
             return false;
@@ -65,15 +65,19 @@ internal static class NamedArgumentValue
 
     /// <summary>
     /// The colon right before the name, past the line breaks a call carries on over; -1 when there's none.
+    /// <paramref name="onLineAbove"/> says a line break came between them, so the colon only counts inside an open call:
+    /// after a half-typed <c>default hide:</c> the next line is a line of its own.
     /// </summary>
-    private static int FindColon(List<Token> tokens, int index)
+    private static int FindColon(List<Token> tokens, int index, out bool onLineAbove)
     {
+        onLineAbove = false;
         if (Lexer.IsStatementStart(tokens, index))
             return -1;
 
         var previous = index - 1;
         while (previous >= 0 && tokens[previous].Kind == TokenKind.NewLine)
         {
+            onLineAbove = true;
             previous--;
         }
 
