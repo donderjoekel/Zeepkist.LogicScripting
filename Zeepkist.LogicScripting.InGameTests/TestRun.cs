@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
+using TMPro;
 using TNRD.Zeepkist.LogicScripting.Blocks;
 using TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 using TNRD.Zeepkist.LogicScripting.UI;
@@ -23,6 +25,9 @@ internal sealed class TestRun : IDisposable
     // Starts every line this plugin logs, so a run's lines can be picked out of the BepInEx log
     public const string Marker = "[ZLS-TEST]";
     private const float WaitSeconds = 120;
+
+    // How long a run asked to stay on the start screen waits there, which is only to show the failure it reports
+    private const float StuckStartSeconds = 10;
 
     private readonly ManualLogSource _logger;
     private readonly RunResults _results;
@@ -184,8 +189,16 @@ internal sealed class TestRun : IDisposable
             yield break;
 
         PressAnyKeyToStartGame startScreen = null;
-        yield return WaitFor(() => startScreen = Find<PressAnyKeyToStartGame>(), "the start screen");
-        yield return WaitUntil(() => startScreen.disableThisIntroPanel.activeInHierarchy && PlayerManager.Instance != null, "press any key");
+        yield return WaitFor(() => startScreen = Find<PressAnyKeyToStartGame>(), "the start screen", () => DescribeStartScreen(null));
+        var stuck = _request.StuckStart;
+        if (stuck)
+            _logger.LogWarning($"{Marker} staying on the start screen, as the run asked");
+
+        yield return WaitUntil(
+            () => !stuck && startScreen.disableThisIntroPanel.activeInHierarchy && PlayerManager.Instance != null,
+            "press any key",
+            () => DescribeStartScreen(startScreen),
+            stuck ? StuckStartSeconds : WaitSeconds);
         if (_walkFailed)
             yield break;
 
@@ -296,7 +309,7 @@ internal sealed class TestRun : IDisposable
     /// <summary>
     /// Looks for an object once now and once after each scene load, rather than searching the scene every frame.
     /// </summary>
-    private IEnumerator WaitFor(Func<Object> find, string what)
+    private IEnumerator WaitFor(Func<Object> find, string what, Func<string> describe = null)
     {
         var checkedAt = -1;
         return WaitUntil(
@@ -308,26 +321,120 @@ internal sealed class TestRun : IDisposable
                 checkedAt = _game.ScenesLoaded;
                 return find() != null;
             },
-            what);
+            what,
+            describe);
     }
 
-    private IEnumerator WaitUntil(Func<bool> condition, string what)
+    /// <summary>
+    /// With <paramref name="describe"/>, a wait that gives up says what the game showed instead.
+    /// </summary>
+    private IEnumerator WaitUntil(Func<bool> condition, string what, Func<string> describe = null, float seconds = WaitSeconds)
     {
         if (_walkFailed)
             yield break;
 
-        var giveUpAt = Time.realtimeSinceStartup + WaitSeconds;
+        var giveUpAt = Time.realtimeSinceStartup + seconds;
         while (!condition())
         {
             if (Time.realtimeSinceStartup > giveUpAt)
             {
-                WalkFailed(what, $"not reached after {WaitSeconds} seconds");
+                var detail = $"not reached after {seconds} seconds";
+                if (describe != null)
+                    detail += $": {describe()}";
+
+                WalkFailed(what, detail);
                 yield return _screenshots.Take(_walkScenario.Length > 0 ? $"{_walkScenario}-failure" : "failure");
                 yield break;
             }
 
             yield return null;
         }
+    }
+
+    /// <summary>
+    /// What the screen shows, for a walk that gave up before the main menu, with <paramref name="screen"/> once the game
+    /// has its start screen. The start screen's own fields go to the log only, as they're the game's.
+    /// </summary>
+    private string DescribeStartScreen(PressAnyKeyToStartGame screen)
+    {
+        var state = new StartScreenState
+        {
+            ScreenFound = screen != null,
+            IntroPanelActive = screen != null && screen.disableThisIntroPanel != null && screen.disableThisIntroPanel.activeInHierarchy,
+            PlayerManagerExists = PlayerManager.Instance != null,
+            Texts = VisibleTexts(screen),
+        };
+
+        // The detail keeps only the first few, so all of them go to the log
+        _logger.LogInfo($"{Marker} texts on screen: {string.Join(" | ", state.Texts.ConvertAll(text => text.Replace('\n', ' ')))}");
+        if (screen != null)
+            _logger.LogInfo($"{Marker} start screen fields: {FieldValues(screen)}");
+
+        return state.Describe();
+    }
+
+    /// <summary>
+    /// The texts on screen: those of active text components, which is what a person sees on a menu. Those under
+    /// <paramref name="screen"/> come first, then those under its root, so the start screen's own status isn't crowded out
+    /// of the step's detail by the rest of the scene.
+    /// </summary>
+    private static List<string> VisibleTexts(Component screen)
+    {
+        HashSet<Component> seen = [];
+        List<string> texts = [];
+
+        void Add(IEnumerable<TMP_Text> tmpTexts, IEnumerable<UnityEngine.UI.Text> uiTexts)
+        {
+            foreach (var text in tmpTexts)
+            {
+                if (text.isActiveAndEnabled && seen.Add(text))
+                    texts.Add(text.text);
+            }
+
+            foreach (var text in uiTexts)
+            {
+                if (text.isActiveAndEnabled && seen.Add(text))
+                    texts.Add(text.text);
+            }
+        }
+
+        if (screen != null)
+        {
+            Add(screen.GetComponentsInChildren<TMP_Text>(), screen.GetComponentsInChildren<UnityEngine.UI.Text>());
+            var root = screen.transform.root;
+            Add(root.GetComponentsInChildren<TMP_Text>(), root.GetComponentsInChildren<UnityEngine.UI.Text>());
+        }
+
+        Add(Object.FindObjectsOfType<TMP_Text>(), Object.FindObjectsOfType<UnityEngine.UI.Text>());
+        return texts;
+    }
+
+    /// <summary>
+    /// The component's simple fields, and for each object it holds whether it's there and active.
+    /// </summary>
+    private static string FieldValues(Component component)
+    {
+        List<string> values = [];
+        foreach (var field in component.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+        {
+            var value = field.GetValue(component);
+            var type = field.FieldType;
+            if (type.IsPrimitive || type.IsEnum || type == typeof(string))
+            {
+                values.Add($"{field.Name}={value}");
+            }
+            else if (typeof(Object).IsAssignableFrom(type))
+            {
+                var unityObject = value as Object;
+                var shown = unityObject == null ? "none"
+                    : unityObject is GameObject gameObject ? (gameObject.activeInHierarchy ? "active" : "inactive")
+                    : unityObject is Behaviour behaviour ? (behaviour.isActiveAndEnabled ? "enabled" : "disabled")
+                    : "set";
+                values.Add($"{field.Name}={shown}");
+            }
+        }
+
+        return string.Join(", ", values);
     }
 
     private void WalkFailed(Exception exception)

@@ -20,6 +20,12 @@ internal sealed class RunRequest
     /// </summary>
     public List<string> Scenarios { get; set; } = [];
 
+    /// <summary>
+    /// Keeps the walk waiting on the start screen, and gives up on it sooner, so a run shows what a run stuck there
+    /// reports. Set by the script's --stuck-start.
+    /// </summary>
+    public bool StuckStart { get; set; }
+
     public static bool TryRead(string folder, string[] args, out RunRequest request)
     {
         request = null;
