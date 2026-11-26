@@ -192,6 +192,7 @@ public partial class StepListTests
     [InlineData("import-orphan", "import-orphan takes an Orphaned Group's name")]
     [InlineData("restore-orphan", "restore-orphan takes an Orphaned Group's name")]
     [InlineData("expect-orphan-result", "expect-orphan-result takes the text to look for, or none")]
+    [InlineData("ctrl-click", "ctrl-click takes the text to Ctrl+click")]
     [InlineData("set-window-size", "set-window-size takes a width and a height, each a whole number of pixels above 0")]
     [InlineData("set-window-size 1600", "set-window-size takes a width and a height, each a whole number of pixels above 0, not '1600'")]
     [InlineData("set-window-size 1600 0", "set-window-size takes a width and a height, each a whole number of pixels above 0, not '1600 0'")]

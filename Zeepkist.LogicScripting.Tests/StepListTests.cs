@@ -75,6 +75,7 @@ public partial class StepListTests
     [InlineData("expect-no-hover", typeof(ExpectNoHoverStep))]
     [InlineData("expect-usages 1:1 3:12", typeof(ExpectUsagesStep))]
     [InlineData("expect-usages none", typeof(ExpectUsagesStep))]
+    [InlineData("ctrl-click x, 1", typeof(CtrlClickStep))]
     [InlineData("press ctrl+space", typeof(PressStep))]
     [InlineData("type b = a", typeof(TypeStep))]
     [InlineData("place-block lamp", typeof(PlaceBlockStep))]

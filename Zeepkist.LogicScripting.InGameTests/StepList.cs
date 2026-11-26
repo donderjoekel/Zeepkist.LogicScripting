@@ -105,6 +105,7 @@ internal static partial class StepList
         ["expect-hover"] = (step, argument) => new ExpectHoverStep(StepArgument.Text(step, argument, "the text to look for")),
         ["expect-no-hover"] = (step, argument) => None(step, argument, new ExpectNoHoverStep()),
         ["expect-usages"] = ExpectUsages,
+        ["ctrl-click"] = (step, argument) => new CtrlClickStep(StepArgument.Text(step, argument, "the text to Ctrl+click")),
         ["press"] = (step, argument) => new PressStep(StepArgument.Keys(step, argument, KeysStep.MaxKeysPerFrame)),
         ["type"] = (step, argument) => new TypeStep(StepArgument.Text(step, argument, "the text to type")),
         ["place-block"] = PlaceBlock,
