@@ -2,9 +2,6 @@ using System.Collections.Generic;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Types the text one key a frame.
-/// </summary>
 internal sealed class TypeStep : KeysStep
 {
     public TypeStep(string text)

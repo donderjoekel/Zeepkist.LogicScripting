@@ -35,9 +35,6 @@ internal sealed class BlockPose
         return new BlockPose((json.p.x, json.p.y, json.p.z), (json.r.x, json.r.y, json.r.z), (json.s.x, json.s.y, json.s.z));
     }
 
-    /// <summary>
-    /// What's different in <paramref name="other"/>, of <c>position</c>, <c>rotation</c> and <c>scale</c>.
-    /// </summary>
     public IReadOnlyList<string> FindChanges(BlockPose other)
     {
         List<string> changes = [];

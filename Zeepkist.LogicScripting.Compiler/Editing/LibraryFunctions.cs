@@ -21,9 +21,6 @@ internal static class LibraryFunctions
         return hasErrors ? [] : functions.Select(f => f.Function);
     }
 
-    /// <summary>
-    /// Null when the Library has no callable Function by that name.
-    /// </summary>
     public static FunctionDefinition Find(string library, string name, EditorLookups lookups)
     {
         return GetCallable(library, lookups).FirstOrDefault(f => f.Name.Name == name);

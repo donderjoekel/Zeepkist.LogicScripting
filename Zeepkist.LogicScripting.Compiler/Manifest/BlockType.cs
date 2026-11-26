@@ -4,15 +4,8 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
-/// <summary>
-/// One Logic Block type in the Block Manifest: its Block Function name, the blocks it can place, its Connectors and
-/// its Settings.
-/// </summary>
 public sealed class BlockType
 {
-    /// <summary>
-    /// The argument that picks one of several <see cref="Styles"/>.
-    /// </summary>
     public const string StyleName = "style";
 
     private IReadOnlyList<BlockArgument> _arguments;
@@ -54,7 +47,7 @@ public sealed class BlockType
     }
 
     /// <summary>
-    /// The Block Function name; for a placed-only type, the name a Placed Block Reference is checked against.
+    /// For a placed-only type, the name a Placed Block Reference is checked against.
     /// </summary>
     public string Function { get; }
 
@@ -64,7 +57,7 @@ public sealed class BlockType
     public BlockCategory Category { get; }
 
     /// <summary>
-    /// The blocks this type can be, one per block ID. The first is what a call without <c>style:</c> places.
+    /// One per block ID. The first is what a call without <c>style:</c> places.
     /// </summary>
     public IReadOnlyList<BlockStyle> Styles { get; }
 
@@ -123,9 +116,6 @@ public sealed class BlockType
         return -1;
     }
 
-    /// <summary>
-    /// The outputs of a block with the given Settings; they differ from <see cref="Outputs"/> only per mode.
-    /// </summary>
     public IReadOnlyList<BlockConnector> GetOutputs(IReadOnlyList<Setting> settings)
     {
         return Modes == null ? Outputs : Modes.Outputs[GetModeIndex(settings)];
@@ -180,7 +170,7 @@ public sealed class BlockType
     }
 
     /// <summary>
-    /// One of <see cref="Settings"/>, or <see cref="BlockSetting.Hide"/>, which every Block Function takes.
+    /// Also finds <see cref="BlockSetting.Hide"/>, which every Block Function takes.
     /// </summary>
     public BlockSetting FindSetting(string name)
     {
@@ -223,8 +213,7 @@ public sealed class BlockType
     }
 
     /// <summary>
-    /// The given Settings, each stored under one or more keys, in the order <see cref="Settings"/> declares them,
-    /// <c>hide:</c> last, whatever order they were given in.
+    /// In the order <see cref="Settings"/> declares them, <c>hide:</c> last, whatever order they were given in.
     /// </summary>
     public Setting[] OrderSettings(IReadOnlyDictionary<BlockSetting, IReadOnlyList<Setting>> settings)
     {

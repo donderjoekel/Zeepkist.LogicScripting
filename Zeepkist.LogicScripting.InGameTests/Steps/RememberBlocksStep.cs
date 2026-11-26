@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Remembers where the named blocks are, for <see cref="ExpectBlocksUnmovedStep"/>.
-/// </summary>
 internal sealed class RememberBlocksStep : ScenarioStep
 {
     public RememberBlocksStep(IReadOnlyList<string> names)

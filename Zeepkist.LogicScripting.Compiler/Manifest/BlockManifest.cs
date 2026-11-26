@@ -25,14 +25,8 @@ public static class BlockManifest
         LogicOperatorKey,
         "and", "or", "nand", "nor", "xor", "xnor");
 
-    /// <summary>
-    /// <c>player:</c> on blocks that read one player's car.
-    /// </summary>
     public static readonly BlockSetting OnePlayer = BlockSetting.Player("xpr", hasEveryone: false);
 
-    /// <summary>
-    /// <c>player:</c> on blocks that act on everyone, or one player.
-    /// </summary>
     public static readonly BlockSetting PlayerOrEveryone = BlockSetting.Player("xpr", hasEveryone: true);
 
     public static readonly BlockSetting DigitizerInvert = BlockSetting.Bool("invert", "xt1");
@@ -426,9 +420,6 @@ public static class BlockManifest
         return found;
     }
 
-    /// <summary>
-    /// The type a Placed Block Reference to a block ID has: its manifest type, or <see cref="OtherBlock"/>.
-    /// </summary>
     public static BlockType GetPlacedType(int blockId)
     {
         return TryGetBlock(blockId, out var type, out _) ? type : OtherBlock;

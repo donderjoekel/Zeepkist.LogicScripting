@@ -17,8 +17,6 @@ public static class DefinedNames
     /// Every definition of a name that isn't reserved, and every input of a Function, in text order; a name defined
     /// twice is listed twice.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="lookups">The level gives a Placed Block Reference its type.</param>
     public static IReadOnlyList<DefinedName> Read(string text, EditorLookups lookups = null)
     {
         lookups ??= EditorLookups.None;
@@ -145,13 +143,9 @@ public static class DefinedNames
     /// <summary>
     /// What the value starting at <paramref name="start"/> stands for when the whole value is one call the editor
     /// knows, or a name defined as one, in any parentheses, since the compiler drops them. A name is its first
-    /// definition; a Function's name is the Function, which has no value.
+    /// definition; a Function's name is the Function, which has no value. <paramref name="earlierInScope"/> are the
+    /// names defined before the value, in its scope.
     /// </summary>
-    /// <param name="tokens"></param>
-    /// <param name="start"></param>
-    /// <param name="lookups"></param>
-    /// <param name="functions"></param>
-    /// <param name="earlierInScope">The names defined before the value, in its scope.</param>
     private static DefinedValue ReadValue(
         List<Token> tokens,
         int start,

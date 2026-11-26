@@ -5,9 +5,6 @@ using TNRD.Zeepkist.LogicScripting.Blocks;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Makes the named blocks the editor's selection, in the order given, as one undo step.
-/// </summary>
 internal sealed class SelectBlocksStep : ScenarioStep
 {
     public SelectBlocksStep(IReadOnlyList<string> names)

@@ -288,12 +288,9 @@ public sealed class CaretContext
     /// <summary>
     /// The token of the name the word picks an output of, or of the function whose call it does: right before a dot
     /// that's right before the word, and not itself after a dot, since only a name or a call has outputs, unless the
-    /// call is qualified with a Library's name, <c>timing.edge(x)</c>. -1 when there's none.
+    /// call is qualified with a Library's name, <c>timing.edge(x)</c>. -1 when there's none. <paramref name="library"/>
+    /// is the token of the Library's name in a qualified call, or -1.
     /// </summary>
-    /// <param name="tokens"></param>
-    /// <param name="word"></param>
-    /// <param name="isCall"></param>
-    /// <param name="library">The token of the Library's name in a qualified call; -1 when there's none.</param>
     private static int FindDotted(List<Token> tokens, TextSpan word, out bool isCall, out int library)
     {
         isCall = false;

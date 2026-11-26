@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
-/// <summary>
-/// How the window's Reference tab writes a list of names, and matches its filter.
-/// </summary>
 internal static class ReferenceText
 {
     public const string None = "–";

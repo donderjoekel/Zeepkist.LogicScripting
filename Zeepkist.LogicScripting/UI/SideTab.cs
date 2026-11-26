@@ -13,9 +13,6 @@ internal static class SideTab
     private const string WarningMark = "!";
     private const float DotScale = 0.4f;
 
-    /// <summary>
-    /// Returns whether the tab was clicked.
-    /// </summary>
     public static bool Draw(ImGui gui, bool selected, string label, ImRect rect, bool dot, bool warning)
     {
         ref readonly var style = ref selected ? ref gui.Style.Tabs.Selected : ref gui.Style.Tabs.Normal;

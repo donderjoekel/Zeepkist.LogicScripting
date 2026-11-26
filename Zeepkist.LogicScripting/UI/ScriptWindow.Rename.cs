@@ -32,8 +32,8 @@ internal sealed partial class ScriptWindow
     }
 
     /// <summary>
-    /// The prompt, while it's open. The rename is one undo step, and the blocks only change at the next Compile. Any
-    /// change to the text closes it, as its index may then be on another name.
+    /// The rename is one undo step, and the blocks only change at the next Compile. Any change to the text closes the
+    /// prompt, as its index may then be on another name.
     /// </summary>
     private void DrawRenamePrompt(ImGui gui)
     {

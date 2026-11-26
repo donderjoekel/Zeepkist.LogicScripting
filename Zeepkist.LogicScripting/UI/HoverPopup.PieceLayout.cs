@@ -38,10 +38,6 @@ internal sealed partial class HoverPopup
             _y -= height;
         }
 
-        /// <summary>
-        /// The labels in a column as wide as the longest, each value wrapping beside its label. A label too long for
-        /// that column gets a line of its own, with its value indented on the next.
-        /// </summary>
         public void AddRows(IReadOnlyList<ReferenceRow> rows, Color32 labelColor, Color32 valueColor, float indent)
         {
             var space = _gui.MeasureTextSize(" ").x;
@@ -62,8 +58,8 @@ internal sealed partial class HoverPopup
         }
 
         /// <summary>
-        /// Wraps when it's wider than the box. Drawn as wide as the box allows, since a rect exactly as wide as the
-        /// measured text can still wrap its last word.
+        /// Drawn as wide as the box allows, since a rect exactly as wide as the measured text can still wrap its last
+        /// word.
         /// </summary>
         public void AddLine(string text, Color32 color, float x)
         {

@@ -5,9 +5,6 @@ using ZeepSDK.UI;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The "Logic Script" menu in ZeepSDK's menu bar, which opens and closes the window like its key does.
-/// </summary>
 internal sealed class ScriptToolbarDrawer : IZeepToolbarDrawer
 {
     private readonly ScriptWindow _window;
@@ -21,7 +18,6 @@ internal sealed class ScriptToolbarDrawer : IZeepToolbarDrawer
 
     public void DrawMenuItems(ImGui gui)
     {
-        // The window only shows in the editor, outside test mode
         var available = LevelEditorApi.IsInLevelEditor && !LevelEditorApi.IsTestingLevel;
         gui.BeginReadOnly(!available);
         if (gui.Menu(_window.IsOpen ? "Close Script window" : "Open Script window") && available)

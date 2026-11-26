@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// A heading the Reference tab drew, a Block Category's or the Libraries', and whether it was open.
-/// </summary>
 internal readonly struct ReferenceHeading
 {
     public const string ClosedSuffix = ":closed";

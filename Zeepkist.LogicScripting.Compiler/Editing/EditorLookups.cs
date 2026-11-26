@@ -7,9 +7,6 @@ namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 /// </summary>
 public sealed class EditorLookups
 {
-    /// <summary>
-    /// Finds no block in the level and no Library.
-    /// </summary>
     public static readonly EditorLookups None = new();
 
     private readonly Func<string, PlacedBlock> _findPlacedBlock;

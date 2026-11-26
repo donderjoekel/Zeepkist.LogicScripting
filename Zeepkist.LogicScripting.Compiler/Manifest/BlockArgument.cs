@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
-/// <summary>
-/// One argument a Block Function takes, from <see cref="BlockType.Arguments"/>.
-/// </summary>
 public sealed class BlockArgument
 {
     internal const string InputDetail = "input";
@@ -30,9 +27,6 @@ public sealed class BlockArgument
 
     public bool IsInput => Kind == BlockArgumentKind.Input;
 
-    /// <summary>
-    /// The name, with a colon unless it is an input.
-    /// </summary>
     public string Label => IsInput ? Name : $"{Name}:";
 
     public static BlockArgument ForSetting(BlockSetting setting)

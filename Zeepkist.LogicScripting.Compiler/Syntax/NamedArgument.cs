@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
-/// <summary>
-/// <c>name: value</c> in a call.
-/// </summary>
 internal sealed class NamedArgument : SyntaxNode
 {
     public NamedArgument(Position position, string name, Expression value, Position valuePosition)

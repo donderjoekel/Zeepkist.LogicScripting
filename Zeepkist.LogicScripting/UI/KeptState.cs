@@ -30,9 +30,6 @@ internal readonly struct KeptState
     /// </summary>
     public ImRect? WindowRect { get; }
 
-    /// <summary>
-    /// Whether the Scripts side shows its Libraries tab rather than its Scripts tab.
-    /// </summary>
     public bool ShowLibraries { get; }
 
     /// <summary>

@@ -42,18 +42,12 @@ internal sealed class DraftSaver
             Save();
     }
 
-    /// <summary>
-    /// Saves a requested change without waiting for the delay.
-    /// </summary>
     public void SavePending()
     {
         if (_saveTime != null)
             Save();
     }
 
-    /// <summary>
-    /// Writes the Draft of every Script that changed since its last one.
-    /// </summary>
     public void Save()
     {
         _saveTime = null;

@@ -7,9 +7,7 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Changes a Setting of a block <c>place-block ... as &lt;name&gt;</c> placed, as changing it in the block's own
-/// settings panel does: through the block's editor, so the change is one undo step and the level's block holds it. The
-/// Setting and its value are written as a Script writes them, such as <c>mode global_velocity</c>.
+/// The Setting and its value are written as a Script writes them, such as <c>mode global_velocity</c>.
 /// </summary>
 internal sealed class SetBlockSettingStep : ScenarioStep
 {
@@ -25,8 +23,7 @@ internal sealed class SetBlockSettingStep : ScenarioStep
     public string Value { get; }
 
     /// <summary>
-    /// The value as the block stores it, as a Compile would write it. Null, with why in <paramref name="error"/>, for a
-    /// value the Setting doesn't take.
+    /// The value as the block stores it, as a Compile would write it.
     /// </summary>
     public static Setting ToSetting(BlockSetting setting, string value, out string error)
     {
@@ -107,9 +104,6 @@ internal sealed class SetBlockSettingStep : ScenarioStep
             properties.SetStringDictionaryValue(setting.Key, setting.TextValue);
     }
 
-    /// <summary>
-    /// What the block holds under the Setting's key, as text to compare with what was written.
-    /// </summary>
     private static string Read(PropertyDictionariesJSON properties, Setting setting)
     {
         return setting.Kind == SettingKind.Int

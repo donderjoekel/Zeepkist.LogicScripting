@@ -4,10 +4,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the open completion list has a row with the label, and with the detail too when one is given: empty
-/// for a row with none.
-/// </summary>
 internal sealed class ExpectCompletionStep : ScenarioStep
 {
     private const float WaitSeconds = 1;

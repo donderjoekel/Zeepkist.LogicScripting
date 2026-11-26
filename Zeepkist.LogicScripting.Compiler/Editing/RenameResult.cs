@@ -24,14 +24,8 @@ public sealed class RenameResult
     /// </summary>
     public int Caret { get; }
 
-    /// <summary>
-    /// How many places the name was changed in.
-    /// </summary>
     public int Count { get; }
 
-    /// <summary>
-    /// Why the rename was refused, or null.
-    /// </summary>
     public string Error { get; }
 
     public bool Succeeded => Error == null;

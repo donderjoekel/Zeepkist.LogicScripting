@@ -9,7 +9,7 @@ internal sealed partial class GraphBuilder
     private readonly List<DeferredWire> _deferredWires = [];
 
     /// <summary>
-    /// What feeds an input. Inside <c>delay(...)</c> a name may not be defined yet; its Wire is then connected
+    /// Inside <c>delay(...)</c> a name may not be defined yet; its Wire is then connected
     /// once every definition has been visited.
     /// </summary>
     private InputFeed EvaluateFeed(Expression expression)

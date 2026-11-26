@@ -36,16 +36,10 @@ public sealed class CompletionSession
     public IReadOnlyList<CompletionItem> Items { get; private set; } = [];
     public int Selected { get; private set; }
 
-    /// <summary>
-    /// The first item the list shows.
-    /// </summary>
     public int FirstRow { get; private set; }
 
     public int VisibleRows => Math.Min(MaxRows, Items.Count);
 
-    /// <summary>
-    /// Where the word being completed starts while the list is open.
-    /// </summary>
     public int? WordStart => IsOpen ? _context.Word.Start : null;
 
     /// <summary>
@@ -125,9 +119,6 @@ public sealed class CompletionSession
             Close();
     }
 
-    /// <summary>
-    /// Moves the selection, wrapping around the ends or stopping at them, and scrolls it into view.
-    /// </summary>
     public void Select(int index, bool wrap)
     {
         var count = Items.Count;
@@ -141,9 +132,6 @@ public sealed class CompletionSession
             FirstRow = Selected - MaxRows + 1;
     }
 
-    /// <summary>
-    /// Closes the list and returns the text with the item written in; null when there's no such item.
-    /// </summary>
     public TextSnapshot? Accept(int index)
     {
         if (!IsOpen || index < 0 || index >= Items.Count)

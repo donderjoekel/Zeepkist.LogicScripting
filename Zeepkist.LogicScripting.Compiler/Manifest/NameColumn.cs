@@ -29,10 +29,6 @@ public sealed class NameColumn
     /// </summary>
     public float Width { get; }
 
-    /// <param name="rows"></param>
-    /// <param name="measure">The width a name takes when drawn.</param>
-    /// <param name="gap">The room between a name and its value.</param>
-    /// <param name="availableWidth">The width the rows are laid out in.</param>
     public static NameColumn Fit(IReadOnlyList<ReferenceRow> rows, Func<string, float> measure, float gap, float availableWidth)
     {
         var maxWidth = availableWidth * MaxShare;

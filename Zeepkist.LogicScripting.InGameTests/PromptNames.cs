@@ -4,9 +4,6 @@ using TNRD.Zeepkist.LogicScripting.UI;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests;
 
-/// <summary>
-/// How a scenario writes a list tab's prompts and their buttons.
-/// </summary>
 internal static class PromptNames
 {
     public static readonly IReadOnlyDictionary<string, ListPrompt> Prompts = new Dictionary<string, ListPrompt>

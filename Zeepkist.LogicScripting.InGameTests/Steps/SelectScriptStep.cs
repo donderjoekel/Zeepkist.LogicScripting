@@ -3,7 +3,7 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Clicks the Script in the list, which selects it while the window draws the list, as a player's click does.
+/// The click selects the Script while the window draws the list, as a player's click does.
 /// </summary>
 internal sealed class SelectScriptStep : ScenarioStep
 {

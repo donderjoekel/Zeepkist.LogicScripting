@@ -41,12 +41,9 @@ public static class NameRename
 
     /// <summary>
     /// Renames the name the character at <paramref name="index"/> is in or right after to
-    /// <paramref name="newName"/>, everywhere the Script uses it.
+    /// <paramref name="newName"/>, everywhere the Script uses it. <paramref name="newName"/> is trimmed before it's
+    /// checked.
     /// </summary>
-    /// <param name="text">The Script.</param>
-    /// <param name="index">The caret, in or right after a use of the name.</param>
-    /// <param name="newName">Trimmed before it's checked.</param>
-    /// <param name="lookups">The level's blocks and the Libraries, to compile the Script with.</param>
     public static RenameResult Rename(string text, int index, string newName, EditorLookups lookups = null)
     {
         text ??= string.Empty;

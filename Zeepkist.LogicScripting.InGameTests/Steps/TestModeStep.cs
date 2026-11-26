@@ -3,8 +3,7 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Starts test mode and waits until the round starts, when the player can drive. Refuses a level with a Dependency Loop,
-/// which would stop all its logic.
+/// Refuses a level with a Dependency Loop, which would stop all its logic.
 /// </summary>
 internal sealed class TestModeStep : ScenarioStep
 {

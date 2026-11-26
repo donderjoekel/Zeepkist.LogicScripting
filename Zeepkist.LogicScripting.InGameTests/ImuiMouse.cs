@@ -37,7 +37,7 @@ internal static class ImuiMouse
     }
 
     /// <summary>
-    /// Moves the mouse by <paramref name="delta"/> with the button held. Returns false when there's no backend.
+    /// Moves the mouse with the button held. Returns false when there's no backend.
     /// </summary>
     public static bool Drag(Vector2 delta)
     {

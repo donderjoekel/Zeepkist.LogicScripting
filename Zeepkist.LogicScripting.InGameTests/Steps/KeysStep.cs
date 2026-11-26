@@ -5,8 +5,7 @@ using System.Linq;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Sends keys to the focused field through Imui, a group of them each frame, and waits until the field has handled
-/// them. An Escape is also held for the Script editor, as Unity's <c>Input</c> would report it.
+/// An Escape is also held for the Script editor, as Unity's <c>Input</c> would report it.
 /// </summary>
 internal abstract class KeysStep : ScenarioStep
 {

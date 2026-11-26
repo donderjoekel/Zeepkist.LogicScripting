@@ -96,11 +96,9 @@ internal sealed partial class HoverPopup
     }
 
     /// <summary>
-    /// Read again only when the text, its errors or the character change.
+    /// Read again only when the text, its errors or the character change. A null index means the mouse is on no
+    /// character.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="index">The character the mouse is on; null when it's on none.</param>
-    /// <param name="errors"></param>
     public HoverInfo Find(string text, int? index, IReadOnlyList<ErrorUnderline> errors)
     {
         if (ReferenceEquals(_found.Text, text) && ReferenceEquals(_found.Errors, errors) && _found.Index == index)

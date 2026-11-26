@@ -5,10 +5,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting;
 
-/// <summary>
-/// Where and how a Compile places a Script's blocks: a first Compile in front of the camera, a recompile in place of
-/// the Script's Block Group.
-/// </summary>
 internal abstract class CompilePlacement
 {
     public abstract IReadOnlyList<BlockProperties> Group { get; }
@@ -24,14 +20,8 @@ internal abstract class CompilePlacement
         return group.Count > 0 ? new RecompilePlacement(group) : new FirstCompilePlacement(central);
     }
 
-    /// <summary>
-    /// Whether placing <paramref name="result"/> would leave the level as it is.
-    /// </summary>
     public abstract bool ChangesNothing(CompileResult result);
 
-    /// <summary>
-    /// The result line when <see cref="ChangesNothing"/>.
-    /// </summary>
     public string GetNothingToPlaceLine()
     {
         return $"Nothing to place. {NotStoredNote}";
@@ -42,9 +32,6 @@ internal abstract class CompilePlacement
     /// </summary>
     public abstract Vector3 GetOrigin(CompileResult result);
 
-    /// <summary>
-    /// What placing <paramref name="result"/> did, for the window's result line.
-    /// </summary>
     public string GetResultLine(CompileResult result)
     {
         var line = GetPlacedLine(result.Blocks.Count);

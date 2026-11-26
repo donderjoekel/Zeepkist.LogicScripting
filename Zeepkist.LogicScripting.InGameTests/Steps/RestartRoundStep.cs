@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Restarts the round in test mode and waits until it starts again, with the level still the one that was running.
-/// </summary>
 internal sealed class RestartRoundStep : ScenarioStep
 {
     private const float StartSeconds = 60;

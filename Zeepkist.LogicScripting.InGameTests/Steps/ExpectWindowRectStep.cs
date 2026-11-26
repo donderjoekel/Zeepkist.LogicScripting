@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the window is drawn at the size and position <see cref="RememberWindowRectStep"/> remembered.
-/// </summary>
 internal sealed class ExpectWindowRectStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

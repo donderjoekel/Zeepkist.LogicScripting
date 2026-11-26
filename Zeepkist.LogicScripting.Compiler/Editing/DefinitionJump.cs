@@ -18,9 +18,6 @@ public sealed class DefinitionJump
         Target = target;
     }
 
-    /// <summary>
-    /// The name the character is in.
-    /// </summary>
     public TextSpan Name { get; }
 
     /// <summary>
@@ -33,9 +30,6 @@ public sealed class DefinitionJump
     /// defines. The latest definition above the name is the one used, or the first below it when there's none above,
     /// as only <c>delay(...)</c> may refer to a name defined later.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="index"></param>
-    /// <param name="lookups">The level gives a Placed Block Reference its type.</param>
     public static DefinitionJump At(string text, int index, EditorLookups lookups = null)
     {
         text ??= string.Empty;

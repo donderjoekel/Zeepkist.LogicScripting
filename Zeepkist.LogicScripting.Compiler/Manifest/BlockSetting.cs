@@ -5,9 +5,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
-/// <summary>
-/// A Setting a block type takes as a named argument, and the key it's saved under.
-/// </summary>
 public sealed class BlockSetting
 {
     /// <summary>

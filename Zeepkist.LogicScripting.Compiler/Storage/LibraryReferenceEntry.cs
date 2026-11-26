@@ -4,9 +4,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 
-/// <summary>
-/// One Library Function as the window's Reference tab shows it.
-/// </summary>
 public sealed class LibraryReferenceEntry
 {
     private const string SettingMark = " (setting)";
@@ -14,12 +11,9 @@ public sealed class LibraryReferenceEntry
 
     private readonly IReadOnlyList<string> _names;
 
-    /// <param name="library">The Library's name.</param>
-    /// <param name="functionName">The Function's own name, without the Library's.</param>
-    /// <param name="inputs">The input names, in order.</param>
-    /// <param name="settingInputs">The inputs its body uses as a Setting.</param>
-    /// <param name="outputs">The output names, in order.</param>
-    /// <param name="libraryHasErrors">Whether the Library's text has an error.</param>
+    /// <summary>
+    /// <paramref name="settingInputs"/> are the inputs the Function's body uses as a Setting.
+    /// </summary>
     public LibraryReferenceEntry(
         string library,
         string functionName,

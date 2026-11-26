@@ -5,8 +5,8 @@ using System.Linq;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Stores a Setting no Script can give, such as an input's override, on a block <c>place-block ... as &lt;name&gt;</c>
-/// placed, by the key and the way the block stores it. <see cref="SetBlockSettingStep"/> sets the others.
+/// For a Setting no Script can give, such as an input's override, by the key and the way the block stores it.
+/// <see cref="SetBlockSettingStep"/> sets the others.
 /// </summary>
 internal sealed class SetStoredSettingStep : ScenarioStep
 {

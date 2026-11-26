@@ -4,10 +4,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the Scripts tab draws the Orphaned Groups' result line and it contains the text, matching case, or with
-/// <see cref="NoResult"/> when it draws none.
-/// </summary>
 internal sealed class ExpectOrphanResultStep : ScenarioStep
 {
     public const string NoResult = "none";

@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the call help box doesn't show.
-/// </summary>
 internal sealed class ExpectNoCallHelpStep : ScenarioStep
 {
     private const float WaitSeconds = 1;

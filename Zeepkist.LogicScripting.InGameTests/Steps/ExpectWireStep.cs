@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when both blocks store the Wire.
-/// </summary>
 internal sealed class ExpectWireStep : ScenarioStep
 {
     public ExpectWireStep(WireArgument wire)

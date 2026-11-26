@@ -24,7 +24,7 @@ internal static class BlockGroups
     }
 
     /// <summary>
-    /// Whether the block is in the Block Group of a Script other than <paramref name="scriptId"/>, which may be null.
+    /// <paramref name="scriptId"/> may be null.
     /// </summary>
     public static bool IsInOtherGroup(BlockProperties block, ScriptId scriptId)
     {

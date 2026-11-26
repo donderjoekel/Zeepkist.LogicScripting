@@ -2,9 +2,6 @@ using System.Collections.Generic;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
-/// <summary>
-/// The text of the Script that blocks import into, or why they can't be imported.
-/// </summary>
 public sealed class ImportResult
 {
     private ImportResult(

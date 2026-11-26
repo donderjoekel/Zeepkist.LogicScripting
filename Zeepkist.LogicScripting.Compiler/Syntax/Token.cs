@@ -33,13 +33,10 @@ internal readonly struct Token
     /// </summary>
     public bool IsUnclosed { get; }
 
-    /// <summary>
-    /// The binary operator an <see cref="TokenKind.Operator"/> token spells, if any.
-    /// </summary>
     public BinaryOperator BinaryOperator { get; }
 
     /// <summary>
-    /// The unary operator an <see cref="TokenKind.Operator"/> token spells, if any; <c>-</c> is both.
+    /// <c>-</c> sets both this and <see cref="BinaryOperator"/>.
     /// </summary>
     public UnaryOperator UnaryOperator { get; }
 

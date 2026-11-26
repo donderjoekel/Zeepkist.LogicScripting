@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// What can be typed at the caret, for completion.
-/// </summary>
 public enum CaretContextKind
 {
     /// <summary>

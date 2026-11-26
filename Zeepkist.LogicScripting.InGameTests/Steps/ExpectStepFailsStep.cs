@@ -4,8 +4,8 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Runs another step and passes when it fails for the given reason. An exception still fails the scenario.
-/// Writes <c>{uid:&lt;name&gt;}</c> in the reason as that block's UID, for a message that names blocks by it.
+/// An exception in the step still fails the scenario. The reason can name a block's UID as
+/// <c>{uid:&lt;name&gt;}</c>, for a message that names blocks by it.
 /// </summary>
 internal sealed class ExpectStepFailsStep : ScenarioStep
 {

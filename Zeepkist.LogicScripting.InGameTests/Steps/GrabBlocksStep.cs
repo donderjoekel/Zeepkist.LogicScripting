@@ -3,8 +3,7 @@ using System.Collections;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Presses the editor's grab key, so the selected blocks are grabbed and follow the mouse until
-/// <see cref="DropBlocksStep"/>.
+/// The grabbed blocks follow the mouse until <see cref="DropBlocksStep"/>.
 /// </summary>
 internal sealed class GrabBlocksStep : ScenarioStep
 {

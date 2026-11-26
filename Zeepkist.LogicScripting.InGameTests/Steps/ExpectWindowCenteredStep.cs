@@ -2,10 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the window's middle is the screen's, to within <see cref="RectCheck.Tolerance"/>, as center-window and a
-/// first open leave it.
-/// </summary>
 internal sealed class ExpectWindowCenteredStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

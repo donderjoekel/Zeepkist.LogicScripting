@@ -37,9 +37,6 @@ internal sealed class LibraryStore
 
     public bool HasUnsavedChanges => Libraries.Version != _savedVersion;
 
-    /// <summary>
-    /// Writes the file when a Library changed since it was last written.
-    /// </summary>
     public void Save()
     {
         if (ReadFailed || !HasUnsavedChanges)

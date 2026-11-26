@@ -2,10 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Writes a Placed Block Reference for each block selected in the level at the caret, as Insert selected does. Fails
-/// when it writes none.
-/// </summary>
 internal sealed class InsertSelectedStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

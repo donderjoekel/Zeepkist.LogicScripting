@@ -2,10 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the Script editor is at least three rows tall, and it and the error panel's header lie inside the
-/// center, inside the window.
-/// </summary>
 internal sealed class ExpectEditorInViewStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

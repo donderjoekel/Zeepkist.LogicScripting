@@ -4,7 +4,7 @@ using System.Globalization;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// In test mode, passes when the Signal a named block's input got in the last Tick is this one.
+/// Checks the Signal the input got in the last Tick.
 /// </summary>
 internal sealed class ExpectSignalStep : ScenarioStep
 {

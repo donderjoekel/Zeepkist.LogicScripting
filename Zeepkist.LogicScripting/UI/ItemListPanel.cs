@@ -5,10 +5,6 @@ using Imui.Core;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// A list of Scripts or Libraries in a scroll region, and per entry Rename and Delete. Under the list is a footer pinned
-/// to the bottom of the tab, which holds whichever prompt is open, the result line, and the buttons, with New as the bottom row.
-/// </summary>
 internal abstract class ItemListPanel<T> : IListPanel
     where T : class
 {
@@ -66,9 +62,6 @@ internal abstract class ItemListPanel<T> : IListPanel
 
     protected abstract string EmptyText { get; }
 
-    /// <summary>
-    /// Null for none.
-    /// </summary>
     protected virtual string NewTooltip => null;
 
     /// <summary>
@@ -187,9 +180,6 @@ internal abstract class ItemListPanel<T> : IListPanel
         return selected;
     }
 
-    /// <summary>
-    /// Returns the entry the player made, or null.
-    /// </summary>
     private T DrawPrompts(ImGui gui)
     {
         T made = null;
@@ -232,9 +222,6 @@ internal abstract class ItemListPanel<T> : IListPanel
             gui.TooltipAtLastControl(NewTooltip);
     }
 
-    /// <summary>
-    /// Returns the entry the player imported, or null.
-    /// </summary>
     protected virtual T DrawImport(ImGui gui, ImRect rect)
     {
         return null;
@@ -330,9 +317,6 @@ internal abstract class ItemListPanel<T> : IListPanel
 
     protected abstract string GetName(T entry);
 
-    /// <summary>
-    /// Null when there's none by that name.
-    /// </summary>
     protected T Find(string name)
     {
         return Entries.FirstOrDefault(e => GetName(e) == name);

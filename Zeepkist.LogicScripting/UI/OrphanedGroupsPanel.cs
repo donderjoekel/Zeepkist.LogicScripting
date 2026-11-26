@@ -13,8 +13,8 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
 /// <summary>
-/// Lists the level's Orphaned Groups, each with Delete, Untag, Select, Import and Restore Script from Draft. Delete and
-/// Untag are one undo step each, Select is the editor's own selection step; importing and restoring are the caller's.
+/// Delete and Untag are one undo step each, Select is the editor's own selection step; importing and restoring are the
+/// caller's.
 /// </summary>
 internal sealed class OrphanedGroupsPanel
 {
@@ -39,9 +39,6 @@ internal sealed class OrphanedGroupsPanel
     /// </summary>
     public (int Frame, string Text) DrawnMessage { get; private set; } = (-1, string.Empty);
 
-    /// <summary>
-    /// What the row calls the group.
-    /// </summary>
     public static string GetName(OrphanedGroup orphan)
     {
         return orphan.Draft?.Name ?? "Unnamed";
@@ -132,10 +129,6 @@ internal sealed class OrphanedGroupsPanel
         return (imported, restored);
     }
 
-    /// <summary>
-    /// Drawn like a Reference category's header, in the warning color and with the count on the right. Returns whether
-    /// it was clicked.
-    /// </summary>
     private static bool DrawHeading(ImGui gui, int count, bool collapsed)
     {
         gui.AddSpacingIfLayoutFrameNotEmpty();

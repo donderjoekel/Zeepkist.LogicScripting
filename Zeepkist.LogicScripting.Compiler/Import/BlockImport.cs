@@ -79,9 +79,6 @@ public static class BlockImport
         return refusal == null ? ImportResult.Written(text.Text, uids, kept) : ImportResult.Refused(refusal);
     }
 
-    /// <summary>
-    /// What a refusal calls a block.
-    /// </summary>
     internal static string Describe(ImportedBlock block)
     {
         return Describe(block.Uid, block.BlockId);

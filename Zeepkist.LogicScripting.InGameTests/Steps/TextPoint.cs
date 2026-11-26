@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Where the mouse goes onto the first character of the first time a text is in the selected Script's or Library's
-/// editor, for the steps that move the mouse there.
-/// </summary>
 internal static class TextPoint
 {
     /// <summary>

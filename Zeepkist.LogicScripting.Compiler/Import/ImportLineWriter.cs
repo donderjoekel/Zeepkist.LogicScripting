@@ -8,9 +8,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
-/// <summary>
-/// Writes one line of an import's text, with the blocks nested into it.
-/// </summary>
 internal sealed class ImportLineWriter
 {
     private static readonly int _unaryPrecedence = BinaryOperator.All.Max(o => o.Precedence) + 1;
@@ -24,11 +21,9 @@ internal sealed class ImportLineWriter
     private readonly Dictionary<(Position Position, BlockType Type), string> _places = [];
     private int _depth;
 
-    /// <param name="graph">What to write.</param>
-    /// <param name="shapes">How to write each block.</param>
-    /// <param name="nested">The blocks written where they're used, instead of on a line of their own.</param>
-    /// <param name="getName">The name of a block that isn't nested.</param>
-    /// <param name="line">The line's number.</param>
+    /// <summary>
+    /// <paramref name="nested"/> are the blocks written where they're used, instead of on a line of their own.
+    /// </summary>
     public ImportLineWriter(
         ImportGraph graph,
         ImportShapes shapes,
@@ -79,9 +74,6 @@ internal sealed class ImportLineWriter
         Leave();
     }
 
-    /// <summary>
-    /// The call that wires into an outside block.
-    /// </summary>
     public void WriteOutsideCall(string uid)
     {
         Enter();

@@ -22,8 +22,5 @@ internal readonly struct TextPiece
 
     public ImRect Rect { get; }
 
-    /// <summary>
-    /// Whether it wraps inside <see cref="Rect"/> instead of staying on one line.
-    /// </summary>
     public bool Wrap { get; }
 }

@@ -128,7 +128,7 @@ internal sealed partial class Parser
     }
 
     /// <summary>
-    /// Where and why the body of the Function at <paramref name="keyword"/> ends. Indentation is only style, so the
+    /// Indentation is only style, so the
     /// body ends at the first <c>end</c> line. A Function can't be defined inside another, so a <c>function</c> line
     /// before it ends this one, to be read as the next Function. It parses nothing, so the editor can find bodies with
     /// it on each key press.
@@ -382,9 +382,10 @@ internal sealed partial class Parser
         }
     }
 
-    /// <param name="digits">The integer token.</param>
-    /// <param name="start">Where the literal starts: the digits, or the sign before them.</param>
-    /// <param name="sign">The sign's symbol, or empty.</param>
+    /// <summary>
+    /// <paramref name="start"/> is the digits, or the sign before them; <paramref name="sign"/> is the sign's symbol,
+    /// or empty.
+    /// </summary>
     private IntegerLiteral ParseInteger(Token digits, Token start, string sign)
     {
         _index++;

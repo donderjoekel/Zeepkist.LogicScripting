@@ -3,9 +3,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Graph;
 
-/// <summary>
-/// The blocks a Script describes and the Wires between them, before layout.
-/// </summary>
 internal sealed class BlockGraph
 {
     /// <summary>

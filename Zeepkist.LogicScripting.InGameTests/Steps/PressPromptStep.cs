@@ -5,7 +5,7 @@ using TNRD.Zeepkist.LogicScripting.UI;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Clicks a button of the open prompt on the shown tab, which the prompt handles the next time it's drawn.
+/// The prompt handles the click the next time it's drawn.
 /// </summary>
 internal sealed class PressPromptStep : ScenarioStep
 {

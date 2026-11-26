@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Replaces the text in the open name prompt, as typing it does.
-/// </summary>
 internal sealed class TypeNameStep : ScenarioStep
 {
     public TypeNameStep(string text)

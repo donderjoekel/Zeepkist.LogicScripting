@@ -35,8 +35,5 @@ internal readonly struct EditorLayout
     /// </summary>
     public float MinFieldHeight { get; }
 
-    /// <summary>
-    /// Whether the center drew the storage warning above the editor.
-    /// </summary>
     public bool HasStorageWarning { get; }
 }

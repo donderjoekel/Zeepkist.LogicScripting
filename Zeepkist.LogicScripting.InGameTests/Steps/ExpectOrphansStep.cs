@@ -3,9 +3,6 @@ using System.Globalization;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the window lists this many Orphaned Groups.
-/// </summary>
 internal sealed class ExpectOrphansStep : ScenarioStep
 {
     public ExpectOrphansStep(int count)

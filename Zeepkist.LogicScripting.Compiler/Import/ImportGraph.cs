@@ -19,9 +19,6 @@ internal sealed class ImportGraph
     private readonly Dictionary<(string Uid, int Connector), ImportedWire> _inputs = [];
     private readonly List<KeptBlock> _kept = [];
 
-    /// <param name="blocks">The blocks to import.</param>
-    /// <param name="findPlacedBlock">An outside block by its UID, or null when there's none.</param>
-    /// <param name="disabledBlockIds">Blocks the startup check found don't match the game.</param>
     public ImportGraph(
         IReadOnlyList<ImportedBlock> blocks,
         Func<string, PlacedBlock> findPlacedBlock = null,
@@ -43,9 +40,6 @@ internal sealed class ImportGraph
     /// </summary>
     public IReadOnlyList<KeptBlock> Kept => _kept;
 
-    /// <summary>
-    /// The blocks to import and the outside blocks they reach.
-    /// </summary>
     public int BlockCount => _blocks.Count + _outside.Count;
 
     public ImportedBlock GetImported(string uid)
@@ -58,9 +52,6 @@ internal sealed class ImportGraph
         return _indices.ContainsKey(uid);
     }
 
-    /// <summary>
-    /// The Wire into an input, or null.
-    /// </summary>
     public ImportedWire FindWire(string uid, BlockConnector input)
     {
         return _inputs.TryGetValue((uid, input.Index), out var wire) ? wire : null;
@@ -79,9 +70,6 @@ internal sealed class ImportGraph
         return GetType(uid).GetOutputs(IsImported(uid) ? GetImported(uid).Settings : _outside[uid].Settings);
     }
 
-    /// <summary>
-    /// What a refusal calls a block to import or one that was added as an outside block.
-    /// </summary>
     public string Describe(string uid)
     {
         return BlockImport.Describe(uid, GetBlockId(uid));

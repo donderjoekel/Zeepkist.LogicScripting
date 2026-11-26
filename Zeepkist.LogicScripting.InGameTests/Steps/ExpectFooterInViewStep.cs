@@ -4,9 +4,7 @@ using TNRD.Zeepkist.LogicScripting.UI;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the shown tab's footer, the open prompt, the result line and the buttons, lies inside the tab, inside the
-/// window, with the list above it at least two rows tall. The prompts may scroll when there's no room for all of them,
-/// but get at least a row.
+/// The prompts may scroll when there's no room for all of them, so they only need to get a row.
 /// </summary>
 internal sealed class ExpectFooterInViewStep : ScenarioStep
 {

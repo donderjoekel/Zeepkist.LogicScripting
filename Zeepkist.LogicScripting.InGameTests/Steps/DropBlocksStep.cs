@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Presses the editor's grab key again, which lets go of the grabbed blocks where they are, as one undo step.
-/// </summary>
 internal sealed class DropBlocksStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

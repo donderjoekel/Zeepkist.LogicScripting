@@ -7,8 +7,8 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Wires an output of one named block to an input of another, as one undo step. Fails for a Wire a player couldn't make
-/// by hand: into an input that already has one, or one that closes a Dependency Loop.
+/// Fails for a Wire a player couldn't make by hand: into an input that already has one, or one that closes a
+/// Dependency Loop.
 /// </summary>
 internal sealed class WireBlocksStep : ScenarioStep
 {

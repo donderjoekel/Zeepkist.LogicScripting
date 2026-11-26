@@ -5,8 +5,7 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Places a start block on the ground below the camera, facing the way it looks, so the soapbox faces the blocks a
-/// Compile places in front of the camera. It's one undo step, like placing it by hand.
+/// Faces the way the camera looks, so the soapbox faces the blocks a Compile places in front of the camera.
 /// </summary>
 internal sealed class PlaceStartStep : ScenarioStep
 {

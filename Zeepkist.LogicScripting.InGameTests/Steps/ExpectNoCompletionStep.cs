@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the completion list is closed.
-/// </summary>
 internal sealed class ExpectNoCompletionStep : ScenarioStep
 {
     private const float WaitSeconds = 1;

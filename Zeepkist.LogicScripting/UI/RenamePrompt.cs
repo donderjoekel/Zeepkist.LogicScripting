@@ -6,9 +6,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The new name for a name in the Script, in one row between the name row and the editor, opened with F2.
-/// </summary>
 /// <remarks>
 /// Enter is taken from Imui's key event, not Unity's <c>Input</c>, which comes a frame earlier: the editor, focused
 /// again by then, would get the Enter as a line break.
@@ -26,9 +23,6 @@ internal sealed class RenamePrompt
 
     public bool Focused { get; private set; }
 
-    /// <summary>
-    /// The name being renamed.
-    /// </summary>
     public string Name { get; private set; }
 
     /// <summary>
@@ -46,9 +40,6 @@ internal sealed class RenamePrompt
     /// </summary>
     public string Error => _error;
 
-    /// <summary>
-    /// The row, and the error's while there is one.
-    /// </summary>
     public float GetHeight(ImGui gui)
     {
         if (!IsOpen)

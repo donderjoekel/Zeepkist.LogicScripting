@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
-/// <summary>
-/// A line of an import's text.
-/// </summary>
 internal sealed class ImportLine
 {
     public ImportLine(string uid, string text)

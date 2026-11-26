@@ -1,8 +1,5 @@
 namespace TNRD.Zeepkist.LogicScripting.Compiler;
 
-/// <summary>
-/// A Setting key and value, ready to write into the block's property dictionary.
-/// </summary>
 public sealed class Setting
 {
     private Setting(string key, SettingKind kind, int intValue, string textValue)

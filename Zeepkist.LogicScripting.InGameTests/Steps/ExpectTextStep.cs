@@ -3,9 +3,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the selected Script's or Library's text contains the text, matching case.
-/// </summary>
 internal sealed class ExpectTextStep : ScenarioStep
 {
     public ExpectTextStep(string text)

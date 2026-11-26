@@ -4,7 +4,7 @@ using System.Linq;
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Syntax;
 
 /// <summary>
-/// A Block Function call. Positional arguments are inputs in Connector order; named ones are Settings or inputs.
+/// Positional arguments are inputs in Connector order; named ones are Settings or inputs.
 /// </summary>
 internal sealed class CallExpression : Expression
 {
@@ -29,9 +29,6 @@ internal sealed class CallExpression : Expression
 
     public string Function { get; }
 
-    /// <summary>
-    /// The name as written, with its Library.
-    /// </summary>
     public string QualifiedName => Library == null ? Function : $"{Library}.{Function}";
     public List<Expression> Arguments { get; }
     public List<NamedArgument> NamedArguments { get; }

@@ -6,9 +6,6 @@ using Xunit;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Tests;
 
-/// <summary>
-/// The text an import writes, from the blocks a Script compiles to.
-/// </summary>
 public class BlockImportTextTests
 {
     private const int TriggerId = 2413;

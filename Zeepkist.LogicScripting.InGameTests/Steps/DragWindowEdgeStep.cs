@@ -7,13 +7,6 @@ using UnityEngine;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Drags the window's resize handle as a player's mouse does: the mouse moves onto it, presses, makes each of
-/// <see cref="Moves"/> in turn, by an even part of it each frame, down or up, or right or left when
-/// <see cref="Sideways"/>, and lets go. Every frame from the press runs the checks of
-/// <see cref="ExpectEditorInViewStep"/> and checks the window is no smaller than its minimum, failing with the first
-/// frame that's wrong.
-/// </summary>
 internal sealed class DragWindowEdgeStep : ScenarioStep
 {
     public DragWindowEdgeStep(IReadOnlyList<DragMove> moves, bool sideways)
@@ -23,8 +16,8 @@ internal sealed class DragWindowEdgeStep : ScenarioStep
     }
 
     /// <summary>
-    /// The moves the mouse makes in one press, one after the other: each down, or up when below 0, or right, or left,
-    /// when <see cref="Sideways"/>.
+    /// Made one after the other in one press. Each moves down, or up when below 0; right, or left, when
+    /// <see cref="Sideways"/>.
     /// </summary>
     public IReadOnlyList<DragMove> Moves { get; }
 
@@ -116,17 +109,13 @@ internal sealed class DragWindowEdgeStep : ScenarioStep
             null);
     }
 
-    /// <summary>
-    /// The window's width when <see cref="Sideways"/>, otherwise its height.
-    /// </summary>
     private float GetSize(ImRect rect)
     {
         return Sideways ? rect.W : rect.H;
     }
 
     /// <summary>
-    /// How far the mouse moves in each frame after the press: every move's frames in turn, each in whole pixels that
-    /// add up to all of its move.
+    /// Whole pixels for each frame after the press, which add up to all of their move.
     /// </summary>
     private List<float> GetFrameMoves()
     {

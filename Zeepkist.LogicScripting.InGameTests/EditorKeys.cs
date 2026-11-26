@@ -8,14 +8,8 @@ internal static class EditorKeys
 {
     private static EditorKey _pressed;
 
-    /// <summary>
-    /// Whether the editor still has to read the key pressed last.
-    /// </summary>
     public static bool IsPressed => _pressed != EditorKey.None;
 
-    /// <summary>
-    /// Whether the key is one <see cref="LEV_GizmoHandler"/> reads, instead of <see cref="LEV_UndoRedo"/>.
-    /// </summary>
     public static bool IsGizmoKeyPressed => _pressed is EditorKey.Grab or EditorKey.Duplicate;
 
     public static void Press(EditorKey key)

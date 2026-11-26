@@ -390,9 +390,6 @@ public class CallHelpTests
         return CallHelp.At(snapshot.Text, snapshot.Caret, new EditorLookups(findPlacedBlock, findLibrary));
     }
 
-    /// <summary>
-    /// A lookup with one Library, <c>timing</c>.
-    /// </summary>
     private static Func<string, string> Library(string text)
     {
         return name => name == "timing" ? text : null;

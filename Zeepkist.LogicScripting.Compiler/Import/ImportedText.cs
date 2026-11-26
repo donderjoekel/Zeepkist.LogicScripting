@@ -4,9 +4,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
-/// <summary>
-/// The text an import wrote, and which part of it stands for which block.
-/// </summary>
 internal sealed class ImportedText
 {
     public ImportedText(

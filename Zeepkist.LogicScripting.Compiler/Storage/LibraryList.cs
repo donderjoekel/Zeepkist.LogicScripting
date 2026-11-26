@@ -26,9 +26,6 @@ public sealed class LibraryList
     /// </summary>
     public int Version { get; private set; }
 
-    /// <summary>
-    /// The Function names of each Library by its name, for <see cref="ScriptHighlighter.Highlight"/>.
-    /// </summary>
     public IReadOnlyDictionary<string, IReadOnlyCollection<string>> FunctionNames =>
         _functionNames ??= _entries
             .GroupBy(l => l.Name)
@@ -44,7 +41,7 @@ public sealed class LibraryList
     }
 
     /// <summary>
-    /// Adds an empty Library with a new id. Check the name with <see cref="GetNameError"/> first.
+    /// Check the name with <see cref="GetNameError"/> first.
     /// </summary>
     public Library Add(string name)
     {

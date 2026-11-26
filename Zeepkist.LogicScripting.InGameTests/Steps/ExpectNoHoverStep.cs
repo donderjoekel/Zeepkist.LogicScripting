@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the hover box doesn't show.
-/// </summary>
 internal sealed class ExpectNoHoverStep : ScenarioStep
 {
     public override IEnumerator Run(StepContext context)

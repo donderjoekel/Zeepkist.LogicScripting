@@ -3,10 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Makes a Script from an Orphaned Group's blocks and selects it, as Import on its row does. Fails, with why, when it
-/// makes none.
-/// </summary>
 internal sealed class ImportOrphanStep : ScenarioStep
 {
     private const float DrawSeconds = 2;

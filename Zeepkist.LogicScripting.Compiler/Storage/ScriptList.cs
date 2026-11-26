@@ -46,7 +46,7 @@ public sealed class ScriptList
     }
 
     /// <summary>
-    /// Adds an empty Script with a new id. Check the name with <see cref="GetNameError"/> first.
+    /// Check the name with <see cref="GetNameError"/> first.
     /// </summary>
     public ScriptEntry Add(string name)
     {
@@ -56,7 +56,7 @@ public sealed class ScriptList
     }
 
     /// <summary>
-    /// Adds a Script the level already holds, with its name and text. Take the name from <see cref="GetFreeName"/>.
+    /// Take the name from <see cref="GetFreeName"/>.
     /// </summary>
     public ScriptEntry Add(StoredScript stored)
     {

@@ -8,7 +8,7 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Reads the level's Wires for the steps that make and check them. A Wire is stored on both its blocks.
+/// A Wire is stored on both its blocks.
 /// </summary>
 internal static class LevelWires
 {
@@ -32,7 +32,7 @@ internal static class LevelWires
     }
 
     /// <summary>
-    /// The blocks in the level's Dependency Loops, with the UID of one that has no name, or null when it has no loop.
+    /// Null when the level has no loop. A block that has no name is written by its UID.
     /// </summary>
     public static string DescribeDependencyLoops(LEV_LevelEditorCentral central, PlacedBlockNames names)
     {

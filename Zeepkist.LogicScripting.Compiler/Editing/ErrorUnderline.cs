@@ -18,9 +18,6 @@ public sealed class ErrorUnderline
 
     public string Message { get; }
 
-    /// <summary>
-    /// Whether the character at <paramref name="index"/> is underlined; an empty underline covers its own index.
-    /// </summary>
     public bool Covers(int index)
     {
         return Span.Length == 0 ? index == Span.Start : Span.Start <= index && index < Span.End;

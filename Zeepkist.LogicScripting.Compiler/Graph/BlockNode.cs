@@ -68,9 +68,6 @@ internal sealed class BlockNode
         return _settings.Exists(s => s.Key == key);
     }
 
-    /// <summary>
-    /// Adds a Setting the call didn't give, such as one from a <c>default</c> line.
-    /// </summary>
     public void AddSetting(Setting setting)
     {
         _settings.Add(setting);

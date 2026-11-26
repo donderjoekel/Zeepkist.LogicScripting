@@ -6,9 +6,6 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 
 namespace TNRD.Zeepkist.LogicScripting.UI;
 
-/// <summary>
-/// The Libraries on this machine, New, and per Library Rename and Delete.
-/// </summary>
 internal sealed class LibraryListPanel : ItemListPanel<Library>
 {
     public const string Help = "On this machine, for Scripts in every level. Right-click a Library to rename or delete it";

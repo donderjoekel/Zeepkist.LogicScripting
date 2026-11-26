@@ -4,10 +4,8 @@ using UnityEngine;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Ctrl+clicks the first character of the first time the text is in the selected Script's or Library's editor, as a
-/// player does to jump to a name's definition: the mouse, as <see cref="ImuiMouse"/> hands it to Imui, moves there and
-/// clicks with the jump modifier held for the editor, which Unity's <c>Input</c> never reports for the steps. Passes when
-/// the click jumped, leaving the caret at the definition. Imui has the player's mouse again after it.
+/// Holds the jump modifier through the driver rather than sending Ctrl, because Unity's <c>Input</c>, which the editor
+/// reads it from, never reports the steps' keys.
 /// </summary>
 internal sealed class CtrlClickStep : ScenarioStep
 {

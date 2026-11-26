@@ -6,8 +6,7 @@ using TNRD.Zeepkist.LogicScripting.Compiler;
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
 /// <summary>
-/// Passes when the window's check found an error at the one-based line and column whose message contains the text,
-/// matching case.
+/// The line and column are one-based.
 /// </summary>
 internal sealed class ExpectErrorStep : ErrorCheckStep
 {

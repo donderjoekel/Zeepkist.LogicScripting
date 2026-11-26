@@ -7,20 +7,11 @@ using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Import;
 
-/// <summary>
-/// A block already in the level, to write into a Script, with everything it stores that could be a Setting.
-/// </summary>
 public sealed class ImportedBlock
 {
     private const string WireKeyPrefix = "id";
     private const string PaintKeyPrefix = "p";
 
-    /// <param name="uid">The block's UID.</param>
-    /// <param name="blockId">The block's ID, which picks its type and style.</param>
-    /// <param name="isInBlockGroup">Whether the block is in any Script's Block Group.</param>
-    /// <param name="ints">The whole numbers the block stores by key, or null for none.</param>
-    /// <param name="texts">The texts the block stores by key, or null for none.</param>
-    /// <param name="floats">The other numbers the block stores by key, or null for none.</param>
     public ImportedBlock(
         string uid,
         int blockId,
@@ -63,9 +54,6 @@ public sealed class ImportedBlock
         return Settings.Where(s => s.Key == setting.Key && ImportCompare.GetValue(s) != null).ToList();
     }
 
-    /// <summary>
-    /// The UIDs stored for a <see cref="SettingType.Targets"/> Setting.
-    /// </summary>
     internal IReadOnlyList<string> FindTargets(BlockSetting setting)
     {
         return GetStoredTargets(setting).Where(t => !string.IsNullOrEmpty(t)).ToList();

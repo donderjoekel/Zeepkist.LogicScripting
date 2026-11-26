@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace TNRD.Zeepkist.LogicScripting.Compiler.Editing;
 
-/// <summary>
-/// A name a Script defines, as the editor reads it.
-/// </summary>
 public sealed class DefinedName
 {
     public DefinedName(
@@ -39,15 +36,8 @@ public sealed class DefinedName
     /// </summary>
     public DefinedFunction Function { get; }
 
-    /// <summary>
-    /// Whether the name is one of the <see cref="Function"/>'s inputs, written on its first line.
-    /// </summary>
     public bool IsInput { get; }
 
-    /// <summary>
-    /// Whether the text at <paramref name="index"/> sees the name: it's in the same Function's body, or both are at the
-    /// top level, outside every one of the <paramref name="functions"/>.
-    /// </summary>
     internal bool IsInScopeAt(int index, IEnumerable<DefinedFunction> functions)
     {
         return Function == null ? !functions.Any(f => f.Contains(index)) : Function.Contains(index);

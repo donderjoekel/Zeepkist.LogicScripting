@@ -121,9 +121,6 @@ internal sealed class EditedScript : EditedItem
         return clicked && blocker == null;
     }
 
-    /// <summary>
-    /// Why Compile can't run right now, or null when it can.
-    /// </summary>
     private string GetCompileBlocker()
     {
         if (HasCurrentErrors)

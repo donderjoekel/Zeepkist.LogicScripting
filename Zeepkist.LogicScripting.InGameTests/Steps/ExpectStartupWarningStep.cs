@@ -2,9 +2,6 @@ using System.Collections;
 
 namespace TNRD.Zeepkist.LogicScripting.InGameTests.Steps;
 
-/// <summary>
-/// Passes when the center draws the startup check's warnings, or doesn't, as expected.
-/// </summary>
 internal sealed class ExpectStartupWarningStep : ScenarioStep
 {
     public ExpectStartupWarningStep(bool shown)
