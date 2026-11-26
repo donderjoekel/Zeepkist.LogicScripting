@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using TNRD.Zeepkist.LogicScripting.Compiler.Import;
 using Xunit;
@@ -37,5 +38,14 @@ internal static class ImportAssert
         Assert.Null(import.Text);
         Assert.Empty(import.ImportedUids);
         Assert.Empty(import.Kept);
+    }
+
+    /// <summary>
+    /// The compiled blocks are the same as the blocks and Wires the import read.
+    /// </summary>
+    public static void CompilesToTheSame(IReadOnlyList<ImportedBlock> blocks, IReadOnlyList<ImportedWire> wires, CompileResult compiled)
+    {
+        var (compiledBlocks, compiledWires) = CompiledSignatures.Read(compiled);
+        Assert.Equal(CompiledSignatures.Describe(blocks, wires), CompiledSignatures.Describe(compiledBlocks, compiledWires));
     }
 }

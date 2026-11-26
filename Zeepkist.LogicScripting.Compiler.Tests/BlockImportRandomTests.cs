@@ -62,9 +62,8 @@ public class BlockImportRandomTests
         Assert.Null(import.Refusal);
         var compiled = level.Compile(import);
         Assert.Empty(compiled.Errors);
-        var (compiledBlocks, compiledWires) = CompiledSignatures.Read(compiled);
         var wired = wires.Where(w => blocks.Any(b => b.Uid == w.FromUid || b.Uid == w.ToUid)).ToList();
-        Assert.Equal(CompiledSignatures.Describe(blocks, wired), CompiledSignatures.Describe(compiledBlocks, compiledWires));
+        ImportAssert.CompilesToTheSame(blocks, wired, compiled);
 
         void AddWires(ImportedBlock to, BlockType type, IReadOnlyList<ImportedBlock> feeders, double chance)
         {

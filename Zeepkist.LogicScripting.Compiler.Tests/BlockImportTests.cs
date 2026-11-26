@@ -669,8 +669,7 @@ public class BlockImportTests
         Assert.Null(import.Refusal);
         var compiled = ScriptCompiler.Compile(import.Text, 0);
         Assert.True(compiled.Succeeded);
-        var (compiledBlocks, compiledWires) = CompiledSignatures.Read(compiled);
-        Assert.Equal(CompiledSignatures.Describe(blocks, wires), CompiledSignatures.Describe(compiledBlocks, compiledWires));
+        ImportAssert.CompilesToTheSame(blocks, wires, compiled);
     }
 
     /// <summary>
