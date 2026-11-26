@@ -218,7 +218,7 @@ public class HoverInfoTests
         IReadOnlyList<ErrorUnderline> errors = null,
         Func<string, string> findLibrary = null)
     {
-        var index = marked.IndexOf('|');
-        return HoverInfo.At(marked.Remove(index, 1), index, errors, new EditorLookups(findPlacedBlock, findLibrary));
+        var snapshot = MarkedText.Parse(marked);
+        return HoverInfo.At(snapshot.Text, snapshot.Caret, errors, new EditorLookups(findPlacedBlock, findLibrary));
     }
 }

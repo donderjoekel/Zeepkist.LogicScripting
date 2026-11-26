@@ -405,7 +405,7 @@ public class CompletionTests
         var context = At("x = timing.edge(1, |");
         var item = Completion.GetItems(context, lookups: Library(TwoInputLibrary)).First(i => i.Label == "b:");
 
-        Assert.Equal("x = timing.edge(1, b: |", Format(Completion.Accept(context, item)));
+        Assert.Equal("x = timing.edge(1, b: |", MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Fact]
@@ -414,7 +414,7 @@ public class CompletionTests
         var context = At("function f(a, b) -> c\nend\nx = f(1, |");
         var item = Completion.GetItems(context).First(i => i.Label == "b:");
 
-        Assert.Equal("function f(a, b) -> c\nend\nx = f(1, b: |", Format(Completion.Accept(context, item)));
+        Assert.Equal("function f(a, b) -> c\nend\nx = f(1, b: |", MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Fact]
@@ -423,7 +423,7 @@ public class CompletionTests
         var context = At("function edge(x)\nend\nz = ed|");
         var item = Completion.GetItems(context).First(i => i.Label == "edge");
 
-        Assert.Equal("function edge(x)\nend\nz = edge(|", Format(Completion.Accept(context, item)));
+        Assert.Equal("function edge(x)\nend\nz = edge(|", MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Theory]
@@ -439,7 +439,7 @@ public class CompletionTests
         var context = At(text);
         var item = Completion.GetItems(context).First(i => i.Label == label);
 
-        Assert.Equal(expected, Format(Completion.Accept(context, item)));
+        Assert.Equal(expected, MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Fact]
@@ -448,7 +448,7 @@ public class CompletionTests
         var context = At("abc = 1\nx = ab|");
         var item = Completion.GetItems(context, DefinedNames.Read(context.Text)).First(i => i.Label == "abc");
 
-        Assert.Equal("abc = 1\nx = abc|", Format(Completion.Accept(context, item)));
+        Assert.Equal("abc = 1\nx = abc|", MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Theory]
@@ -977,7 +977,7 @@ public class CompletionTests
         var context = At(text);
         var item = Completion.GetItems(context, lookups: Library(TwoFunctionLibrary)).First(i => i.Label == "edge");
 
-        Assert.Equal(expected, Format(Completion.Accept(context, item)));
+        Assert.Equal(expected, MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Theory]
@@ -1048,7 +1048,7 @@ public class CompletionTests
         var context = At("t = simple_telemetry()\nx = t.sp|");
         var item = Completion.GetItems(context, DefinedNames.Read(context.Text)).First();
 
-        Assert.Equal("t = simple_telemetry()\nx = t.speed|", Format(Completion.Accept(context, item)));
+        Assert.Equal("t = simple_telemetry()\nx = t.speed|", MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Fact]
@@ -1069,7 +1069,7 @@ public class CompletionTests
         var context = At(text);
         var item = Completion.GetItems(context).First(i => i.Label == label);
 
-        Assert.Equal(expected, Format(Completion.Accept(context, item)));
+        Assert.Equal(expected, MarkedText.Format(Completion.Accept(context, item)));
     }
 
     [Theory]
@@ -1152,7 +1152,7 @@ public class CompletionTests
         var context = At(text);
         var item = Completion.GetItems(context).First(i => i.Label == label);
 
-        Assert.Equal(expected, Format(Completion.Accept(context, item)));
+        Assert.Equal(expected, MarkedText.Format(Completion.Accept(context, item)));
     }
 
     /// <summary>
@@ -1209,12 +1209,7 @@ public class CompletionTests
 
     private static CaretContext At(string marked)
     {
-        var caret = marked.IndexOf('|');
-        return CaretContext.At(marked.Remove(caret, 1), caret);
-    }
-
-    private static string Format(TextSnapshot snapshot)
-    {
-        return snapshot.Text.Insert(snapshot.Caret, "|");
+        var snapshot = MarkedText.Parse(marked);
+        return CaretContext.At(snapshot.Text, snapshot.Caret);
     }
 }

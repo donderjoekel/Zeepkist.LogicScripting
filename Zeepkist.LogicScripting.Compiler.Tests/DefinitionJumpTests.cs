@@ -96,7 +96,7 @@ public class DefinitionJumpTests
 
     private static DefinitionJump At(string marked)
     {
-        var index = marked.IndexOf('|');
-        return DefinitionJump.At(marked.Remove(index, 1), index);
+        var snapshot = MarkedText.Parse(marked);
+        return DefinitionJump.At(snapshot.Text, snapshot.Caret);
     }
 }
