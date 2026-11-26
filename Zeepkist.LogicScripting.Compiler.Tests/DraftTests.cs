@@ -149,6 +149,27 @@ public class DraftTests
         Assert.Equal("x = 2", Assert.Single(changes.TakeChanged(list.Entries, _ => newer)).Text);
     }
 
+    [Fact]
+    public void ADraftTypedOverANewerCopy_IsKeptWhenAnOlderCopyIsLoadedAfterClear()
+    {
+        var list = new ScriptList();
+        var changes = new DraftChanges();
+        var groups = new Dictionary<ScriptId, int>();
+        list.Update([new StoredScript(_id, "doors", "x = 2", 1)], groups, NoDraft);
+        list.Entries[0].Text = "# typed\nx = 2";
+        var typed = Assert.Single(changes.TakeChanged(list.Entries, NoDraft));
+        list.Clear();
+        changes.Clear();
+
+        list.Update([new StoredScript(_id, "doors", "x = 1", 1)], groups, _ => typed);
+        Assert.Equal("x = 1", list.Entries[0].Text);
+
+        Assert.Empty(changes.TakeChanged(list.Entries, _ => typed));
+
+        list.Entries[0].Text = "x = 3";
+        Assert.Equal("x = 3", Assert.Single(changes.TakeChanged(list.Entries, _ => typed)).Text);
+    }
+
     private static Draft NoDraft(ScriptId id)
     {
         return null;

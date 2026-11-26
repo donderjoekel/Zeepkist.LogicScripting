@@ -12,7 +12,7 @@ public sealed class DraftChanges
 
     /// <summary>
     /// Returns the Drafts of <paramref name="entries"/> that differ from the last ones returned, and takes them as saved.
-    /// A Script seen for the first time keeps a Draft typed over other text than the level's until it's edited: the
+    /// A Script seen for the first time since the last <see cref="Clear"/> keeps a Draft typed over other text than the level's until it's edited: the
     /// level may be an older copy, and the Draft the only place that text is left. <paramref name="findSaved"/> returns
     /// a Script's saved Draft, or null.
     /// </summary>
@@ -40,6 +40,14 @@ public sealed class DraftChanges
     public void TakeAsSaved(ScriptEntry entry)
     {
         _saved[entry.Id] = Draft.For(entry);
+    }
+
+    /// <summary>
+    /// Forgets every Script seen, so the next level's are taken as seen for the first time. Call after saving.
+    /// </summary>
+    public void Clear()
+    {
+        _saved.Clear();
     }
 
     private static bool KeepsSavedDraft(ScriptEntry entry, Draft draft, Draft saved)
