@@ -16,21 +16,7 @@ internal sealed class ExpectTabStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
-        if (context.RequireOpenWindow())
-        {
-            var expected = Describe(Libraries);
-            var actual = Describe(context.Window.ShowsLibraries);
-            if (context.Window.ShowsLibraries == Libraries)
-                context.Pass($"the {actual} tab shows", expected, actual);
-            else
-                context.Fail($"the {actual} tab shows instead", expected, actual);
-        }
-
+        context.ExpectTab(ChoiceNames.Tabs, Libraries, () => context.Window.ShowsLibraries);
         yield return null;
-    }
-
-    private static string Describe(bool libraries)
-    {
-        return libraries ? "libraries" : "scripts";
     }
 }

@@ -21,30 +21,6 @@ internal static class StepList
     /// </summary>
     public const string NoHeadings = "none";
 
-    /// <summary>
-    /// Whether the tab is the Libraries tab.
-    /// </summary>
-    private static readonly Dictionary<string, bool> _tabs = new()
-    {
-        ["scripts"] = false,
-        ["libraries"] = true,
-    };
-
-    /// <summary>
-    /// Whether the Blocks side's tab is the Reference tab.
-    /// </summary>
-    private static readonly Dictionary<string, bool> _blocksTabs = new()
-    {
-        ["placed"] = false,
-        ["reference"] = true,
-    };
-
-    private static readonly Dictionary<string, bool> _onOff = new()
-    {
-        ["on"] = true,
-        ["off"] = false,
-    };
-
     private static readonly Dictionary<string, Func<string, string, ScenarioStep>> _steps = new()
     {
         ["open-window"] = (step, argument) => None(step, argument, new OpenWindowStep()),
@@ -54,19 +30,19 @@ internal static class StepList
         ["new-library"] = (step, argument) => new NewLibraryStep(StepArgument.Text(step, argument, "a name")),
         ["select-library"] = (step, argument) => new SelectLibraryStep(StepArgument.Text(step, argument, "a name")),
         ["open-delete"] = (step, argument) => new OpenDeleteStep(StepArgument.Text(step, argument, "a name")),
-        ["show-tab"] = (step, argument) => new ShowTabStep(StepArgument.Choice(step, argument, _tabs)),
-        ["expect-tab"] = (step, argument) => new ExpectTabStep(StepArgument.Choice(step, argument, _tabs)),
-        ["show-blocks-tab"] = (step, argument) => new ShowBlocksTabStep(StepArgument.Choice(step, argument, _blocksTabs)),
-        ["expect-blocks-tab"] = (step, argument) => new ExpectBlocksTabStep(StepArgument.Choice(step, argument, _blocksTabs)),
+        ["show-tab"] = (step, argument) => new ShowTabStep(StepArgument.Choice(step, argument, ChoiceNames.Tabs)),
+        ["expect-tab"] = (step, argument) => new ExpectTabStep(StepArgument.Choice(step, argument, ChoiceNames.Tabs)),
+        ["show-blocks-tab"] = (step, argument) => new ShowBlocksTabStep(StepArgument.Choice(step, argument, ChoiceNames.BlocksTabs)),
+        ["expect-blocks-tab"] = (step, argument) => new ExpectBlocksTabStep(StepArgument.Choice(step, argument, ChoiceNames.BlocksTabs)),
         ["set-reference-filter"] = (_, argument) => new SetReferenceFilterStep(argument),
         ["expect-reference-headings"] = ExpectReferenceHeadings,
         ["open-new"] = (step, argument) => None(step, argument, new OpenNewStep()),
         ["open-rename"] = (step, argument) => new OpenRenameStep(StepArgument.Text(step, argument, "a name")),
         ["type-name"] = (step, argument) => new TypeNameStep(StepArgument.Text(step, argument, "the name to type")),
-        ["press-prompt"] = (step, argument) => new PressPromptStep(StepArgument.Choice(step, argument, PromptNames.Buttons)),
+        ["press-prompt"] = (step, argument) => new PressPromptStep(StepArgument.Choice(step, argument, ChoiceNames.Buttons)),
         ["select-group"] = (step, argument) => new SelectGroupStep(StepArgument.Text(step, argument, "a name")),
         ["expect-list-result"] = (step, argument) => new ExpectListResultStep(StepArgument.Text(step, argument, "the text to look for")),
-        ["expect-prompt"] = (step, argument) => new ExpectPromptStep(StepArgument.Choice(step, argument, PromptNames.Prompts)),
+        ["expect-prompt"] = (step, argument) => new ExpectPromptStep(StepArgument.Choice(step, argument, ChoiceNames.Prompts)),
         ["expect-footer-in-view"] = (step, argument) => None(step, argument, new ExpectFooterInViewStep()),
         ["set-window-height"] = (step, argument) => new SetWindowHeightStep(StepArgument.Pixels(step, argument)),
         ["expect-window-height"] = (step, argument) => new ExpectWindowHeightStep(StepArgument.Pixels(step, argument)),
@@ -81,10 +57,10 @@ internal static class StepList
         ["remember-window-rect"] = (step, argument) => None(step, argument, new RememberWindowRectStep()),
         ["expect-window-rect"] = (step, argument) => None(step, argument, new ExpectWindowRectStep()),
         ["expect-window-start-rect"] = (step, argument) => None(step, argument, new ExpectWindowStartRectStep()),
-        ["library-read-failed"] = (step, argument) => new LibraryReadFailedStep(StepArgument.Choice(step, argument, _onOff)),
-        ["startup-warning"] = (step, argument) => new StartupWarningStep(StepArgument.Choice(step, argument, _onOff)),
-        ["expect-library-read-failed"] = (step, argument) => new ExpectLibraryReadFailedStep(StepArgument.Choice(step, argument, _onOff)),
-        ["expect-startup-warning"] = (step, argument) => new ExpectStartupWarningStep(StepArgument.Choice(step, argument, _onOff)),
+        ["library-read-failed"] = (step, argument) => new LibraryReadFailedStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
+        ["startup-warning"] = (step, argument) => new StartupWarningStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
+        ["expect-library-read-failed"] = (step, argument) => new ExpectLibraryReadFailedStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
+        ["expect-startup-warning"] = (step, argument) => new ExpectStartupWarningStep(StepArgument.Choice(step, argument, ChoiceNames.OnOff)),
         ["expect-editor-in-view"] = (step, argument) => None(step, argument, new ExpectEditorInViewStep()),
         ["expect-editor-in-view-each-frame"] = (step, argument) => new ExpectEditorInViewEachFrameStep(StepArgument.Count(step, argument)),
         ["compile"] = (step, argument) => None(step, argument, new CompileStep()),

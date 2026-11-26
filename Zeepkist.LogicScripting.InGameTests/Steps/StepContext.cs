@@ -301,6 +301,24 @@ internal sealed class StepContext
     }
 
     /// <summary>
+    /// For a step that checks which of a side's two tabs shows, named by the words in <paramref name="tabs"/>. Fails the
+    /// step when the window isn't open.
+    /// </summary>
+    public void ExpectTab(IReadOnlyDictionary<string, bool> tabs, bool expected, Func<bool> shows)
+    {
+        if (!RequireOpenWindow())
+            return;
+
+        var shown = shows();
+        var expectedName = ChoiceNames.Of(tabs, expected);
+        var actual = ChoiceNames.Of(tabs, shown);
+        if (shown == expected)
+            Pass($"the {actual} tab shows", expectedName, actual);
+        else
+            Fail($"the {actual} tab shows instead", expectedName, actual);
+    }
+
+    /// <summary>
     /// Waits for the window to be drawn, unless it was this frame, so its rect is the one Imui keeps now and not the one
     /// it had before it closed. Fails the step when it isn't drawn in time.
     /// </summary>
