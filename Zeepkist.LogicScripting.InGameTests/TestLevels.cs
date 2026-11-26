@@ -49,6 +49,14 @@ internal static class TestLevels
     public static void OpenLoadPanel(LEV_LevelEditorCentral central)
     {
         central.tool.EnableLoadPanel();
+        ConfirmUnsaved(central);
+    }
+
+    /// <summary>
+    /// Goes on without saving when the game asks whether to leave the open level unsaved.
+    /// </summary>
+    public static void ConfirmUnsaved(LEV_LevelEditorCentral central)
+    {
         if (central.unsavedContentPopup.IsOpen)
             central.unsavedContentPopup.Yes();
     }

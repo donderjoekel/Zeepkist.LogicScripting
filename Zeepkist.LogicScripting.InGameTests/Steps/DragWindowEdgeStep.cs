@@ -56,7 +56,7 @@ internal sealed class DragWindowEdgeStep : ScenarioStep
             yield return null;
             if (!window.WindowLayout.IsResizing)
             {
-                context.Fail("frame 0: the resize handle didn't take the press", RectCheck.Describe(window.WindowLayout.ResizeHandle), $"the mouse at {Describe(ImuiMouse.Position.Value)}");
+                context.Fail("frame 0: the resize handle didn't take the press", RectCheck.Describe(window.WindowLayout.ResizeHandle), $"the mouse at {RectCheck.Point(ImuiMouse.Position.Value)}");
                 yield break;
             }
 
@@ -172,10 +172,5 @@ internal sealed class DragWindowEdgeStep : ScenarioStep
         }
 
         return true;
-    }
-
-    private static string Describe(Vector2 position)
-    {
-        return $"x {RectCheck.Pixels(position.x)}, y {RectCheck.Pixels(position.y)}";
     }
 }
