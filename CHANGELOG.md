@@ -34,6 +34,8 @@ All notable changes to Logic Scripting are listed here.
   a block function's Reference entry, the line that defines a name, a named argument's input or setting,
   and an error underline's message.
 - Ctrl+click (Cmd+click on macOS) a name in the Script editor to jump to the line that defines it.
+- With the caret on a name your Script defines, or a Function's input, the editor underlines the other places it's written
+  in the same scope. Words only spelled like it, such as an option word, a Function's name or an output after a `.`, aren't.
 - The Reference tab lists the blocks under four headings, Inputs, Operators, Outputs and Movers,
   split the same way as the subfolders of the game's logic block folder, and sorted by name.
   A heading can be collapsed, and stays collapsed when you reopen the window.

@@ -391,6 +391,7 @@ public class NeverThrowsTests
     {
         HoverInfo.At(text, index, underlines, _lookups);
         DefinitionJump.At(text, index, _lookups);
+        NameUsages.At(text, index);
     }
 
     private static CompileResult Compile(string text)

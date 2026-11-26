@@ -184,6 +184,7 @@ internal sealed partial class ScriptEditor
 
         DrawText(gui, textRect, textBounds, palette);
         DrawErrors(gui, textRect, palette);
+        DrawUsages(gui, textRect, palette, selected && !gui.IsReadOnly);
 
         // The list takes its clicks and keys before the editor, which would otherwise lose focus or move the caret
         var completing = selected && !gui.IsReadOnly;

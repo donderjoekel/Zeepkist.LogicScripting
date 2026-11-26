@@ -158,6 +158,9 @@ Moving the mouse or pressing a key hides it.
 Ctrl+click (Cmd+click on macOS) a name your Script defines to jump to the line that defines it.
 While Ctrl is held, the name under the mouse is underlined when there's a definition to jump to.
 
+With the caret on a name your Script defines, or on a Function's input, the other places that name is written get a thin underline.
+A name inside a Function is a different one from the same name outside it, so only the ones in the same Function, or outside every Function, are underlined.
+
 ## Importing blocks
 
 Import makes a Script from logic blocks that are already in the level, with their settings and wires.
