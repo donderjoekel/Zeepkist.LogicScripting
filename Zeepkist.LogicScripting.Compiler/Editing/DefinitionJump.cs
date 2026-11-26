@@ -49,14 +49,14 @@ public sealed class DefinitionJump
     }
 
     /// <summary>
-    /// The token of the name the character is in, unless it comes after a dot or a colon: then it's an output or a
-    /// Library's Function, or a Setting's option word, which can be spelled like an alias (<c>op: lerp</c>). -1 when
+    /// The token of the name the character is in, unless it comes after a dot, where it's an output or a Library's
+    /// Function, or it's a Setting's or style's word, which can be spelled like an alias (<c>op: lerp</c>). -1 when
     /// there's none.
     /// </summary>
     internal static int FindName(List<Token> tokens, int index)
     {
         var name = tokens.FindIndex(t => t.Kind == TokenKind.Name && t.Span.Start <= index && index < t.Span.End);
-        return Lexer.IsAfterDot(tokens, name) || (name > 0 && tokens[name - 1].Kind == TokenKind.Colon) ? -1 : name;
+        return name < 0 || Lexer.IsAfterDot(tokens, name) || NamedArgumentValue.IsWord(tokens, name) ? -1 : name;
     }
 
     /// <summary>
