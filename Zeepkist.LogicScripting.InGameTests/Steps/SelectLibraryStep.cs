@@ -25,6 +25,6 @@ internal sealed class SelectLibraryStep : ScenarioStep
             yield break;
         }
 
-        yield return context.WaitForShownList("the list wasn't drawn to take the click: is the Scripts side collapsed?");
+        yield return context.WaitForListClick();
     }
 }

@@ -11,11 +11,8 @@ internal sealed class BackToEditorStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
-        if (!TestModeControls.IsActive)
-        {
-            context.Fail("not in test mode: add test-mode first");
+        if (!context.RequireTestMode())
             yield break;
-        }
 
         var loadsBefore = context.Game.LevelLoads;
         yield return TestModeControls.Leave();

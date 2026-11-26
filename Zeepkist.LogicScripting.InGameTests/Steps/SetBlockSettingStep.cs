@@ -74,18 +74,10 @@ internal sealed class SetBlockSettingStep : ScenarioStep
             yield break;
         }
 
-        var blockEdit = block.GetAllBlockEditV18sFromThisBlock().FirstOrDefault(e => e.IsLogicBlock());
-        if (blockEdit == null)
-        {
-            context.Fail($"\"{Name}\" has no settings panel to change its Settings in");
-            yield break;
-        }
-
-        // Through the block's editor, as its settings panel goes, so the change is one undo step and the level keeps it
         var before = central.undoRedo.currentHistoryPosition;
-        blockEdit.RegisterUndoRedo();
-        BlockJson.Write(blockEdit.GetCustomBlockProperties(), stored);
-        blockEdit.GetUpdateFromSlot(0, updateSlots: true);
+        if (!context.EditSettings(named, properties => BlockJson.Write(properties, stored)))
+            yield break;
+
         yield return null;
 
         var expected = stored.Kind == SettingKind.Int ? stored.IntValue.ToString(CultureInfo.InvariantCulture) : stored.TextValue;

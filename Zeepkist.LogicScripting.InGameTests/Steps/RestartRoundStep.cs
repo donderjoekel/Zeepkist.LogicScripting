@@ -11,11 +11,8 @@ internal sealed class RestartRoundStep : ScenarioStep
 
     public override IEnumerator Run(StepContext context)
     {
-        if (!TestModeControls.IsActive)
-        {
-            context.Fail("not in test mode: add test-mode first");
+        if (!context.RequireTestMode())
             yield break;
-        }
 
         var roundsBefore = context.Game.RoundStarts;
         var scenesBefore = context.Game.ScenesLoaded;

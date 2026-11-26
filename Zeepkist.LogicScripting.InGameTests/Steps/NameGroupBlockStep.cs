@@ -31,12 +31,9 @@ internal sealed class NameGroupBlockStep : ScenarioStep
         if (central == null)
             yield break;
 
-        var scriptId = context.Window.FindScriptId(Script);
+        var scriptId = context.RequireScriptId(Script);
         if (scriptId == null)
-        {
-            context.FailNoScript(Script);
             yield break;
-        }
 
         var type = context.RequireBlockType(Function);
         if (type == null)

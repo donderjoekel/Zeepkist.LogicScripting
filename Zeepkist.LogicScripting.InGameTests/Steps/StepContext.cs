@@ -6,6 +6,7 @@ using System.Linq;
 using BepInEx.Logging;
 using Imui.Core;
 using TNRD.Zeepkist.LogicScripting.Blocks;
+using TNRD.Zeepkist.LogicScripting.Compiler;
 using TNRD.Zeepkist.LogicScripting.Compiler.Manifest;
 using TNRD.Zeepkist.LogicScripting.Compiler.Storage;
 using TNRD.Zeepkist.LogicScripting.UI;
@@ -197,11 +198,8 @@ internal sealed class StepContext
     /// </summary>
     public RunningBlock RequireRunningBlock(string name)
     {
-        if (!TestModeControls.IsActive)
-        {
-            Fail("not in test mode: add test-mode first");
+        if (!RequireTestMode())
             return null;
-        }
 
         var uid = RequireUid(name);
         if (uid == null)
@@ -410,6 +408,58 @@ internal sealed class StepContext
             Fail("no blocks are selected: add select-blocks first");
 
         return Failed ? null : central;
+    }
+
+    /// <summary>
+    /// Fails the step when the game isn't in test mode. Returns whether it is.
+    /// </summary>
+    public bool RequireTestMode()
+    {
+        var active = TestModeControls.IsActive;
+        if (!active)
+            Fail("not in test mode: add test-mode first");
+
+        return active;
+    }
+
+    /// <summary>
+    /// The id of the Script with the name, or null after failing the step when there's none.
+    /// </summary>
+    public ScriptId RequireScriptId(string name)
+    {
+        var scriptId = Window.FindScriptId(name);
+        if (scriptId == null)
+            FailNoScript(name);
+
+        return scriptId;
+    }
+
+    /// <summary>
+    /// Changes the block's stored Settings with <paramref name="write"/> through the block's editor, as its settings
+    /// panel does, so the change is one undo step and the level keeps it. Fails the step when the block has no settings
+    /// panel. Returns whether it changed them, which the block takes a frame later.
+    /// </summary>
+    public bool EditSettings(NamedBlock named, Action<PropertyDictionariesJSON> write)
+    {
+        var blockEdit = named.Block.GetAllBlockEditV18sFromThisBlock().FirstOrDefault(e => e.IsLogicBlock());
+        if (blockEdit == null)
+        {
+            Fail($"\"{named.Name}\" has no settings panel to change its Settings in");
+            return false;
+        }
+
+        blockEdit.RegisterUndoRedo();
+        write(blockEdit.GetCustomBlockProperties());
+        blockEdit.GetUpdateFromSlot(0, updateSlots: true);
+        return true;
+    }
+
+    /// <summary>
+    /// Waits for the shown tab's list to take a click on one of its entries, as <see cref="WaitForShownList"/> does.
+    /// </summary>
+    public IEnumerator WaitForListClick()
+    {
+        return WaitForShownList("the list wasn't drawn to take the click: is the Scripts side collapsed?");
     }
 
     /// <summary>
